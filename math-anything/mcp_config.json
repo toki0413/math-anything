@@ -1,0 +1,32 @@
+{
+  "mcpServers": {
+    "math-anything": {
+      "command": "python",
+      "args": [
+        "mcp_server.py"
+      ],
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/math-anything/core"
+      },
+      "description": "Math Anything - Mathematical structure extraction for computational materials science",
+      "tools": [
+        {
+          "name": "extract_mathematical_structure",
+          "description": "Extract mathematical structure from simulation engine parameters. Returns canonical forms, variable dependencies, discretization schemes, solution strategies, approximations, and mathematical decoding."
+        },
+        {
+          "name": "compare_calculations",
+          "description": "Compare two mathematical schemas and report differences categorized as critical, warning, or info."
+        },
+        {
+          "name": "validate_constraints",
+          "description": "Report symbolic constraints present in a mathematical schema without judging their satisfaction."
+        },
+        {
+          "name": "list_supported_engines",
+          "description": "List all supported simulation engines (vasp, lammps, abaqus, ansys, comsol, gromacs, multiwfn)."
+        }
+      ]
+    }
+  }
+}
