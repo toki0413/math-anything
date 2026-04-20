@@ -45,7 +45,7 @@ When you run extraction, you get the mathematical structure, variable dependenci
 
 ```bash
 # Install
-git clone https://github.com/yourusername/math-anything.git
+git clone https://github.com/toki/math-anything.git
 cd math-anything
 pip install -r requirements.txt
 
