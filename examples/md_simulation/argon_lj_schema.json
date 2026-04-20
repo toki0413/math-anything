@@ -6,7 +6,7 @@
     "extracted_at": "2026-04-20T19:05:01.185180",
     "source_files": {
       "input": [
-        "C:\\Users\\wanzh\\Desktop\\math-anything\\examples\\md_simulation\\argon_lj.in"
+        "examples/md_simulation/argon_lj.in"
       ],
       "log": []
     },

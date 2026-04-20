@@ -37,7 +37,7 @@ Examples:
   # Cross-engine comparison (VASP vs QE)
   math-anything cross vasp_INCAR.json quantum_espresso
   
-For more information: https://github.com/yourusername/math-anything
+For more information: https://github.com/toki/math-anything
         """
     )
     
