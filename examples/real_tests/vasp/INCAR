@@ -1,0 +1,26 @@
+SYSTEM = Generic Input
+
+# Start Parameters
+  NWRITE     = 2      ! Medium-level output
+  ISYM       = 0      ! Symmetry: 0=off, 1=on, 2=high precision
+  
+# Electronic Relaxation
+  PREC       = Accurate
+  ENCUT      = 520    ! Cutoff energy in eV
+  EDIFF      = 1E-6   ! Energy convergence criterion
+  
+# Ionic Relaxation
+  NSW        = 50     ! Number of ionic steps
+  EDIFFG     = -0.01  ! Force convergence criterion (negative for energy)
+  IBRION     = 2      ! Algorithm: 0=MD, 1=quasi-Newton, 2=CG
+  ISIF       = 3      ! Stress/relax: 0=force only, 2=cell shape+ions, 3=cell+ions
+  
+# DOS Related
+  ISMEAR     = 0      ! Gaussian smearing
+  SIGMA      = 0.05   ! Smearing width in eV
+  
+# Magnetic Moment (if needed)
+  ISPIN      = 1      ! 1=non-spin, 2=spin-polarized
+  
+# Parallelisation
+  NCORE      = 4      ! Number of cores per orbital

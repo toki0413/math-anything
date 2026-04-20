@@ -1,0 +1,80 @@
+! Beam Bending Analysis - Ansys APDL Script
+! Mathematical model: Euler-Bernoulli beam theory
+! Convergence: displacement < tolerance
+
+! Parameters
+L = 1.0           ! Beam length [m]
+W = 0.1           ! Beam width [m]
+H = 0.1           ! Beam height [m]
+E = 2.1e11        ! Young's modulus [Pa] - Steel
+NU = 0.3          ! Poisson's ratio [-]
+RHO = 7850        ! Density [kg/m³]
+P = 1000          ! Applied load [N]
+
+/FILNAME, beam_bending, 0
+/TITLE, Cantilever Beam Under End Load
+
+! Enter preprocessor
+/PREP7
+
+! Define element type - 3D 20-node structural solid
+ET, 1, SOLID186
+KEYOPT, 1, 2, 1      ! Full integration
+
+! Define material properties
+MP, EX, 1, E         ! Young's modulus
+MP, PRXY, 1, NU      ! Poisson's ratio  
+MP, DENS, 1, RHO     ! Density
+
+! Create keypoints for beam geometry
+K, 1, 0, 0, 0
+K, 2, L, 0, 0
+K, 3, L, W, 0
+K, 4, 0, W, 0
+K, 5, 0, 0, H
+K, 6, L, 0, H
+K, 7, L, W, H
+K, 8, 0, W, H
+
+! Create volume
+V, 1, 2, 3, 4, 5, 6, 7, 8
+
+! Mesh settings
+ESIZE, 0.02          ! Element size [m]
+SMRTSIZE, OFF
+MSHAPE, 1, 3D        ! Tetrahedral elements
+MSHKEY, 0            ! Free mesh
+VMESH, 1             ! Mesh volume 1
+
+! Define solution
+/SOLU
+ANTYPE, STATIC       ! Static analysis
+
+! Apply boundary conditions - fixed end at x=0
+NSEL, S, LOC, X, 0
+D, ALL, UX, 0
+D, ALL, UY, 0
+D, ALL, UZ, 0
+ALLSEL
+
+! Apply load at free end
+NSEL, S, LOC, X, L
+F, ALL, FY, -P/NNODE ! Distributed load
+ALLSEL
+
+! Solve settings
+TIME, 1              ! End time
+NSUBST, 10           ! 10 substeps
+AUTOTS, ON           ! Automatic time stepping
+LNSRCH, ON           ! Line search
+PRED, ON             ! Predictor
+
+SOLVE
+
+! Post-processing
+/POST1
+PLDISP, 1            ! Plot deformed shape
+PLNSOL, U, Y         ! Plot Y-displacement
+PRNSOL, U, COMP      ! Print displacements
+
+FINISH

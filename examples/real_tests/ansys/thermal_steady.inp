@@ -1,0 +1,57 @@
+! Thermal Analysis - Steady State Heat Conduction
+! Governing equation: ∇·(k∇T) + Q = 0
+
+! Parameters
+LX = 0.5            ! Length [m]
+LY = 0.5            ! Width [m]
+LZ = 0.01           ! Thickness [m]
+KXX = 400           ! Thermal conductivity [W/m·K] - Copper
+RHO_M = 8960        ! Density [kg/m³]
+C = 385             ! Specific heat [J/kg·K]
+Q_GEN = 1e6         ! Heat generation [W/m³]
+T_AMB = 300         ! Ambient temperature [K]
+H_COEF = 100        ! Convection coefficient [W/m²·K]
+
+/FILNAME, thermal_steady, 0
+/TITLE, Steady State Thermal Analysis
+
+/PREP7
+
+! Element type - thermal solid
+ET, 1, SOLID90       ! 20-node thermal element
+
+! Material properties
+MP, KXX, 1, KXX      ! Thermal conductivity
+MP, DENS, 1, RHO_M   ! Density
+MP, C, 1, C          ! Specific heat
+
+! Create block
+BLOCK, 0, LX, 0, LY, 0, LZ
+
+! Mesh
+ESIZE, 0.02
+VMESH, 1
+
+/SOLU
+ANTYPE, STATIC       ! Steady state thermal
+
+! Boundary conditions
+NSEL, S, LOC, X, 0
+D, ALL, TEMP, T_AMB  ! Fixed temperature
+ALLSEL
+
+! Heat generation
+BFE, ALL, HGEN, , Q_GEN
+
+! Convection on top surface
+NSEL, S, LOC, Z, LZ
+SF, ALL, CONV, H_COEF, T_AMB
+ALLSEL
+
+SOLVE
+
+/POST1
+PLNSOL, TEMP         ! Plot temperature distribution
+PRNSOL, TEMP         ! Print temperatures
+
+FINISH

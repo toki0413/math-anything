@@ -1,0 +1,312 @@
+{
+  "schema_version": "1.0.0",
+  "meta": {
+    "extracted_by": "math-anything-lammps",
+    "extractor_version": "0.1.0",
+    "extracted_at": "2026-04-20T19:05:01.185180",
+    "source_files": {
+      "input": [
+        "C:\\Users\\wanzh\\Desktop\\math-anything\\examples\\md_simulation\\argon_lj.in"
+      ],
+      "log": []
+    },
+    "explicit_material_context": null,
+    "material_context_declaration": {
+      "contains_material_specific_parameters": false,
+      "contains_material_specific_geometry": false,
+      "contains_material_specific_initial_state": false,
+      "extraction_scope": "mathematical_structure_only"
+    }
+  },
+  "mathematical_model": {
+    "governing_equations": [
+      {
+        "id": "newton_second_law",
+        "type": "second_order_ode",
+        "name": "Newton's Second Law",
+        "mathematical_form": "m * d\u00b2r/dt\u00b2 = F",
+        "variables": [
+          "position",
+          "velocity",
+          "force",
+          "mass"
+        ],
+        "parameters": {
+          "form": "vector"
+        },
+        "description": "Classical Newtonian equations of motion"
+      },
+      {
+        "id": "hamiltonian_dynamics",
+        "type": "hamiltonian_system",
+        "name": "Hamiltonian Dynamics",
+        "mathematical_form": "H = T(p) + V(q), dq/dt = \u2202H/\u2202p, dp/dt = -\u2202H/\u2202q",
+        "variables": [
+          "position",
+          "momentum",
+          "hamiltonian"
+        ],
+        "parameters": {
+          "separable": true
+        },
+        "description": "Hamiltonian formulation of dynamics"
+      }
+    ],
+    "boundary_conditions": [
+      {
+        "id": "domain_bc_x",
+        "type": "periodic",
+        "domain": {
+          "geometric_region": "x-boundary",
+          "entity_type": "domain"
+        },
+        "mathematical_object": {
+          "field": "x-boundary",
+          "tensor_rank": 0,
+          "tensor_form": "periodic",
+          "components": []
+        },
+        "software_implementation": {
+          "command": "boundary",
+          "parameters": {
+            "x": "p"
+          }
+        }
+      },
+      {
+        "id": "domain_bc_y",
+        "type": "periodic",
+        "domain": {
+          "geometric_region": "y-boundary",
+          "entity_type": "domain"
+        },
+        "mathematical_object": {
+          "field": "y-boundary",
+          "tensor_rank": 0,
+          "tensor_form": "periodic",
+          "components": []
+        },
+        "software_implementation": {
+          "command": "boundary",
+          "parameters": {
+            "y": "p"
+          }
+        }
+      },
+      {
+        "id": "domain_bc_z",
+        "type": "periodic",
+        "domain": {
+          "geometric_region": "z-boundary",
+          "entity_type": "domain"
+        },
+        "mathematical_object": {
+          "field": "z-boundary",
+          "tensor_rank": 0,
+          "tensor_form": "periodic",
+          "components": []
+        },
+        "software_implementation": {
+          "command": "boundary",
+          "parameters": {
+            "z": "p"
+          }
+        }
+      }
+    ],
+    "initial_conditions": [],
+    "constitutive_relations": [
+      {
+        "type": "pair_potential",
+        "name": "lj/cut",
+        "form": "U(r) = 4\u03b5[(\u03c3/r)\u00b9\u00b2 - (\u03c3/r)\u2076]",
+        "parameters": [
+          "2.5"
+        ]
+      }
+    ],
+    "coupling_conditions": [],
+    "parameter_relationships": [
+      {
+        "name": "lennard_jones_potential",
+        "expression": "U(r) = 4*epsilon*((sigma/r)**12 - (sigma/r)**6)",
+        "variables": [
+          "U",
+          "r",
+          "epsilon",
+          "sigma"
+        ],
+        "relation_type": "equality",
+        "description": "Lennard-Jones 12-6 pair potential energy",
+        "physical_meaning": "Van der Waals interaction with repulsive and attractive terms"
+      },
+      {
+        "name": "lennard_jones_force",
+        "expression": "F(r) = 24*epsilon*(2*(sigma/r)**12 - (sigma/r)**6)/r",
+        "variables": [
+          "F",
+          "r",
+          "epsilon",
+          "sigma"
+        ],
+        "relation_type": "equality",
+        "description": "Lennard-Jones force (negative gradient of potential)",
+        "physical_meaning": "Force derived from LJ potential"
+      },
+      {
+        "name": "lj_minimum_distance",
+        "expression": "r_min = 2**(1/6) * sigma",
+        "variables": [
+          "r_min",
+          "sigma"
+        ],
+        "relation_type": "equality",
+        "description": "Distance at which LJ potential is minimum",
+        "physical_meaning": "Equilibrium separation between atoms"
+      },
+      {
+        "name": "nose_hoover_thermostat",
+        "expression": "dT/dt = (T_target - T) / tau_T",
+        "variables": [
+          "T",
+          "T_target",
+          "tau_T",
+          "t"
+        ],
+        "relation_type": "differential_equation",
+        "description": "Nose-Hoover thermostat temperature evolution",
+        "physical_meaning": "Temperature relaxation towards target with time constant tau_T"
+      }
+    ]
+  },
+  "numerical_method": {
+    "discretization": {
+      "time_integrator": "velocity_verlet_with_nose_hoover",
+      "space_discretization": "none",
+      "time_step": 0.005,
+      "order": 2
+    },
+    "solver": {},
+    "parallelization": {}
+  },
+  "conservation_properties": {
+    "energy": {
+      "preserved": false,
+      "mechanism": "thermostat_nvt",
+      "fluctuation": "controlled"
+    }
+  },
+  "computational_graph": {
+    "version": "1.0",
+    "nodes": [
+      {
+        "id": "fix_1",
+        "type": "integrator",
+        "math_semantics": {
+          "operator_type": "thermostat_integrator",
+          "updates": {
+            "target": "phase_space",
+            "variables": [
+              "position",
+              "velocity"
+            ],
+            "mode": "implicit_loop"
+          },
+          "convergence": {
+            "required": true,
+            "criterion": "temperature_target_residual"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "from": "pair_evaluation",
+        "to": "integrator",
+        "data_type": "force",
+        "dependency": "read_only"
+      }
+    ],
+    "execution_topology": {
+      "schedule": "sequential_per_timestep",
+      "implicit_loops": [
+        {
+          "loop_id": "thermostat_1",
+          "nested_in": "fix_1",
+          "convergence_guarantee": "none_explicitly",
+          "max_iterations_source": "fix_parameter"
+        }
+      ]
+    }
+  },
+  "raw_symbols": {
+    "fixes": {
+      "1": {
+        "style": "nvt",
+        "group": "all"
+      }
+    },
+    "computes": {},
+    "variables": {},
+    "groups": {},
+    "units": "lj"
+  },
+  "symbolic_constraints": [
+    {
+      "expression": "epsilon > 0",
+      "description": "LJ energy well depth must be positive",
+      "variables": [
+        "epsilon"
+      ],
+      "confidence": 1.0,
+      "inferred_from": "pair_style lj/cut"
+    },
+    {
+      "expression": "sigma > 0",
+      "description": "LJ length scale must be positive",
+      "variables": [
+        "sigma"
+      ],
+      "confidence": 1.0,
+      "inferred_from": "pair_style lj/cut"
+    },
+    {
+      "expression": "tau_T > 0",
+      "description": "Thermostat damping time must be positive",
+      "variables": [
+        "tau_T"
+      ],
+      "confidence": 1.0,
+      "inferred_from": "fix nvt"
+    },
+    {
+      "expression": "dt < tau_T / 10",
+      "description": "Time step must be much smaller than thermostat damping for stability",
+      "variables": [
+        "dt",
+        "tau_T"
+      ],
+      "confidence": 0.9,
+      "inferred_from": "NVT numerical stability analysis"
+    },
+    {
+      "expression": "dt (0.005) < tau_T/10 (0.1440) \u2713",
+      "description": "Stability constraint satisfied",
+      "variables": [
+        "dt",
+        "tau_T"
+      ],
+      "confidence": 1.0,
+      "inferred_from": "validation"
+    },
+    {
+      "expression": "dt > 0",
+      "description": "Time step must be positive",
+      "variables": [
+        "dt"
+      ],
+      "confidence": 1.0,
+      "inferred_from": "timestep"
+    }
+  ]
+}

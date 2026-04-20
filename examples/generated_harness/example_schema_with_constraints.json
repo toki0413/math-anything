@@ -1,0 +1,99 @@
+{
+  "schema_version": "1.0.0",
+  "meta": {
+    "extracted_by": "math-anything-core",
+    "extractor_version": "0.1.0",
+    "extracted_at": "2026-04-20T18:24:00.528616",
+    "source_files": {},
+    "explicit_material_context": null,
+    "material_context_declaration": {
+      "contains_material_specific_parameters": false,
+      "contains_material_specific_geometry": false,
+      "contains_material_specific_initial_state": false,
+      "extraction_scope": "mathematical_structure_only"
+    }
+  },
+  "mathematical_model": {
+    "governing_equations": [
+      {
+        "id": "nvt_thermostat",
+        "type": "thermostat",
+        "name": "Nose-Hoover Thermostat",
+        "mathematical_form": "dT/dt = (T_target - T) / tau_T",
+        "variables": [
+          "T",
+          "T_target",
+          "tau_T",
+          "t"
+        ],
+        "parameters": {},
+        "description": null,
+        "symbolic_constraints": [
+          {
+            "expression": "tau_T > 0",
+            "description": "Thermostat damping must be positive",
+            "variables": [
+              "tau_T"
+            ],
+            "confidence": 1.0,
+            "inferred_from": "fix_nvt.cpp:38"
+          },
+          {
+            "expression": "dt < tau_T / 10",
+            "description": "Stability constraint for NVT integration",
+            "variables": [
+              "dt",
+              "tau_T"
+            ],
+            "confidence": 0.8,
+            "inferred_from": "fix_nvt.cpp:42"
+          }
+        ]
+      }
+    ],
+    "boundary_conditions": [],
+    "initial_conditions": [],
+    "constitutive_relations": [],
+    "coupling_conditions": [],
+    "parameter_relationships": [
+      {
+        "name": "LJ_potential",
+        "expression": "U(r) = 4*epsilon*((sigma/r)^12 - (sigma/r)^6)",
+        "variables": [
+          "U",
+          "r",
+          "epsilon",
+          "sigma"
+        ],
+        "relation_type": "equality",
+        "description": "Lennard-Jones 12-6 potential",
+        "physical_meaning": "Van der Waals interaction energy"
+      }
+    ]
+  },
+  "numerical_method": {
+    "discretization": {},
+    "solver": {},
+    "parallelization": {}
+  },
+  "conservation_properties": {},
+  "computational_graph": {
+    "version": "1.0",
+    "nodes": [],
+    "edges": [],
+    "execution_topology": {}
+  },
+  "raw_symbols": {},
+  "symbolic_constraints": [
+    {
+      "expression": "r_cut > 2^(1/6) * sigma",
+      "description": "Cutoff must include attractive region",
+      "variables": [
+        "r_cut",
+        "sigma"
+      ],
+      "confidence": 0.9,
+      "inferred_from": "pair_lj_cut.cpp:55"
+    }
+  ]
+}

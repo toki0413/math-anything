@@ -1,0 +1,53 @@
+*Heading
+** Beam bending analysis - Linear elasticity
+** Mathematical model: ∇·σ = 0, σ = C:ε, ε = ½(∇u + (∇u)ᵀ)
+** Constraints: E > 0, ν ∈ (-1, 0.5) for positive definite stiffness
+*Preprint, echo=NO, model=NO, history=NO, contact=NO
+**
+** PARTS
+**
+*Part, name=Beam
+*Node
+      1,           0.,           0.,           0.
+      2,         100.,           0.,           0.
+      3,         100.,          10.,           0.
+      4,           0.,          10.,           0.
+*Element, type=CPS4, elset=All_Elements
+ 1,  1,  2,  3,  4
+*End Part
+**
+** MATERIALS
+**
+*Material, name=Steel
+** Linear elastic material
+** Constraint: Young's modulus E > 0
+** Constraint: Poisson's ratio -1 < ν < 0.5
+** Mathematical relationship: G = E / (2(1+ν))
+*Elastic
+210000., 0.3
+**
+** SECTIONS
+**
+*Solid Section, elset=All_Elements, material=Steel
+1.0,
+**
+** BOUNDARY CONDITIONS
+**
+** Dirichlet BC: u = 0 at fixed end (nodes 1, 4)
+*Boundary
+Set-Fixed, 1, 1
+Set-Fixed, 2, 2
+**
+** Neumann BC: Point load at free end
+** F = 1000 N downward
+*Cload
+Set-Load, 2, -1000.
+**
+** STEP
+**
+*Step, name=Load_Step, nlgeom=NO
+** Linear static analysis
+** Governing equation: K u = F (algebraic system)
+*Static
+1., 1., 1e-05, 1.
+*End Step

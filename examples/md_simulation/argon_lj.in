@@ -1,0 +1,51 @@
+# Argon Lennard-Jones MD Simulation
+# Mathematical model: Classical MD with LJ 12-6 potential
+# U(r) = 4*epsilon*((sigma/r)^12 - (sigma/r)^6)
+# Constraints: sigma > 0, epsilon > 0, r_cut > 2^(1/6)*sigma
+
+# Initialize simulation
+units           lj
+atom_style      atomic
+boundary        p p p
+
+# Create simulation box
+region          box block 0 10 0 10 0 10
+create_box      1 box
+create_atoms    1 random 1000 12345 box
+
+# Mass and potential parameters
+# Physical constraints:
+# - mass > 0 (inertia must be positive)
+# - epsilon > 0 (energy well depth must be positive)
+# - sigma > 0 (particle size must be positive)
+# - r_cut > 2^(1/6)*sigma for attractive tail
+mass            1 39.948
+
+pair_style      lj/cut 2.5
+pair_coeff      1 1 1.0 1.0  # epsilon=1.0, sigma=1.0, r_cut=2.5
+
+# Neighbor list
+neighbor        0.3 bin
+neigh_modify    every 20 delay 0 check no
+
+# Initial velocity
+# Temperature must be positive (T > 0)
+velocity        all create 1.44 87287 loop geom
+
+# Thermostat (NVT ensemble)
+# Governing equation: dT/dt = (T_target - T)/tau_T
+# Constraint: tau_T > 0 (thermostat damping must be positive)
+# Stability: dt < tau_T/10 for numerical stability
+fix             1 all nvt temp 1.44 1.44 0.5  # tau_T = 0.5
+
+# Time integration
+# Symplectic integrator (Velocity Verlet)
+# Constraint: dt > 0 and dt < stability limit
+timestep        0.005  # dt = 0.005 < tau_T/10 = 0.05, stable
+
+# Output
+thermo          100
+thermo_style    custom step temp pe ke etotal press
+
+# Run simulation
+run             1000

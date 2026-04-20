@@ -1,0 +1,215 @@
+{
+  "schema_version": "1.0.0",
+  "meta": {
+    "extracted_by": "math-anything-fem-demo",
+    "extractor_version": "0.2.0",
+    "extracted_at": "2026-04-20T19:10:07.637844",
+    "source_files": {
+      "input": [
+        "beam_bending.inp"
+      ]
+    },
+    "explicit_material_context": null,
+    "material_context_declaration": {
+      "contains_material_specific_parameters": false,
+      "contains_material_specific_geometry": false,
+      "contains_material_specific_initial_state": false,
+      "extraction_scope": "mathematical_structure_only"
+    }
+  },
+  "mathematical_model": {
+    "governing_equations": [
+      {
+        "id": "equilibrium",
+        "type": "partial_differential_equation",
+        "name": "Equilibrium Equation",
+        "mathematical_form": "\u2207\u00b7\u03c3 + b = 0",
+        "variables": [
+          "stress",
+          "body_force",
+          "displacement"
+        ],
+        "parameters": {},
+        "description": "Static equilibrium in the absence of inertia"
+      },
+      {
+        "id": "constitutive",
+        "type": "constitutive_relation",
+        "name": "Hooke's Law (Isotropic)",
+        "mathematical_form": "\u03c3 = \u03bb tr(\u03b5) I + 2\u03bc\u03b5",
+        "variables": [
+          "stress",
+          "strain",
+          "lambda",
+          "mu"
+        ],
+        "parameters": {},
+        "description": "Linear elastic constitutive relation"
+      },
+      {
+        "id": "weak_form",
+        "type": "variational_principle",
+        "name": "Principle of Virtual Work",
+        "mathematical_form": "\u222b_\u03a9 \u03c3:\u03b4\u03b5 d\u03a9 = \u222b_\u03a9 b\u00b7\u03b4u d\u03a9 + \u222b_\u0393 t\u00b7\u03b4u d\u0393",
+        "variables": [
+          "stress",
+          "virtual_strain",
+          "body_force",
+          "traction"
+        ],
+        "parameters": {},
+        "description": "Weak form used in FEM"
+      }
+    ],
+    "boundary_conditions": [],
+    "initial_conditions": [],
+    "constitutive_relations": [
+      {
+        "type": "elastic",
+        "name": "linear_isotropic",
+        "form": "\u03c3 = C : \u03b5",
+        "parameters": {
+          "E": 210000.0,
+          "nu": 0.3,
+          "G": 80769.23076923077
+        }
+      }
+    ],
+    "coupling_conditions": [],
+    "parameter_relationships": [
+      {
+        "name": "lame_first_parameter",
+        "expression": "lambda = E*nu / ((1+nu)*(1-2*nu))",
+        "variables": [
+          "lambda",
+          "E",
+          "nu"
+        ],
+        "relation_type": "equality",
+        "description": "First Lam\u00e9 parameter",
+        "physical_meaning": "Material stiffness in bulk deformation"
+      },
+      {
+        "name": "lame_second_parameter",
+        "expression": "mu = E / (2*(1+nu))",
+        "variables": [
+          "mu",
+          "E",
+          "nu"
+        ],
+        "relation_type": "equality",
+        "description": "Second Lam\u00e9 parameter (shear modulus)",
+        "physical_meaning": "Material stiffness in shear"
+      },
+      {
+        "name": "bulk_modulus",
+        "expression": "K = E / (3*(1-2*nu))",
+        "variables": [
+          "K",
+          "E",
+          "nu"
+        ],
+        "relation_type": "equality",
+        "description": "Bulk modulus",
+        "physical_meaning": "Resistance to uniform compression"
+      },
+      {
+        "name": "effective_modulus_plane_stress",
+        "expression": "E' = E / (1-nu^2)",
+        "variables": [
+          "E_prime",
+          "E",
+          "nu"
+        ],
+        "relation_type": "equality",
+        "description": "Effective modulus for plane stress",
+        "physical_meaning": "Apparent stiffness in 2D"
+      }
+    ]
+  },
+  "numerical_method": {
+    "discretization": {
+      "space_discretization": "FEM_CPS4"
+    },
+    "solver": {
+      "algorithm": "direct_sparse",
+      "convergence_criterion": "residual_norm",
+      "tolerance": 1e-06
+    },
+    "parallelization": {}
+  },
+  "conservation_properties": {},
+  "computational_graph": {
+    "version": "1.0",
+    "nodes": [],
+    "edges": [],
+    "execution_topology": {}
+  },
+  "raw_symbols": {},
+  "symbolic_constraints": [
+    {
+      "expression": "E > 0",
+      "description": "Young's modulus must be positive",
+      "variables": [
+        "E"
+      ],
+      "confidence": 1.0,
+      "inferred_from": "material_stability"
+    },
+    {
+      "expression": "-1 < nu < 0.5",
+      "description": "Poisson's ratio bounds for positive definite tensor",
+      "variables": [
+        "nu"
+      ],
+      "confidence": 1.0,
+      "inferred_from": "stability_requirement"
+    },
+    {
+      "expression": "mu > 0",
+      "description": "Shear modulus must be positive",
+      "variables": [
+        "mu"
+      ],
+      "confidence": 1.0,
+      "inferred_from": "material_stability"
+    },
+    {
+      "expression": "3*lambda + 2*mu > 0",
+      "description": "Bulk modulus must be positive",
+      "variables": [
+        "lambda",
+        "mu"
+      ],
+      "confidence": 1.0,
+      "inferred_from": "positive_definite_requirement"
+    },
+    {
+      "expression": "det(K) != 0",
+      "description": "Stiffness matrix must be non-singular",
+      "variables": [
+        "K"
+      ],
+      "confidence": 0.9,
+      "inferred_from": "fem_solution_existence"
+    },
+    {
+      "expression": "E (210000.0) > 0 \u2713",
+      "description": "Young's modulus positive",
+      "variables": [
+        "E"
+      ],
+      "confidence": 1.0,
+      "inferred_from": "validation"
+    },
+    {
+      "expression": "-1 < nu (0.3) < 0.5 \u2713",
+      "description": "Poisson's ratio in valid range",
+      "variables": [
+        "nu"
+      ],
+      "confidence": 1.0,
+      "inferred_from": "validation"
+    }
+  ]
+}
