@@ -63,7 +63,7 @@ class LammpsMathematicalPrecisionExtractor(BasePrecisionExtractor):
         dependencies = [
             VariableDependency(
                 relation="F_i = -∂V/∂r_i",
-                depends_on=["r_1", "r_2", ..., "r_N"],
+                depends_on=["r"],
                 circular=False,
                 mathematical_form="F = -∇V(r)",
                 physical_interpretation="forces derived from potential energy",

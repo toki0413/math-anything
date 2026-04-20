@@ -68,7 +68,7 @@ class GromacsMathematicalPrecisionExtractor(BasePrecisionExtractor):
             ),
             VariableDependency(
                 relation="V = V_bond + V_angle + V_dihedral + V_LJ + V_coulomb",
-                depends_on=["r", "topology"],
+                depends_on=["r"],
                 circular=False,
                 mathematical_form="total_potential_energy",
                 physical_interpretation="bonded + nonbonded interactions",
