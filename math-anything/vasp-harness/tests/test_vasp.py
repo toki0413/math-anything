@@ -13,7 +13,7 @@ from math_anything.vasp.core.harness import VaspHarness
 
 
 # Example VASP input files
-EXAMPLE incar = """
+EXAMPLE_INCAR = """
 SYSTEM = Si bulk calculation
 ENCUT = 300
 ISMEAR = 0

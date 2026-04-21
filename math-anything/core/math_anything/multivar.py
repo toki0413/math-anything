@@ -344,7 +344,8 @@ def analyze_interactions(
                 pairwise[f"{variable_names[i]}*{variable_names[j]}"] = corr
             
             # Ratio correlation
-            ratio = safe_div(X[:, i], X[:, j])
+            with np.errstate(divide='ignore', invalid='ignore'):
+                ratio = np.where(np.abs(X[:, j]) > 1e-10, X[:, i] / X[:, j], np.nan)
             if np.std(ratio) > 1e-10 and not np.all(np.isnan(ratio)):
                 corr = np.corrcoef(ratio, y)[0, 1]
                 pairwise[f"{variable_names[i]}/{variable_names[j]}"] = corr

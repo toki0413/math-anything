@@ -112,7 +112,19 @@ class Node:
                 # Protect against invalid powers
                 if base < 0 and not float(exp).is_integer():
                     return float('nan')
-                return np.power(base, exp)
+                # Prevent overflow/underflow before computation
+                if abs(base) > 100 and abs(exp) > 5:
+                    return float('nan')
+                if abs(base) < EPSILON and exp < 0:
+                    return float('nan')
+                try:
+                    with np.errstate(over='raise', invalid='raise', divide='raise'):
+                        result = np.power(base, exp)
+                    if np.isinf(result) or np.isnan(result):
+                        return float('nan')
+                    return float(result)
+                except (OverflowError, ValueError, FloatingPointError):
+                    return float('nan')
             
             elif self.node_type == NodeType.SQRT:
                 val = self.left.evaluate(variables)
@@ -379,6 +391,8 @@ class ImprovedSymbolicRegression:
         self.use_standard_ops = use_standard_ops  # Use +, -, *, / in addition to EML
         self.variables: List[str] = []
         self.builder = ExprBuilder()
+        self.best_tree_: Optional[Node] = None
+        self.best_fitness_: float = float('inf')
         
     def fit(
         self,
@@ -409,6 +423,8 @@ class ImprovedSymbolicRegression:
             if fitness[gen_best_idx] < best_fitness:
                 best_fitness = fitness[gen_best_idx]
                 best_tree = population[gen_best_idx].copy()
+                self.best_fitness_ = best_fitness
+                self.best_tree_ = best_tree.copy()
                 no_improvement_count = 0
             else:
                 no_improvement_count += 1

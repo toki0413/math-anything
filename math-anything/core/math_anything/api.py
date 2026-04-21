@@ -90,6 +90,12 @@ class ExtractionResult:
     errors: List[str]
     warnings: List[str]
     
+    def __getattr__(self, name: str) -> Any:
+        """Allow accessing schema keys as attributes."""
+        if name in self.schema:
+            return self.schema[name]
+        raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
+    
     def visualize(self, format: str = "mermaid") -> str:
         """Generate visualization of mathematical structure.
         
