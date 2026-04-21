@@ -147,6 +147,8 @@ Abaqus (FEM):   ∇·σ + f = 0             (continuum)
 
 Inspired by [CLI-Anything](https://github.com/fzdwx/cli-anything), which showed that CLI tools can be made intelligible to AI agents through structured extraction. We extend this from CLI semantics to mathematical semantics.
 
+The EML (Exp-Minus-Log) symbolic regression implementation is based on the work by **Andrzej Odrzywołek** and his paper *"All elementary functions from a single binary operator"* (arXiv:2603.21852), which demonstrates that all elementary functions can be constructed from a single binary operator `eml(x,y) = exp(x) - ln(y)`.
+
 ## License
 
 MIT
