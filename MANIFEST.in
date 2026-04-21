@@ -1,0 +1,17 @@
+include README.md
+include LICENSE
+include math-anything/skill/SKILL.md
+include math-anything/mcp_config.json
+recursive-include math-anything/core/math_anything *.py
+recursive-include math-anything/core/tests *.py
+recursive-include math-anything/examples *.py *.json *.inp *.mdp
+recursive-include math-anything/vasp-harness/math_anything *.py
+recursive-include math-anything/lammps-harness/math_anything *.py
+recursive-include math-anything/abaqus-harness/math_anything *.py
+recursive-include math-anything/ansys-harness/math_anything *.py
+recursive-include math-anything/comsol-harness/math_anything *.py
+recursive-include math-anything/gromacs-harness/math_anything *.py
+recursive-include math-anything/multiwfn-harness/math_anything *.py
+global-exclude __pycache__
+global-exclude *.pyc
+global-exclude .git*

@@ -1,0 +1,68 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "math-anything"
+version = "1.0.0"
+description = "Mathematical structure extraction for computational materials science engines"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "toki"}
+]
+keywords = [
+    "materials-science",
+    "computational-physics",
+    "vasp",
+    "lammps",
+    "ab-initio",
+    "molecular-dynamics",
+    "finite-element",
+    "mathematical-modeling",
+    "llm",
+    "ai"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "click>=8.0.0",
+    "prompt-toolkit>=3.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+]
+mcp = [
+    "mcp>=1.0.0",
+]
+
+[project.scripts]
+math-anything = "math_anything.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/toki0413/math-anything"
+Repository = "https://github.com/toki0413/math-anything"
+Issues = "https://github.com/toki0413/math-anything/issues"
+Documentation = "https://github.com/toki0413/math-anything#readme"
+
+[tool.setuptools.packages.find]
+where = ["math-anything/core"]
+include = ["math_anything*"]
