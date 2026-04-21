@@ -68,3 +68,14 @@ generate_figure7_8.py
 generate_final_revised.py
 generate_final_simple.py
 scientific_skills_analysis.py
+
+# Demo and temporary scripts
+demo_*.py
+test_*.py
+solve_*.py
+add_*.py
+generate_*.py
+reorganize_*.py
+
+# Academic analysis files
+Polya_Analysis_CBES.md
