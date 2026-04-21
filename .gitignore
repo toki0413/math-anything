@@ -57,3 +57,14 @@ examples/generated_harness/
 math-anything/*-harness-auto/
 ANALYSIS_SUMMARY.md
 REVIEW_CHECKLIST.md
+
+# Research/temporary files
+Deep_Research_Report_CBES.md
+crawl_academic_papers.py
+crawled_papers/
+generate_enhanced_v2.py
+generate_all_figures.py
+generate_figure7_8.py
+generate_final_revised.py
+generate_final_simple.py
+scientific_skills_analysis.py
