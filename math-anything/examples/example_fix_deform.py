@@ -14,6 +14,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "core"))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "lammps-harness"))
 
 from math_anything import load_harness
+
 # Import harness to trigger registration
 from math_anything.lammps.core.harness import LammpsHarness
 

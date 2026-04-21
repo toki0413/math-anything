@@ -8,8 +8,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "core"))
 
-from mcp_server import (MCPServer, extract_mathematical_structure,
-                        list_supported_engines)
+from mcp_server import MCPServer, extract_mathematical_structure, list_supported_engines
 
 
 class TestMCPTools(unittest.TestCase):

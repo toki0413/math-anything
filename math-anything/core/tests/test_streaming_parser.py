@@ -12,14 +12,18 @@ import numpy as np
 # Add parent to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from math_anything.utils.streaming_parser import (AtomData, Checkpoint,
-                                                  DumpSampler, FileFormat,
-                                                  FrameData,
-                                                  LammpsDumpExtractor,
-                                                  SamplingConfig,
-                                                  SamplingStrategy,
-                                                  StreamingParser,
-                                                  TrajectoryStats)
+from math_anything.utils.streaming_parser import (
+    AtomData,
+    Checkpoint,
+    DumpSampler,
+    FileFormat,
+    FrameData,
+    LammpsDumpExtractor,
+    SamplingConfig,
+    SamplingStrategy,
+    StreamingParser,
+    TrajectoryStats,
+)
 
 
 class TestLammpsDumpExtractor(unittest.TestCase):

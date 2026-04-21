@@ -14,9 +14,15 @@ sys.path.insert(
 )
 
 from math_anything.core.harness import HarnessRegistry, MathAnythingHarness
-from math_anything.schemas import (BoundaryCondition, GoverningEquation,
-                                   MathematicalModel, MathematicalObject,
-                                   MathSchema, MetaInfo, NumericalMethod)
+from math_anything.schemas import (
+    BoundaryCondition,
+    GoverningEquation,
+    MathematicalModel,
+    MathematicalObject,
+    MathSchema,
+    MetaInfo,
+    NumericalMethod,
+)
 
 
 class AbaqusHarness(MathAnythingHarness):

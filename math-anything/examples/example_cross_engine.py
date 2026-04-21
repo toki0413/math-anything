@@ -9,10 +9,13 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "core"))
 
-from math_anything.core import (CouplingInterface, CouplingType,
-                                CrossEngineSession, ModelScale)
-from math_anything.schemas import (GoverningEquation, MathematicalObject,
-                                   MathSchema)
+from math_anything.core import (
+    CouplingInterface,
+    CouplingType,
+    CrossEngineSession,
+    ModelScale,
+)
+from math_anything.schemas import GoverningEquation, MathematicalObject, MathSchema
 
 
 def create_mock_md_schema():

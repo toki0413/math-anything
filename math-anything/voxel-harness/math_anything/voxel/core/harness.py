@@ -14,13 +14,16 @@ sys.path.insert(0, str(current_dir.parent.parent.parent.parent / "core"))
 
 import numpy as np
 from math_anything.core.harness import Harness
-from math_anything.schemas.math_schema import (BoundaryCondition,
-                                               ComputationalGraph,
-                                               DiscretizationScheme,
-                                               GoverningEquation,
-                                               MathematicalObject, MathSchema,
-                                               NumericalMethod,
-                                               TensorComponent)
+from math_anything.schemas.math_schema import (
+    BoundaryCondition,
+    ComputationalGraph,
+    DiscretizationScheme,
+    GoverningEquation,
+    MathematicalObject,
+    MathSchema,
+    NumericalMethod,
+    TensorComponent,
+)
 from math_anything.schemas.registry import HarnessRegistry
 
 

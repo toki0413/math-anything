@@ -10,10 +10,16 @@ Design Principles:
 
 from typing import Any, Dict, List
 
-from .precision import (Approximation, BasePrecisionExtractor,
-                        DiscretizationScheme, MathematicalDecoding,
-                        MathematicalStructure, PrecisionMetadata,
-                        SolutionStrategy, VariableDependency)
+from .precision import (
+    Approximation,
+    BasePrecisionExtractor,
+    DiscretizationScheme,
+    MathematicalDecoding,
+    MathematicalStructure,
+    PrecisionMetadata,
+    SolutionStrategy,
+    VariableDependency,
+)
 
 
 class GromacsMathematicalPrecisionExtractor(BasePrecisionExtractor):

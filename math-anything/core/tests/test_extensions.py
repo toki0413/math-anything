@@ -8,12 +8,17 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from math_anything.schemas import (ExtendedMathSchema, ExtensionRegistry,
-                                   GraphNeuralNetworkExtension, MathSchema,
-                                   MLInteratomicPotentialExtension,
-                                   PINNLossExtension, SchemaExtension,
-                                   get_available_extensions,
-                                   validate_with_extensions)
+from math_anything.schemas import (
+    ExtendedMathSchema,
+    ExtensionRegistry,
+    GraphNeuralNetworkExtension,
+    MathSchema,
+    MLInteratomicPotentialExtension,
+    PINNLossExtension,
+    SchemaExtension,
+    get_available_extensions,
+    validate_with_extensions,
+)
 
 
 class TestSchemaExtension(unittest.TestCase):

@@ -17,14 +17,24 @@ sys.path.insert(
     ),
 )
 
-from math_anything.schemas import (BoundaryCondition, ComputationalEdge,
-                                   ComputationalGraph, ComputationalNode,
-                                   Discretization, GoverningEquation,
-                                   MathematicalModel, MathematicalObject,
-                                   MathSchema, MetaInfo, NumericalMethod,
-                                   ParameterRelationship, Solver,
-                                   SymbolicConstraint, TensorComponent,
-                                   UpdateMode)
+from math_anything.schemas import (
+    BoundaryCondition,
+    ComputationalEdge,
+    ComputationalGraph,
+    ComputationalNode,
+    Discretization,
+    GoverningEquation,
+    MathematicalModel,
+    MathematicalObject,
+    MathSchema,
+    MetaInfo,
+    NumericalMethod,
+    ParameterRelationship,
+    Solver,
+    SymbolicConstraint,
+    TensorComponent,
+    UpdateMode,
+)
 
 # Import the new parsers with symbolic constraint support
 from .incar_parser import IncarParser

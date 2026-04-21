@@ -20,10 +20,13 @@ import sys
 # Add core to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "core"))
 
-from math_anything.utils.streaming_parser import (DumpSampler, FileFormat,
-                                                  SamplingConfig,
-                                                  SamplingStrategy,
-                                                  StreamingParser)
+from math_anything.utils.streaming_parser import (
+    DumpSampler,
+    FileFormat,
+    SamplingConfig,
+    SamplingStrategy,
+    StreamingParser,
+)
 
 
 def create_sample_dump_file(filepath: str, num_frames: int = 100):

@@ -22,24 +22,48 @@ Quick Start:
 __version__ = "1.0.0"
 
 # New simplified API
-from .api import (ExtractionResult, FileNotFoundError, MathAnything,
-                  MathAnythingError, ParseError, UnsupportedEngineError,
-                  extract, extract_file)
+from .api import (
+    ExtractionResult,
+    FileNotFoundError,
+    MathAnything,
+    MathAnythingError,
+    ParseError,
+    UnsupportedEngineError,
+    extract,
+    extract_file,
+)
 from .core.extractor import ExtractorEngine
+
 # Legacy API (for backward compatibility)
 from .core.harness import HarnessRegistry, MathAnythingHarness
 from .core.session import ExtractionSession
+
 # EML Symbolic Regression
-from .eml_v2 import (ExprBuilder, ImprovedSymbolicRegression, Node, NodeType,
-                     SymbolicRegression, discover_equation, eml)
+from .eml_v2 import (
+    ExprBuilder,
+    ImprovedSymbolicRegression,
+    Node,
+    NodeType,
+    SymbolicRegression,
+    discover_equation,
+    eml,
+)
+
 # Multi-variable Discovery
-from .multivar import (MultiVariableDiscovery, analyze_interactions,
-                       discover_multivar)
-from .schemas import (BoundaryCondition, ComputationalGraph, GoverningEquation,
-                      MathematicalModel, MathSchema, NumericalMethod,
-                      SchemaValidator)
+from .multivar import MultiVariableDiscovery, analyze_interactions, discover_multivar
+from .schemas import (
+    BoundaryCondition,
+    ComputationalGraph,
+    GoverningEquation,
+    MathematicalModel,
+    MathSchema,
+    NumericalMethod,
+    SchemaValidator,
+)
+
 # Expression Simplification
 from .simplifier import ExpressionSimplifier, simplify
+
 # Visualization
 from .visualization import Visualizer, save_html, to_graphviz, to_mermaid
 

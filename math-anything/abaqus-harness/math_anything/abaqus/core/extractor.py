@@ -20,14 +20,24 @@ sys.path.insert(
     ),
 )
 
-from math_anything.schemas import (BoundaryCondition, ComputationalEdge,
-                                   ComputationalGraph, ComputationalNode,
-                                   Discretization, GoverningEquation,
-                                   MathematicalModel, MathematicalObject,
-                                   MathSchema, MetaInfo, NumericalMethod,
-                                   ParameterRelationship, Solver,
-                                   SymbolicConstraint, TensorComponent,
-                                   UpdateMode)
+from math_anything.schemas import (
+    BoundaryCondition,
+    ComputationalEdge,
+    ComputationalGraph,
+    ComputationalNode,
+    Discretization,
+    GoverningEquation,
+    MathematicalModel,
+    MathematicalObject,
+    MathSchema,
+    MetaInfo,
+    NumericalMethod,
+    ParameterRelationship,
+    Solver,
+    SymbolicConstraint,
+    TensorComponent,
+    UpdateMode,
+)
 
 from .parser import AbaqusInputParser
 from .parser import BoundaryCondition as AbaqusBC

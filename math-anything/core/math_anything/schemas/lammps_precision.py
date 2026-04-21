@@ -10,11 +10,17 @@ Design Principles:
 
 from typing import Any, Dict, List
 
-from .precision import (Approximation, BasePrecisionExtractor,
-                        DiscretizationScheme, EnhancedMathSchema,
-                        MathematicalDecoding, MathematicalStructure,
-                        PrecisionMetadata, SolutionStrategy,
-                        VariableDependency)
+from .precision import (
+    Approximation,
+    BasePrecisionExtractor,
+    DiscretizationScheme,
+    EnhancedMathSchema,
+    MathematicalDecoding,
+    MathematicalStructure,
+    PrecisionMetadata,
+    SolutionStrategy,
+    VariableDependency,
+)
 
 
 class LammpsMathematicalPrecisionExtractor(BasePrecisionExtractor):

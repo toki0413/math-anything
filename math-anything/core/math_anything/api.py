@@ -20,13 +20,15 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-from .schemas import (extract_abaqus_mathematical_precision,
-                      extract_ansys_mathematical_precision,
-                      extract_comsol_mathematical_precision,
-                      extract_gromacs_mathematical_precision,
-                      extract_lammps_mathematical_precision,
-                      extract_multiwfn_mathematical_precision,
-                      extract_vasp_mathematical_precision)
+from .schemas import (
+    extract_abaqus_mathematical_precision,
+    extract_ansys_mathematical_precision,
+    extract_comsol_mathematical_precision,
+    extract_gromacs_mathematical_precision,
+    extract_lammps_mathematical_precision,
+    extract_multiwfn_mathematical_precision,
+    extract_vasp_mathematical_precision,
+)
 from .schemas.precision import EnhancedMathSchema
 
 # Engine registry

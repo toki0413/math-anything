@@ -1,37 +1,79 @@
 """Math Schema v1.0 - Core schema definitions for Math Anything."""
 
-from .abaqus_precision import (AbaqusMathematicalPrecisionExtractor,
-                               extract_abaqus_mathematical_precision)
-from .ansys_precision import (AnsysMathematicalPrecisionExtractor,
-                              extract_ansys_mathematical_precision)
-from .comsol_precision import (ComsolMathematicalPrecisionExtractor,
-                               extract_comsol_mathematical_precision)
-from .extensions import (ExtendedMathSchema, ExtensionMetadata,
-                         ExtensionRegistry, GraphNeuralNetworkExtension,
-                         MLInteratomicPotentialExtension, PINNLossExtension,
-                         SchemaExtension, get_available_extensions,
-                         get_extension_documentation, validate_with_extensions)
-from .gromacs_precision import (GromacsMathematicalPrecisionExtractor,
-                                extract_gromacs_mathematical_precision)
-from .lammps_precision import (LammpsMathematicalPrecisionExtractor,
-                               extract_lammps_mathematical_precision)
-from .math_schema import (BoundaryCondition, ComputationalEdge,
-                          ComputationalGraph, ComputationalNode,
-                          ConservationProperty, Discretization,
-                          GoverningEquation, MathematicalModel,
-                          MathematicalObject, MathSchema, MetaInfo,
-                          NumericalMethod, ParameterRelationship,
-                          SchemaValidator, Solver, SymbolicConstraint,
-                          TensorComponent, TensorRank, UpdateMode)
-from .multiwfn_precision import (MultiwfnMathematicalPrecisionExtractor,
-                                 extract_multiwfn_mathematical_precision)
-from .precision import (Approximation, BasePrecisionExtractor,
-                        DiscretizationScheme, EnhancedMathSchema,
-                        MathematicalDecoding, MathematicalStructure, MLContext,
-                        ModelingGuidance, PrecisionMetadata, SolutionStrategy,
-                        VariableDependency)
-from .vasp_precision import (VaspMathematicalPrecisionExtractor,
-                             extract_vasp_mathematical_precision)
+from .abaqus_precision import (
+    AbaqusMathematicalPrecisionExtractor,
+    extract_abaqus_mathematical_precision,
+)
+from .ansys_precision import (
+    AnsysMathematicalPrecisionExtractor,
+    extract_ansys_mathematical_precision,
+)
+from .comsol_precision import (
+    ComsolMathematicalPrecisionExtractor,
+    extract_comsol_mathematical_precision,
+)
+from .extensions import (
+    ExtendedMathSchema,
+    ExtensionMetadata,
+    ExtensionRegistry,
+    GraphNeuralNetworkExtension,
+    MLInteratomicPotentialExtension,
+    PINNLossExtension,
+    SchemaExtension,
+    get_available_extensions,
+    get_extension_documentation,
+    validate_with_extensions,
+)
+from .gromacs_precision import (
+    GromacsMathematicalPrecisionExtractor,
+    extract_gromacs_mathematical_precision,
+)
+from .lammps_precision import (
+    LammpsMathematicalPrecisionExtractor,
+    extract_lammps_mathematical_precision,
+)
+from .math_schema import (
+    BoundaryCondition,
+    ComputationalEdge,
+    ComputationalGraph,
+    ComputationalNode,
+    ConservationProperty,
+    Discretization,
+    GoverningEquation,
+    MathematicalModel,
+    MathematicalObject,
+    MathSchema,
+    MetaInfo,
+    NumericalMethod,
+    ParameterRelationship,
+    SchemaValidator,
+    Solver,
+    SymbolicConstraint,
+    TensorComponent,
+    TensorRank,
+    UpdateMode,
+)
+from .multiwfn_precision import (
+    MultiwfnMathematicalPrecisionExtractor,
+    extract_multiwfn_mathematical_precision,
+)
+from .precision import (
+    Approximation,
+    BasePrecisionExtractor,
+    DiscretizationScheme,
+    EnhancedMathSchema,
+    MathematicalDecoding,
+    MathematicalStructure,
+    MLContext,
+    ModelingGuidance,
+    PrecisionMetadata,
+    SolutionStrategy,
+    VariableDependency,
+)
+from .vasp_precision import (
+    VaspMathematicalPrecisionExtractor,
+    extract_vasp_mathematical_precision,
+)
 
 __all__ = [
     # Core schema

@@ -8,12 +8,21 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from math_anything.schemas import (BoundaryCondition, ComputationalGraph,
-                                   ComputationalNode, Discretization,
-                                   GoverningEquation, MathematicalModel,
-                                   MathematicalObject, MathSchema, MetaInfo,
-                                   NumericalMethod, SchemaValidator, Solver,
-                                   TensorComponent)
+from math_anything.schemas import (
+    BoundaryCondition,
+    ComputationalGraph,
+    ComputationalNode,
+    Discretization,
+    GoverningEquation,
+    MathematicalModel,
+    MathematicalObject,
+    MathSchema,
+    MetaInfo,
+    NumericalMethod,
+    SchemaValidator,
+    Solver,
+    TensorComponent,
+)
 
 
 class TestMathSchema(unittest.TestCase):

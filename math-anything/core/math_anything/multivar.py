@@ -23,8 +23,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 
-from .eml_v2 import (ExprBuilder, ImprovedSymbolicRegression, Node, NodeType,
-                     safe_div)
+from .eml_v2 import ExprBuilder, ImprovedSymbolicRegression, Node, NodeType, safe_div
 
 
 class MultiVariableDiscovery:

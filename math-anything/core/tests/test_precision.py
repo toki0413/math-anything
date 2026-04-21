@@ -8,13 +8,15 @@ import sys
 
 sys.path.insert(0, ".")
 
-from math_anything.schemas import (extract_abaqus_mathematical_precision,
-                                   extract_ansys_mathematical_precision,
-                                   extract_comsol_mathematical_precision,
-                                   extract_gromacs_mathematical_precision,
-                                   extract_lammps_mathematical_precision,
-                                   extract_multiwfn_mathematical_precision,
-                                   extract_vasp_mathematical_precision)
+from math_anything.schemas import (
+    extract_abaqus_mathematical_precision,
+    extract_ansys_mathematical_precision,
+    extract_comsol_mathematical_precision,
+    extract_gromacs_mathematical_precision,
+    extract_lammps_mathematical_precision,
+    extract_multiwfn_mathematical_precision,
+    extract_vasp_mathematical_precision,
+)
 
 
 def print_result(name: str, result: dict):

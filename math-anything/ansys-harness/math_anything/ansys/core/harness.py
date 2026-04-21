@@ -13,10 +13,16 @@ current_dir = Path(__file__).parent
 sys.path.insert(0, str(current_dir.parent.parent.parent.parent / "core"))
 
 from math_anything.core.harness import MathAnythingHarness
-from math_anything.schemas import (BoundaryCondition, ComputationalGraph,
-                                   Discretization, GoverningEquation,
-                                   MathematicalObject, MathSchema,
-                                   NumericalMethod, TensorComponent)
+from math_anything.schemas import (
+    BoundaryCondition,
+    ComputationalGraph,
+    Discretization,
+    GoverningEquation,
+    MathematicalObject,
+    MathSchema,
+    NumericalMethod,
+    TensorComponent,
+)
 from math_anything.schemas.registry import HarnessRegistry
 
 from .extractor import AnsysExtractor

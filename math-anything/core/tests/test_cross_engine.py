@@ -7,8 +7,14 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from math_anything.core import (CoupledSchema, CouplingInterface, CouplingType,
-                                CrossEngineSession, ModelScale, ScaleModel)
+from math_anything.core import (
+    CoupledSchema,
+    CouplingInterface,
+    CouplingType,
+    CrossEngineSession,
+    ModelScale,
+    ScaleModel,
+)
 from math_anything.schemas import GoverningEquation, MathSchema
 
 

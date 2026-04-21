@@ -18,11 +18,19 @@ _CORE_ROOT = str(Path(__file__).parent.parent.parent.parent)
 if _CORE_ROOT not in sys.path:
     sys.path.insert(0, _CORE_ROOT)
 
-from math_anything.schemas import (BoundaryCondition, Discretization,
-                                   GoverningEquation, MathematicalModel,
-                                   MathematicalObject, MathSchema, MetaInfo,
-                                   NumericalMethod, ParameterRelationship,
-                                   Solver, SymbolicConstraint)
+from math_anything.schemas import (
+    BoundaryCondition,
+    Discretization,
+    GoverningEquation,
+    MathematicalModel,
+    MathematicalObject,
+    MathSchema,
+    MetaInfo,
+    NumericalMethod,
+    ParameterRelationship,
+    Solver,
+    SymbolicConstraint,
+)
 
 
 class MultiwfnAnalysisType(Enum):

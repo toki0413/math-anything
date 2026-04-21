@@ -17,15 +17,29 @@ sys.path.insert(
     ),
 )
 
-from math_anything.schemas import (BoundaryCondition, ComputationalEdge,
-                                   ComputationalGraph, ComputationalNode,
-                                   Discretization, GoverningEquation,
-                                   MathematicalModel, MathematicalObject,
-                                   MathSchema, MetaInfo, NumericalMethod,
-                                   Solver, TensorComponent, UpdateMode)
+from math_anything.schemas import (
+    BoundaryCondition,
+    ComputationalEdge,
+    ComputationalGraph,
+    ComputationalNode,
+    Discretization,
+    GoverningEquation,
+    MathematicalModel,
+    MathematicalObject,
+    MathSchema,
+    MetaInfo,
+    NumericalMethod,
+    Solver,
+    TensorComponent,
+    UpdateMode,
+)
 
-from .parser import (CrystalStructure, ElectronicParameters, VaspInputParser,
-                     VaspOutputParser)
+from .parser import (
+    CrystalStructure,
+    ElectronicParameters,
+    VaspInputParser,
+    VaspOutputParser,
+)
 
 
 class VaspExtractor:

@@ -487,8 +487,13 @@ class MathAnythingREPL(cmd.Cmd):
     def _create_schema_from_apdl(self, result) -> MathSchema:
         """Convert APDL result to MathSchema."""
         # Simplified conversion - full implementation would be more comprehensive
-        from schemas import (BoundaryCondition, GoverningEquation,
-                             MathematicalModel, MathSchema, MetaInfo)
+        from schemas import (
+            BoundaryCondition,
+            GoverningEquation,
+            MathematicalModel,
+            MathSchema,
+            MetaInfo,
+        )
 
         fem_math = result.extract_fem_mathematics()
 

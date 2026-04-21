@@ -10,13 +10,18 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "core"))
 
-from math_anything.schemas import (ExtendedMathSchema, ExtensionRegistry,
-                                   GraphNeuralNetworkExtension, MathSchema,
-                                   MLInteratomicPotentialExtension,
-                                   PINNLossExtension, SchemaExtension,
-                                   get_available_extensions,
-                                   get_extension_documentation,
-                                   validate_with_extensions)
+from math_anything.schemas import (
+    ExtendedMathSchema,
+    ExtensionRegistry,
+    GraphNeuralNetworkExtension,
+    MathSchema,
+    MLInteratomicPotentialExtension,
+    PINNLossExtension,
+    SchemaExtension,
+    get_available_extensions,
+    get_extension_documentation,
+    validate_with_extensions,
+)
 
 
 def example_1_builtin_extensions():

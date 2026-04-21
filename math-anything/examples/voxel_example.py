@@ -21,8 +21,7 @@ import numpy as np
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "core"))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "voxel-harness"))
 
-from math_anything.extractors.lbm_boundary_extractor import \
-    LBMBoundaryExtractor
+from math_anything.extractors.lbm_boundary_extractor import LBMBoundaryExtractor
 from math_anything.extractors.voxel_extractor import VoxelMathExtractor
 from math_anything.voxel.core.harness import VoxelHarness
 

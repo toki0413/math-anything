@@ -13,17 +13,31 @@ sys.path.insert(
     0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 )
 
-from math_anything.schemas import (BoundaryCondition, ComputationalEdge,
-                                   ComputationalGraph, ComputationalNode,
-                                   Discretization, GoverningEquation,
-                                   MathematicalModel, MathematicalObject,
-                                   MathSchema, MetaInfo, NumericalMethod,
-                                   ParameterRelationship, Solver,
-                                   SymbolicConstraint, TensorComponent,
-                                   UpdateMode)
+from math_anything.schemas import (
+    BoundaryCondition,
+    ComputationalEdge,
+    ComputationalGraph,
+    ComputationalNode,
+    Discretization,
+    GoverningEquation,
+    MathematicalModel,
+    MathematicalObject,
+    MathSchema,
+    MetaInfo,
+    NumericalMethod,
+    ParameterRelationship,
+    Solver,
+    SymbolicConstraint,
+    TensorComponent,
+    UpdateMode,
+)
 
-from .parser import (ComputationalSettings, FixCommand, LammpsInputParser,
-                     LammpsLogParser)
+from .parser import (
+    ComputationalSettings,
+    FixCommand,
+    LammpsInputParser,
+    LammpsLogParser,
+)
 
 
 class LammpsExtractor:

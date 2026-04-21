@@ -4,6 +4,7 @@ Tests the Harness Auto-Generator, SourceCodeAnalyzer, and ConstraintInference.
 """
 
 import os
+
 # Add parent to path
 import sys
 import tempfile
@@ -12,12 +13,18 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from math_anything.codegen import (ConstraintInference, HarnessAutoGenerator,
-                                   SourceCodeAnalyzer,
-                                   extract_symbolic_constraints, quick_infer)
-from math_anything.codegen.source_analyzer import (ExtractedCommand,
-                                                   ExtractedParameter,
-                                                   ExtractionConfidence)
+from math_anything.codegen import (
+    ConstraintInference,
+    HarnessAutoGenerator,
+    SourceCodeAnalyzer,
+    extract_symbolic_constraints,
+    quick_infer,
+)
+from math_anything.codegen.source_analyzer import (
+    ExtractedCommand,
+    ExtractedParameter,
+    ExtractionConfidence,
+)
 
 
 class TestSourceCodeAnalyzer(unittest.TestCase):

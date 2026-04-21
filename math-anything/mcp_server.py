@@ -25,14 +25,16 @@ from typing import Any, Dict, List, Optional
 # Add core to path
 sys.path.insert(0, str(Path(__file__).parent / "core"))
 
-from math_anything.schemas import (AbaqusMathematicalPrecisionExtractor,
-                                   AnsysMathematicalPrecisionExtractor,
-                                   ComsolMathematicalPrecisionExtractor,
-                                   EnhancedMathSchema,
-                                   GromacsMathematicalPrecisionExtractor,
-                                   LammpsMathematicalPrecisionExtractor,
-                                   MultiwfnMathematicalPrecisionExtractor,
-                                   VaspMathematicalPrecisionExtractor)
+from math_anything.schemas import (
+    AbaqusMathematicalPrecisionExtractor,
+    AnsysMathematicalPrecisionExtractor,
+    ComsolMathematicalPrecisionExtractor,
+    EnhancedMathSchema,
+    GromacsMathematicalPrecisionExtractor,
+    LammpsMathematicalPrecisionExtractor,
+    MultiwfnMathematicalPrecisionExtractor,
+    VaspMathematicalPrecisionExtractor,
+)
 from math_anything.utils.math_diff import MathDiffer
 
 # Registry of available extractors

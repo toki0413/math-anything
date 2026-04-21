@@ -13,13 +13,16 @@ current_dir = Path(__file__).parent
 sys.path.insert(0, str(current_dir.parent.parent.parent.parent / "core"))
 
 from math_anything.core.harness import Harness
-from math_anything.schemas.math_schema import (BoundaryCondition,
-                                               ComputationalGraph,
-                                               DiscretizationScheme,
-                                               GoverningEquation,
-                                               MathematicalObject, MathSchema,
-                                               NumericalMethod,
-                                               TensorComponent)
+from math_anything.schemas.math_schema import (
+    BoundaryCondition,
+    ComputationalGraph,
+    DiscretizationScheme,
+    GoverningEquation,
+    MathematicalObject,
+    MathSchema,
+    NumericalMethod,
+    TensorComponent,
+)
 from math_anything.schemas.registry import HarnessRegistry
 
 from .extractor import MultiwfnExtractor
