@@ -51,6 +51,14 @@ from .eml_v2 import (
 
 # Multi-variable Discovery
 from .multivar import MultiVariableDiscovery, analyze_interactions, discover_multivar
+
+# Math Proposition Generation
+from .proposition import (
+    MathematicalPropositions,
+    MathematicalTask,
+    PropositionGenerator,
+    TaskType,
+)
 from .schemas import (
     BoundaryCondition,
     ComputationalGraph,
@@ -63,14 +71,6 @@ from .schemas import (
 
 # Expression Simplification
 from .simplifier import ExpressionSimplifier, simplify
-
-# Math Proposition Generation
-from .proposition import (
-    MathematicalPropositions,
-    MathematicalTask,
-    PropositionGenerator,
-    TaskType,
-)
 
 # Visualization
 from .visualization import Visualizer, save_html, to_graphviz, to_mermaid

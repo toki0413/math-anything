@@ -447,9 +447,7 @@ class MathAnything:
             return "No equation found"
         return best_tree.to_standard_form()
 
-    def translate(
-        self, result: ExtractionResult
-    ) -> "MathematicalPropositions":
+    def translate(self, result: ExtractionResult) -> "MathematicalPropositions":
         """Translate extracted schema into LLM-solvable mathematical propositions.
 
         This is the core Translate functionality of Math Anything. It converts
@@ -508,9 +506,7 @@ class MathAnything:
         from .proposition import PropositionGenerator
 
         generator = PropositionGenerator()
-        return generator.translate_comparison(
-            result1.schema, result2.schema
-        )
+        return generator.translate_comparison(result1.schema, result2.schema)
 
 
 # Convenience function for quick extraction

@@ -22,6 +22,7 @@ from typing import Any, Dict, List, Optional
 
 class TaskType(Enum):
     """Types of mathematical tasks that can be generated."""
+
     PROOF = "proof"
     VALIDATION = "validation"
     CONSISTENCY_CHECK = "consistency_check"
@@ -157,9 +158,15 @@ class PropositionGenerator:
 
         propositions.core_problem = self._generate_core_problem(math_struct, decoding)
         propositions.proof_tasks = self._generate_proof_tasks(approximations)
-        propositions.validation_tasks = self._generate_validation_tasks(discretization, solution)
-        propositions.consistency_checks = self._generate_consistency_checks(variable_deps, math_struct)
-        propositions.error_analysis = self._generate_error_analysis(approximations, discretization)
+        propositions.validation_tasks = self._generate_validation_tasks(
+            discretization, solution
+        )
+        propositions.consistency_checks = self._generate_consistency_checks(
+            variable_deps, math_struct
+        )
+        propositions.error_analysis = self._generate_error_analysis(
+            approximations, discretization
+        )
 
         return propositions
 
@@ -210,7 +217,9 @@ class PropositionGenerator:
             ),
         }
 
-    def _generate_proof_tasks(self, approximations: List[Dict[str, Any]]) -> List[MathematicalTask]:
+    def _generate_proof_tasks(
+        self, approximations: List[Dict[str, Any]]
+    ) -> List[MathematicalTask]:
         """Generate proof tasks for each approximation."""
         tasks = []
 
