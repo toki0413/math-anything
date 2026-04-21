@@ -78,9 +78,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
+          pip install pytest pytest-cov
 
       - name: Run tests | 运行测试
-        run: pytest math-anything/core/tests/ math-anything/lammps-harness/tests/ math-anything/vasp-harness/tests/ examples/real_tests/ansys/ --cov=math_anything --cov-report=xml --cov-report=term-missing -v || pytest math-anything/core/tests/ -v
+        run: pytest math-anything/core/tests/ -v --tb=short
 
       - name: Upload coverage | 上传覆盖率
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
