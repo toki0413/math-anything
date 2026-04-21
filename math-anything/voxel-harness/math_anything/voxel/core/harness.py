@@ -6,21 +6,22 @@ Extracts mathematical structures from voxel-based simulations.
 import os
 import sys
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Union, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 # Add core to path
 current_dir = Path(__file__).parent
-sys.path.insert(0, str(current_dir.parent.parent.parent.parent / 'core'))
-
-from math_anything.core.harness import Harness
-from math_anything.schemas.math_schema import (
-    MathSchema, GoverningEquation, BoundaryCondition,
-    ComputationalGraph, MathematicalObject, TensorComponent,
-    NumericalMethod, DiscretizationScheme,
-)
-from math_anything.schemas.registry import HarnessRegistry
+sys.path.insert(0, str(current_dir.parent.parent.parent.parent / "core"))
 
 import numpy as np
+from math_anything.core.harness import Harness
+from math_anything.schemas.math_schema import (BoundaryCondition,
+                                               ComputationalGraph,
+                                               DiscretizationScheme,
+                                               GoverningEquation,
+                                               MathematicalObject, MathSchema,
+                                               NumericalMethod,
+                                               TensorComponent)
+from math_anything.schemas.registry import HarnessRegistry
 
 
 class VoxelHarness(Harness):
@@ -58,16 +59,16 @@ class VoxelHarness(Harness):
 
     ENGINE_NAME = "voxel"
     ENGINE_VERSION = "1.0.0"
-    SUPPORTED_EXTENSIONS = ['.npy', '.raw', '.vdb', '.voxel', '.bin']
+    SUPPORTED_EXTENSIONS = [".npy", ".raw", ".vdb", ".voxel", ".bin"]
 
     # Supported simulation types
     SIMULATION_TYPES = {
-        'lattice_boltzmann': 'Lattice Boltzmann Method',
-        'fdtd': 'Finite-Difference Time-Domain',
-        'fvm_cartesian': 'Finite Volume on Cartesian Grid',
-        'cellular_automata': 'Cellular Automata',
-        'phase_field': 'Phase Field Method',
-        'generic': 'Generic Voxel Simulation',
+        "lattice_boltzmann": "Lattice Boltzmann Method",
+        "fdtd": "Finite-Difference Time-Domain",
+        "fvm_cartesian": "Finite Volume on Cartesian Grid",
+        "cellular_automata": "Cellular Automata",
+        "phase_field": "Phase Field Method",
+        "generic": "Generic Voxel Simulation",
     }
 
     def __init__(self):
@@ -79,8 +80,8 @@ class VoxelHarness(Harness):
         flag_file: Optional[str] = None,
         physical_origin: Tuple[float, float, float] = (0.0, 0.0, 0.0),
         voxel_size: Union[float, Tuple[float, float, float]] = 1.0,
-        simulation_type: str = 'generic',
-        **kwargs
+        simulation_type: str = "generic",
+        **kwargs,
     ) -> MathSchema:
         """Extract mathematical schema from voxel data.
 
@@ -96,8 +97,8 @@ class VoxelHarness(Harness):
             MathSchema with extracted mathematical structures
         """
         self._current_files = {
-            'voxel': voxel_file,
-            'flag': flag_file,
+            "voxel": voxel_file,
+            "flag": flag_file,
         }
 
         # Load voxel data
@@ -115,7 +116,9 @@ class VoxelHarness(Harness):
         self._add_governing_equations(schema, simulation_type, voxel_data)
 
         # Add scale mapping as boundary condition (domain definition)
-        self._add_scale_mapping_bc(schema, physical_origin, voxel_size, voxel_data.shape)
+        self._add_scale_mapping_bc(
+            schema, physical_origin, voxel_size, voxel_data.shape
+        )
 
         # Add numerical method (voxel discretization)
         self._add_numerical_method(schema, simulation_type, voxel_data)
@@ -136,9 +139,9 @@ class VoxelHarness(Harness):
         """Load voxel data from file."""
         ext = Path(filepath).suffix.lower()
 
-        if ext == '.npy':
+        if ext == ".npy":
             return np.load(filepath)
-        elif ext in ['.raw', '.bin']:
+        elif ext in [".raw", ".bin"]:
             # Assume raw binary, need dimensions from kwargs
             return np.fromfile(filepath, dtype=np.float32)
         else:
@@ -152,7 +155,7 @@ class VoxelHarness(Harness):
     ):
         """Add governing equations based on simulation type."""
 
-        if simulation_type == 'lattice_boltzmann':
+        if simulation_type == "lattice_boltzmann":
             # Discrete velocity Boltzmann equation
             boltzmann = GoverningEquation(
                 id="discrete_boltzmann",
@@ -161,9 +164,21 @@ class VoxelHarness(Harness):
                 mathematical_form="f_i(x + c_iΔt, t + Δt) - f_i(x, t) = Ω_i(f)",
                 description="Lattice Boltzmann evolution equation",
                 variables=[
-                    {"name": "f_i", "description": "Population in direction i", "type": "scalar_field"},
-                    {"name": "c_i", "description": "Discrete velocity", "type": "vector"},
-                    {"name": "Ω_i", "description": "Collision operator", "type": "functional"},
+                    {
+                        "name": "f_i",
+                        "description": "Population in direction i",
+                        "type": "scalar_field",
+                    },
+                    {
+                        "name": "c_i",
+                        "description": "Discrete velocity",
+                        "type": "vector",
+                    },
+                    {
+                        "name": "Ω_i",
+                        "description": "Collision operator",
+                        "type": "functional",
+                    },
                 ],
             )
             schema.add_governing_equation(boltzmann)
@@ -177,7 +192,11 @@ class VoxelHarness(Harness):
                 description="Bhatnagar-Gross-Krook relaxation",
                 variables=[
                     {"name": "τ", "description": "Relaxation time", "type": "scalar"},
-                    {"name": "f_i^eq", "description": "Equilibrium distribution", "type": "scalar_field"},
+                    {
+                        "name": "f_i^eq",
+                        "description": "Equilibrium distribution",
+                        "type": "scalar_field",
+                    },
                 ],
             )
             schema.add_governing_equation(bgk)
@@ -198,7 +217,7 @@ class VoxelHarness(Harness):
             )
             schema.add_governing_equation(equilibrium)
 
-        elif simulation_type == 'fdtd':
+        elif simulation_type == "fdtd":
             # Maxwell's equations
             maxwell = GoverningEquation(
                 id="maxwell_equations",
@@ -207,15 +226,31 @@ class VoxelHarness(Harness):
                 mathematical_form="∂E/∂t = (1/ε)∇×H - (σ/ε)E, ∂H/∂t = -(1/μ)∇×E",
                 description="Electromagnetic field evolution",
                 variables=[
-                    {"name": "E", "description": "Electric field", "type": "vector_field"},
-                    {"name": "H", "description": "Magnetic field", "type": "vector_field"},
-                    {"name": "ε", "description": "Permittivity", "type": "tensor_field"},
-                    {"name": "μ", "description": "Permeability", "type": "tensor_field"},
+                    {
+                        "name": "E",
+                        "description": "Electric field",
+                        "type": "vector_field",
+                    },
+                    {
+                        "name": "H",
+                        "description": "Magnetic field",
+                        "type": "vector_field",
+                    },
+                    {
+                        "name": "ε",
+                        "description": "Permittivity",
+                        "type": "tensor_field",
+                    },
+                    {
+                        "name": "μ",
+                        "description": "Permeability",
+                        "type": "tensor_field",
+                    },
                 ],
             )
             schema.add_governing_equation(maxwell)
 
-        elif simulation_type == 'fvm_cartesian':
+        elif simulation_type == "fvm_cartesian":
             conservation = GoverningEquation(
                 id="conservation_law",
                 type="pde",
@@ -223,7 +258,11 @@ class VoxelHarness(Harness):
                 mathematical_form="∂U/∂t + ∇·F(U) = S",
                 description="Integral conservation form",
                 variables=[
-                    {"name": "U", "description": "Conserved quantity", "type": "vector_field"},
+                    {
+                        "name": "U",
+                        "description": "Conserved quantity",
+                        "type": "vector_field",
+                    },
                     {"name": "F", "description": "Flux tensor", "type": "tensor_field"},
                     {"name": "S", "description": "Source term", "type": "vector_field"},
                 ],
@@ -238,8 +277,16 @@ class VoxelHarness(Harness):
             mathematical_form="f(r) ≈ Σ_{i,j,k} f_{i,j,k} χ_{i,j,k}(r)",
             description="Field represented on voxel grid with characteristic functions",
             variables=[
-                {"name": "f_{i,j,k}", "description": "Field value at voxel (i,j,k)", "type": "scalar"},
-                {"name": "χ_{i,j,k}", "description": "Voxel characteristic function", "type": "function"},
+                {
+                    "name": "f_{i,j,k}",
+                    "description": "Field value at voxel (i,j,k)",
+                    "type": "scalar",
+                },
+                {
+                    "name": "χ_{i,j,k}",
+                    "description": "Voxel characteristic function",
+                    "type": "function",
+                },
             ],
         )
         schema.add_governing_equation(discretized_field)
@@ -268,8 +315,16 @@ class VoxelHarness(Harness):
             region=f"voxel_grid_{shape[:3]}",
             mathematical_form=f"r_phys = ({origin[0]}, {origin[1]}, {origin[2]}) + (i,j,k) * ({voxel_size[0]}, {voxel_size[1]}, {voxel_size[2]})",
             variables=[
-                {"name": "r_phys", "description": "Physical coordinate", "type": "vector"},
-                {"name": "(i,j,k)", "description": "Voxel index", "type": "integer_vector"},
+                {
+                    "name": "r_phys",
+                    "description": "Physical coordinate",
+                    "type": "vector",
+                },
+                {
+                    "name": "(i,j,k)",
+                    "description": "Voxel index",
+                    "type": "integer_vector",
+                },
             ],
             physical_meaning=f"Affine mapping from index space (0..{shape[0]-1}, 0..{shape[1]-1}, 0..{shape[2]-1}) to physical domain {physical_dims}",
         )
@@ -287,12 +342,12 @@ class VoxelHarness(Harness):
         nx, ny, nz = flag_data.shape
 
         face_boundaries = [
-            ('xmin', flag_data[0, :, :]),
-            ('xmax', flag_data[nx-1, :, :]),
-            ('ymin', flag_data[:, 0, :]),
-            ('ymax', flag_data[:, ny-1, :]),
-            ('zmin', flag_data[:, :, 0]),
-            ('zmax', flag_data[:, :, nz-1]),
+            ("xmin", flag_data[0, :, :]),
+            ("xmax", flag_data[nx - 1, :, :]),
+            ("ymin", flag_data[:, 0, :]),
+            ("ymax", flag_data[:, ny - 1, :]),
+            ("zmin", flag_data[:, :, 0]),
+            ("zmax", flag_data[:, :, nz - 1]),
         ]
 
         for location, face_data in face_boundaries:
@@ -316,29 +371,32 @@ class VoxelHarness(Harness):
         """Create boundary condition from flag value."""
 
         flag_types = {
-            1: ('wall', 'No-slip wall'),
-            2: ('inlet', 'Velocity inlet'),
-            3: ('outlet', 'Pressure outlet'),
-            4: ('slip', 'Slip wall'),
-            5: ('symmetry', 'Symmetry plane'),
-            6: ('periodic', 'Periodic boundary'),
-            7: ('moving_wall', 'Moving wall'),
+            1: ("wall", "No-slip wall"),
+            2: ("inlet", "Velocity inlet"),
+            3: ("outlet", "Pressure outlet"),
+            4: ("slip", "Slip wall"),
+            5: ("symmetry", "Symmetry plane"),
+            6: ("periodic", "Periodic boundary"),
+            7: ("moving_wall", "Moving wall"),
         }
 
-        bc_type, description = flag_types.get(flag, ('unknown', 'Unknown boundary'))
+        bc_type, description = flag_types.get(flag, ("unknown", "Unknown boundary"))
 
-        if simulation_type == 'lattice_boltzmann':
+        if simulation_type == "lattice_boltzmann":
             implementations = {
-                'wall': ('bounce_back', 'f_{opp} = f_i (mid-link bounce-back)'),
-                'inlet': ('zou_he_velocity', 'Moment-based velocity BC'),
-                'outlet': ('zou_he_pressure', 'Moment-based pressure BC'),
-                'slip': ('specular', 'Specular reflection'),
-                'moving_wall': ('equilibrium_enhanced', 'f_{opp} = f_i - 6w_iρ(c_i·u_w)/c_s²'),
+                "wall": ("bounce_back", "f_{opp} = f_i (mid-link bounce-back)"),
+                "inlet": ("zou_he_velocity", "Moment-based velocity BC"),
+                "outlet": ("zou_he_pressure", "Moment-based pressure BC"),
+                "slip": ("specular", "Specular reflection"),
+                "moving_wall": (
+                    "equilibrium_enhanced",
+                    "f_{opp} = f_i - 6w_iρ(c_i·u_w)/c_s²",
+                ),
             }
-            scheme, math_form = implementations.get(bc_type, ('unknown', 'Unknown'))
+            scheme, math_form = implementations.get(bc_type, ("unknown", "Unknown"))
         else:
-            scheme = 'standard'
-            math_form = f'{bc_type} boundary'
+            scheme = "standard"
+            math_form = f"{bc_type} boundary"
 
         return BoundaryCondition(
             id=f"bc_{location}_{bc_type}",
@@ -368,13 +426,21 @@ class VoxelHarness(Harness):
                 "total_voxels": shape[0] * shape[1] * shape[2],
                 "field_components": shape[3] if len(shape) > 3 else 1,
                 "discretization_type": "cell_centered",
-                "stencil": "nearest_neighbor" if simulation_type == 'cellular_automata' else "compact",
+                "stencil": (
+                    "nearest_neighbor"
+                    if simulation_type == "cellular_automata"
+                    else "compact"
+                ),
             },
         )
 
         discretization = DiscretizationScheme(
             spatial_order=1,  # First-order in space for voxel
-            temporal_order=1 if simulation_type in ['lattice_boltzmann', 'cellular_automata'] else 2,
+            temporal_order=(
+                1
+                if simulation_type in ["lattice_boltzmann", "cellular_automata"]
+                else 2
+            ),
             mesh_type="cartesian_voxel",
         )
         method.discretization = discretization
@@ -462,7 +528,7 @@ class VoxelHarness(Harness):
             description=self.SIMULATION_TYPES.get(simulation_type, simulation_type),
         )
 
-        if simulation_type == 'lattice_boltzmann':
+        if simulation_type == "lattice_boltzmann":
             nodes = [
                 ("initialize", "Initialize Populations f_i"),
                 ("stream", "Streaming (Advection)"),
@@ -506,24 +572,24 @@ class VoxelHarness(Harness):
     def get_capabilities(self) -> Dict[str, Any]:
         """Return harness capabilities."""
         return {
-            'engine_name': self.ENGINE_NAME,
-            'engine_version': self.ENGINE_VERSION,
-            'supported_formats': self.SUPPORTED_EXTENSIONS,
-            'simulation_types': list(self.SIMULATION_TYPES.keys()),
-            'features': [
-                'scale_mapping',
-                'boundary_condition_extraction',
-                'voxel_to_continuous_interpolation',
-                'lbm_specific_analysis',
+            "engine_name": self.ENGINE_NAME,
+            "engine_version": self.ENGINE_VERSION,
+            "supported_formats": self.SUPPORTED_EXTENSIONS,
+            "simulation_types": list(self.SIMULATION_TYPES.keys()),
+            "features": [
+                "scale_mapping",
+                "boundary_condition_extraction",
+                "voxel_to_continuous_interpolation",
+                "lbm_specific_analysis",
             ],
         }
 
     def validate_input(self, input_data: Dict[str, Any]) -> bool:
         """Validate input parameters."""
-        if 'voxel_file' not in input_data:
+        if "voxel_file" not in input_data:
             return False
 
-        voxel_file = input_data['voxel_file']
+        voxel_file = input_data["voxel_file"]
         if not os.path.exists(voxel_file):
             return False
 

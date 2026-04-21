@@ -14,8 +14,8 @@ Mathematical focus:
 - Interpolation rules for continuous reconstruction
 """
 
-from .core.harness import VoxelHarness
 from .core.extractor import VoxelMathExtractor
+from .core.harness import VoxelHarness
 from .core.lbm_extractor import LBMBoundaryExtractor
 
 __version__ = "1.0.0"

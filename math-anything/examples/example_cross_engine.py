@@ -4,24 +4,21 @@ This example demonstrates how to extract models from multiple engines
 at different scales and identify coupling interfaces between them.
 """
 
-import sys
 import os
+import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'core'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "core"))
 
-from math_anything.core import (
-    CrossEngineSession,
-    CouplingInterface,
-    ModelScale,
-    CouplingType,
-)
-from math_anything.schemas import MathSchema, GoverningEquation, MathematicalObject
+from math_anything.core import (CouplingInterface, CouplingType,
+                                CrossEngineSession, ModelScale)
+from math_anything.schemas import (GoverningEquation, MathematicalObject,
+                                   MathSchema)
 
 
 def create_mock_md_schema():
     """Create a mock MD schema with stress tensor."""
     schema = MathSchema()
-    
+
     # Add virial stress equation
     schema.mathematical_model.governing_equations.append(
         GoverningEquation(
@@ -33,7 +30,7 @@ def create_mock_md_schema():
             description="Per-atom virial stress from MD simulation",
         )
     )
-    
+
     # Add temperature equation
     schema.mathematical_model.governing_equations.append(
         GoverningEquation(
@@ -44,14 +41,14 @@ def create_mock_md_schema():
             variables=["temperature", "kinetic_energy", "velocity"],
         )
     )
-    
+
     return schema
 
 
 def create_mock_fem_schema():
     """Create a mock FEM schema with stress."""
     schema = MathSchema()
-    
+
     # Add equilibrium equation
     schema.mathematical_model.governing_equations.append(
         GoverningEquation(
@@ -63,7 +60,7 @@ def create_mock_fem_schema():
             description="Static equilibrium in continuum mechanics",
         )
     )
-    
+
     # Add constitutive relation
     schema.mathematical_model.governing_equations.append(
         GoverningEquation(
@@ -74,7 +71,7 @@ def create_mock_fem_schema():
             variables=["stress", "strain", "stiffness_tensor"],
         )
     )
-    
+
     # Add heat equation
     schema.mathematical_model.governing_equations.append(
         GoverningEquation(
@@ -85,14 +82,14 @@ def create_mock_fem_schema():
             variables=["temperature", "time", "density", "conductivity", "heat_source"],
         )
     )
-    
+
     return schema
 
 
 def create_mock_quantum_schema():
     """Create a mock quantum/DFT schema."""
     schema = MathSchema()
-    
+
     schema.mathematical_model.governing_equations.append(
         GoverningEquation(
             id="kohn_sham",
@@ -103,7 +100,7 @@ def create_mock_quantum_schema():
             description="Density functional theory electronic structure",
         )
     )
-    
+
     return schema
 
 
@@ -113,12 +110,13 @@ def example_1_basic_coupling():
     print("EXAMPLE 1: Basic MD-to-FEM Coupling")
     print("=" * 70)
     print()
-    
+
     session = CrossEngineSession()
-    
+
     # Add MD model
     md_schema = create_mock_md_schema()
     from math_anything.core.cross_engine import ScaleModel
+
     session.models["md_bulk"] = ScaleModel(
         model_id="md_bulk",
         scale=ModelScale.ATOMISTIC,
@@ -127,7 +125,7 @@ def example_1_basic_coupling():
         domain=" Representative Volume Element",
     )
     print("✓ Added MD model (atomistic scale)")
-    
+
     # Add FEM model
     fem_schema = create_mock_fem_schema()
     session.models["fem_structure"] = ScaleModel(
@@ -139,11 +137,11 @@ def example_1_basic_coupling():
     )
     print("✓ Added FEM model (continuum scale)")
     print()
-    
+
     # Auto-detect coupling
     print("Auto-detecting coupling interfaces...")
     interfaces = session.auto_detect_coupling()
-    
+
     print(f"  Found {len(interfaces)} coupling interface(s):")
     for iface in interfaces:
         print(f"    - {iface.interface_id}")
@@ -159,12 +157,13 @@ def example_2_three_scale_hierarchy():
     print("EXAMPLE 2: Three-Scale Hierarchy")
     print("=" * 70)
     print()
-    
+
     session = CrossEngineSession()
-    
+
     # Quantum scale (DFT)
     qm_schema = create_mock_quantum_schema()
     from math_anything.core.cross_engine import ScaleModel
+
     session.models["dft_bulk"] = ScaleModel(
         model_id="dft_bulk",
         scale=ModelScale.QUANTUM,
@@ -173,7 +172,7 @@ def example_2_three_scale_hierarchy():
         domain="interatomic potential training",
     )
     print("✓ Added DFT model (quantum scale)")
-    
+
     # Atomistic scale (MD)
     md_schema = create_mock_md_schema()
     session.models["md_defect"] = ScaleModel(
@@ -184,7 +183,7 @@ def example_2_three_scale_hierarchy():
         domain="crack tip region",
     )
     print("✓ Added MD model (atomistic scale)")
-    
+
     # Continuum scale (FEM)
     fem_schema = create_mock_fem_schema()
     session.models["fem_specimen"] = ScaleModel(
@@ -196,7 +195,7 @@ def example_2_three_scale_hierarchy():
     )
     print("✓ Added FEM model (continuum scale)")
     print()
-    
+
     # Show scale hierarchy
     print("Scale Hierarchy (micro to macro):")
     hierarchy = session.get_scale_hierarchy()
@@ -204,7 +203,7 @@ def example_2_three_scale_hierarchy():
         arrow = "→" if i < len(hierarchy) - 1 else ""
         print(f"  {scale.value:12} ({model_id}) {arrow}")
     print()
-    
+
     # Detect all coupling
     interfaces = session.auto_detect_coupling()
     print(f"Detected {len(interfaces)} coupling interfaces:")
@@ -220,25 +219,26 @@ def example_3_manual_coupling():
     print("EXAMPLE 3: Manual Coupling Definition")
     print("=" * 70)
     print()
-    
+
     session = CrossEngineSession()
-    
+
     # Add models
     from math_anything.core.cross_engine import ScaleModel
+
     session.models["md"] = ScaleModel(
         model_id="md",
         scale=ModelScale.ATOMISTIC,
         engine="lammps",
         schema=create_mock_md_schema(),
     )
-    
+
     session.models["fem"] = ScaleModel(
         model_id="fem",
         scale=ModelScale.CONTINUUM,
         engine="abaqus",
         schema=create_mock_fem_schema(),
     )
-    
+
     # Manually add a specialized coupling
     custom_iface = CouplingInterface(
         interface_id="multiscale_stress_hill",
@@ -250,7 +250,7 @@ def example_3_manual_coupling():
         transfer_quantity="stress_tensor",
         conservation_check=True,
     )
-    
+
     session.add_manual_interface(custom_iface)
     print("✓ Added manual coupling interface:")
     print(f"  ID: {custom_iface.interface_id}")
@@ -266,39 +266,42 @@ def example_4_consistency_check():
     print("EXAMPLE 4: Consistency Checking")
     print("=" * 70)
     print()
-    
+
     session = CrossEngineSession()
-    
+
     # Create inconsistent system
     from math_anything.core.cross_engine import ScaleModel
+
     session.models["md"] = ScaleModel(
         model_id="md",
         scale=ModelScale.ATOMISTIC,
         engine="lammps",
         schema=MathSchema(),
     )
-    
+
     # Add interface to non-existent model
-    session.coupling_interfaces.append(CouplingInterface(
-        interface_id="bad_coupling",
-        from_scale="md",
-        to_scale="nonexistent_fem",
-    ))
-    
+    session.coupling_interfaces.append(
+        CouplingInterface(
+            interface_id="bad_coupling",
+            from_scale="md",
+            to_scale="nonexistent_fem",
+        )
+    )
+
     # Check consistency
     report = session.check_consistency()
-    
+
     print("Consistency Report:")
     print(f"  Consistent: {report['consistent']}")
     print(f"  Errors: {len(report['errors'])}")
     print(f"  Warnings: {len(report['warnings'])}")
-    
-    if report['errors']:
+
+    if report["errors"]:
         print("\n  Errors found:")
-        for error in report['errors']:
+        for error in report["errors"]:
             print(f"    ✗ {error}")
     print()
-    
+
     # Now create consistent system
     print("Creating consistent system...")
     session2 = CrossEngineSession()
@@ -314,12 +317,14 @@ def example_4_consistency_check():
         engine="abaqus",
         schema=MathSchema(),
     )
-    session2.coupling_interfaces.append(CouplingInterface(
-        interface_id="valid_coupling",
-        from_scale="md",
-        to_scale="fem",
-    ))
-    
+    session2.coupling_interfaces.append(
+        CouplingInterface(
+            interface_id="valid_coupling",
+            from_scale="md",
+            to_scale="fem",
+        )
+    )
+
     report2 = session2.check_consistency()
     print(f"  Consistent: {report2['consistent']}")
     print(f"  Errors: {len(report2['errors'])}")
@@ -332,11 +337,12 @@ def example_5_generate_coupled_schema():
     print("EXAMPLE 5: Generating Coupled Schema")
     print("=" * 70)
     print()
-    
+
     session = CrossEngineSession()
-    
+
     # Add models
     from math_anything.core.cross_engine import ScaleModel
+
     session.models["md"] = ScaleModel(
         model_id="md",
         scale=ModelScale.ATOMISTIC,
@@ -344,7 +350,7 @@ def example_5_generate_coupled_schema():
         schema=create_mock_md_schema(),
         domain="grain boundary",
     )
-    
+
     session.models["fem"] = ScaleModel(
         model_id="fem",
         scale=ModelScale.CONTINUUM,
@@ -352,22 +358,23 @@ def example_5_generate_coupled_schema():
         schema=create_mock_fem_schema(),
         domain="polycrystal",
     )
-    
+
     # Detect coupling
     session.auto_detect_coupling()
-    
+
     # Generate coupled schema
     coupled = session.generate_coupled_schema(CouplingType.HIERARCHICAL)
-    
+
     print("Generated Coupled Schema:")
     print(f"  Version: {coupled.schema_version}")
     print(f"  Coupling Type: {coupled.coupling_type.name}")
     print(f"  Models: {len(coupled.models)}")
     print(f"  Interfaces: {len(coupled.coupling_interfaces)}")
     print()
-    
+
     # Show JSON structure
     import json
+
     data = coupled.to_dict()
     print("JSON Structure:")
     print(json.dumps(data, indent=2, default=str)[:1500])
@@ -381,10 +388,11 @@ def example_6_summary():
     print("EXAMPLE 6: Session Summary")
     print("=" * 70)
     print()
-    
+
     session = CrossEngineSession()
-    
+
     from math_anything.core.cross_engine import ScaleModel
+
     session.models["dft"] = ScaleModel(
         model_id="dft",
         scale=ModelScale.QUANTUM,
@@ -409,9 +417,9 @@ def example_6_summary():
         engine="abaqus",
         schema=MathSchema(),
     )
-    
+
     summary = session.get_summary()
-    
+
     print("Session Summary:")
     print(f"  Total Models: {summary['n_models']}")
     print(f"  Coupling Interfaces: {summary['n_interfaces']}")
@@ -425,17 +433,19 @@ def main():
     """Run all examples."""
     print("\n")
     print("╔" + "═" * 68 + "╗")
-    print("║" + " " * 10 + "CROSS-ENGINE SESSION - MULTI-SCALE COUPLING" + " " * 15 + "║")
+    print(
+        "║" + " " * 10 + "CROSS-ENGINE SESSION - MULTI-SCALE COUPLING" + " " * 15 + "║"
+    )
     print("╚" + "═" * 68 + "╝")
     print("\n")
-    
+
     example_1_basic_coupling()
     example_2_three_scale_hierarchy()
     example_3_manual_coupling()
     example_4_consistency_check()
     example_5_generate_coupled_schema()
     example_6_summary()
-    
+
     print("=" * 70)
     print("Cross-Engine Session Demo Complete!")
     print("=" * 70)
@@ -454,7 +464,7 @@ Use Cases:
 - Hierarchical multiscale modeling
 - Concurrent multiscale simulation
 """)
-    
+
     return 0
 
 

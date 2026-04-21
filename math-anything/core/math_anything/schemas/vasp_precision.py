@@ -8,30 +8,27 @@ Design Principles:
 - Zero judgment: Describe what is, not what should be
 """
 
-from typing import Dict, Any, List
-from .precision import (
-    MathematicalStructure,
-    VariableDependency,
-    DiscretizationScheme,
-    SolutionStrategy,
-    Approximation,
-    MathematicalDecoding,
-    PrecisionMetadata,
-    EnhancedMathSchema,
-    BasePrecisionExtractor,
-)
+from typing import Any, Dict, List
+
+from .precision import (Approximation, BasePrecisionExtractor,
+                        DiscretizationScheme, EnhancedMathSchema,
+                        MathematicalDecoding, MathematicalStructure,
+                        PrecisionMetadata, SolutionStrategy,
+                        VariableDependency)
 
 
 class VaspMathematicalPrecisionExtractor(BasePrecisionExtractor):
     """Extract precise mathematical structures from VASP inputs.
-    
+
     Translates VASP parameters into their mathematical significance,
     enabling "decryption" of what the calculation is mathematically doing.
     """
-    
-    def extract_mathematical_structure(self, params: Dict[str, Any]) -> MathematicalStructure:
+
+    def extract_mathematical_structure(
+        self, params: Dict[str, Any]
+    ) -> MathematicalStructure:
         """Extract the mathematical structure of the problem being solved.
-        
+
         VASP solves the Kohn-Sham equations, which are nonlinear eigenvalue problems.
         """
         return MathematicalStructure(
@@ -45,10 +42,12 @@ class VaspMathematicalPrecisionExtractor(BasePrecisionExtractor):
             dimension=3,
             function_space="L²(ℝ³)",
         )
-    
-    def extract_variable_dependencies(self, params: Dict[str, Any]) -> List[VariableDependency]:
+
+    def extract_variable_dependencies(
+        self, params: Dict[str, Any]
+    ) -> List[VariableDependency]:
         """Extract variable dependencies that require self-consistent iteration.
-        
+
         The key circular dependency in DFT:
         V_eff depends on n, which depends on ψ, which depends on V_eff
         """
@@ -68,14 +67,16 @@ class VaspMathematicalPrecisionExtractor(BasePrecisionExtractor):
                 physical_interpretation="density constructed from wavefunctions",
             ),
         ]
-    
-    def extract_discretization_scheme(self, params: Dict[str, Any]) -> DiscretizationScheme:
+
+    def extract_discretization_scheme(
+        self, params: Dict[str, Any]
+    ) -> DiscretizationScheme:
         """Extract the discretization scheme from VASP parameters.
-        
+
         VASP uses plane wave basis with energy cutoff.
         """
         encut = params.get("ENCUT", 520)
-        
+
         return DiscretizationScheme(
             method="plane_wave_expansion",
             mathematical_meaning="ψ(r) = Σ_G c_G exp(iG·r), where |G|²/2 < E_cut",
@@ -87,15 +88,15 @@ class VaspMathematicalPrecisionExtractor(BasePrecisionExtractor):
             completeness="controlled_by_cutoff",
             convergence_order="exponential_for_smooth_functions",
         )
-    
+
     def extract_solution_strategy(self, params: Dict[str, Any]) -> SolutionStrategy:
         """Extract the solution strategy from VASP parameters.
-        
+
         VASP uses self-consistent field (SCF) iteration.
         """
         ediff = params.get("EDIFF", 1e-4)
         nelm = params.get("NELM", 60)
-        
+
         return SolutionStrategy(
             method="self_consistent_field",
             mathematical_form="n^{k+1} = F[n^k], iterate until |E^{k+1} - E^k| < ε",
@@ -103,66 +104,82 @@ class VaspMathematicalPrecisionExtractor(BasePrecisionExtractor):
             iteration_type="fixed_point_iteration",
             stability_requirement=f"mixing required for convergence, max {nelm} iterations",
         )
-    
+
     def extract_approximations(self, params: Dict[str, Any]) -> List[Approximation]:
         """Extract the approximations made in the calculation.
-        
+
         Lists what approximations are applied, without judging their quality.
         """
         approximations = []
-        
+
         encut = params.get("ENCUT", 520)
-        approximations.append(Approximation(
-            name="plane_wave_truncation",
-            mathematical_form=f"|G|²/2 < {encut} eV",
-            consequence="wavefunction expansion limited, affects high-energy states",
-            affected_quantities=["wavefunction_accuracy", "total_energy"],
-            theoretical_basis="finite basis set approximation",
-        ))
-        
+        approximations.append(
+            Approximation(
+                name="plane_wave_truncation",
+                mathematical_form=f"|G|²/2 < {encut} eV",
+                consequence="wavefunction expansion limited, affects high-energy states",
+                affected_quantities=["wavefunction_accuracy", "total_energy"],
+                theoretical_basis="finite basis set approximation",
+            )
+        )
+
         ismear = params.get("ISMEAR", 1)
         sigma = params.get("SIGMA", 0.2)
         if ismear >= 0:
-            approximations.append(Approximation(
-                name="smearing",
-                mathematical_form=f"Gaussian/MP smearing with width {sigma} eV",
-                consequence="occupations smoothed, enables metallic systems",
-                affected_quantities=["fermi_level", "band_energy"],
-                theoretical_basis="finite temperature DFT",
-            ))
+            approximations.append(
+                Approximation(
+                    name="smearing",
+                    mathematical_form=f"Gaussian/MP smearing with width {sigma} eV",
+                    consequence="occupations smoothed, enables metallic systems",
+                    affected_quantities=["fermi_level", "band_energy"],
+                    theoretical_basis="finite temperature DFT",
+                )
+            )
         elif ismear == -5:
-            approximations.append(Approximation(
-                name="tetrahedron_method",
-                mathematical_form="Blöchl tetrahedron integration",
-                consequence="accurate DOS, not suitable for relaxation",
-                affected_quantities=["density_of_states", "total_energy"],
-                theoretical_basis="tetrahedron integration",
-            ))
-        
+            approximations.append(
+                Approximation(
+                    name="tetrahedron_method",
+                    mathematical_form="Blöchl tetrahedron integration",
+                    consequence="accurate DOS, not suitable for relaxation",
+                    affected_quantities=["density_of_states", "total_energy"],
+                    theoretical_basis="tetrahedron integration",
+                )
+            )
+
         gga = params.get("GGA", "PE")
-        approximations.append(Approximation(
-            name="exchange_correlation_approximation",
-            mathematical_form=f"GGA-{gga} functional",
-            consequence="approximate treatment of electron-electron interactions",
-            affected_quantities=["total_energy", "bond_lengths", "reaction_barriers"],
-            theoretical_basis="Kohn-Sham DFT with approximate xc functional",
-        ))
-        
+        approximations.append(
+            Approximation(
+                name="exchange_correlation_approximation",
+                mathematical_form=f"GGA-{gga} functional",
+                consequence="approximate treatment of electron-electron interactions",
+                affected_quantities=[
+                    "total_energy",
+                    "bond_lengths",
+                    "reaction_barriers",
+                ],
+                theoretical_basis="Kohn-Sham DFT with approximate xc functional",
+            )
+        )
+
         if params.get("kpoints"):
             grid = params.get("kpoints", {}).get("grid", [1, 1, 1])
-            approximations.append(Approximation(
-                name="k_point_sampling",
-                mathematical_form=f"Monkhorst-Pack grid {grid}",
-                consequence="Brillouin zone discretized, affects metallic systems",
-                affected_quantities=["fermi_surface", "total_energy"],
-                theoretical_basis="k-point integration approximation",
-            ))
-        
+            approximations.append(
+                Approximation(
+                    name="k_point_sampling",
+                    mathematical_form=f"Monkhorst-Pack grid {grid}",
+                    consequence="Brillouin zone discretized, affects metallic systems",
+                    affected_quantities=["fermi_surface", "total_energy"],
+                    theoretical_basis="k-point integration approximation",
+                )
+            )
+
         return approximations
-    
-    def extract_mathematical_decoding(self, params: Dict[str, Any]) -> MathematicalDecoding:
+
+    def extract_mathematical_decoding(
+        self, params: Dict[str, Any]
+    ) -> MathematicalDecoding:
         """Extract a complete mathematical decoding of the VASP setup.
-        
+
         Translates all parameters into their mathematical meaning.
         """
         return MathematicalDecoding(
@@ -179,21 +196,32 @@ class VaspMathematicalPrecisionExtractor(BasePrecisionExtractor):
             },
             mathematical_hierarchy=[
                 {"level": "physical", "description": "many-body Schrödinger equation"},
-                {"level": "approximation_1", "description": "Born-Oppenheimer approximation"},
+                {
+                    "level": "approximation_1",
+                    "description": "Born-Oppenheimer approximation",
+                },
                 {"level": "approximation_2", "description": "Kohn-Sham DFT"},
-                {"level": "approximation_3", "description": "exchange-correlation functional"},
-                {"level": "discretization", "description": "plane wave basis truncation"},
+                {
+                    "level": "approximation_3",
+                    "description": "exchange-correlation functional",
+                },
+                {
+                    "level": "discretization",
+                    "description": "plane wave basis truncation",
+                },
                 {"level": "numerical", "description": "SCF iteration with mixing"},
             ],
         )
-    
-    def extract_precision_metadata(self, params: Dict[str, Any]) -> Dict[str, PrecisionMetadata]:
+
+    def extract_precision_metadata(
+        self, params: Dict[str, Any]
+    ) -> Dict[str, PrecisionMetadata]:
         """Extract precision metadata for each parameter.
-        
+
         Expresses confidence and source of each extracted value.
         """
         metadata = {}
-        
+
         for param_name in params:
             if param_name in ["ENCUT", "EDIFF", "ISMEAR", "SIGMA", "NELM", "ALGO"]:
                 metadata[param_name] = PrecisionMetadata(
@@ -213,16 +241,16 @@ class VaspMathematicalPrecisionExtractor(BasePrecisionExtractor):
                     source="default_value",
                     notes=["using VASP default, not explicitly set"],
                 )
-        
+
         return metadata
 
 
 def extract_vasp_mathematical_precision(params: Dict[str, Any]) -> Dict[str, Any]:
     """Convenience function to extract mathematical precision from VASP params.
-    
+
     Args:
         params: Dictionary of VASP parameters (from INCAR, etc.)
-        
+
     Returns:
         Dictionary with precise mathematical structure representation
     """

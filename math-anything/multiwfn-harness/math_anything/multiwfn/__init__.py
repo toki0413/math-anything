@@ -5,13 +5,9 @@ Supports various quantum chemical analyses including electron density,
  electrostatic potential, and topology analysis.
 """
 
-from .core.harness import MultiwfnHarness
 from .core.extractor import MultiwfnExtractor
-from .core.parser import (
-    MultiwfnInputParser,
-    WfnFileParser,
-    CubeFileParser,
-)
+from .core.harness import MultiwfnHarness
+from .core.parser import CubeFileParser, MultiwfnInputParser, WfnFileParser
 
 __version__ = "1.0.0"
 

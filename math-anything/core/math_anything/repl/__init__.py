@@ -11,9 +11,9 @@ Features:
 - Colored output and progress indicators
 """
 
-from .core import MathAnythingREPL, REPLSession
 from .commands import CommandRegistry
-from .diff import MathDiff, DiffResult
+from .core import MathAnythingREPL, REPLSession
+from .diff import DiffResult, MathDiff
 
 __all__ = [
     "MathAnythingREPL",

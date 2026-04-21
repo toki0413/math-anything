@@ -4,13 +4,9 @@ Extracts mathematical structures from COMSOL multiphysics simulations.
 Supports physics-based modeling and equation-based modeling.
 """
 
-from .core.harness import ComsolHarness
 from .core.extractor import ComsolExtractor
-from .core.parser import (
-    MPHParser,
-    ModelParser,
-    JavaParser,
-)
+from .core.harness import ComsolHarness
+from .core.parser import JavaParser, ModelParser, MPHParser
 
 __version__ = "1.0.0"
 

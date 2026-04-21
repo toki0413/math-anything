@@ -12,17 +12,19 @@ Key concepts demonstrated:
 - Interpolation rules for continuous reconstruction
 """
 
-import sys
 import os
+import sys
+
 import numpy as np
 
 # Add core to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'core'))
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'voxel-harness'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "core"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "voxel-harness"))
 
-from math_anything.voxel.core.harness import VoxelHarness
+from math_anything.extractors.lbm_boundary_extractor import \
+    LBMBoundaryExtractor
 from math_anything.extractors.voxel_extractor import VoxelMathExtractor
-from math_anything.extractors.lbm_boundary_extractor import LBMBoundaryExtractor
+from math_anything.voxel.core.harness import VoxelHarness
 
 
 def create_sample_lbm_data():
@@ -73,7 +75,7 @@ def example_voxel_harness():
         flag_file="sample_flags.npy",
         physical_origin=(0.0, 0.0, 0.0),
         voxel_size=0.001,  # 1mm voxels
-        simulation_type='lattice_boltzmann',
+        simulation_type="lattice_boltzmann",
     )
 
     print(f"\nExtracted Schema:")
@@ -112,31 +114,31 @@ def example_voxel_extractor():
         voxel_data=voxel_data,
         physical_origin=(0.0, 0.0, 0.0),
         voxel_size=0.01,
-        simulation_type='lattice_boltzmann',
+        simulation_type="lattice_boltzmann",
     )
 
     print(f"\nGrid Information:")
-    grid_info = result['grid_info']
+    grid_info = result["grid_info"]
     print(f"  Dimensions: {grid_info['dimensions']}")
     print(f"  Total Voxels: {grid_info['num_voxels']:,}")
     print(f"  Physical Size: {grid_info['physical_dimensions']}")
     print(f"  Total Volume: {grid_info['total_volume']:.6f} m³")
 
     print(f"\nScale Mapping:")
-    scale = result['scale_mapping']
+    scale = result["scale_mapping"]
     print(f"  Type: {scale['transformation_type']}")
     print(f"  Index→Physical: {scale['mathematical_expression']['index_to_physical']}")
     print(f"  Physical→Index: {scale['mathematical_expression']['physical_to_index']}")
 
     print(f"\nDiscretization:")
-    disc = result['discretization']
+    disc = result["discretization"]
     print(f"  Method: {disc.get('method', 'Voxel-based')}")
     print(f"  Approach: {disc.get('discretization_approach', 'finite_volume_like')}")
 
     print(f"\nInterpolation Rules:")
-    interp = result['interpolation_rules']
+    interp = result["interpolation_rules"]
     print(f"  Available methods: {len(interp['available_methods'])}")
-    for method in interp['available_methods'][:2]:
+    for method in interp["available_methods"][:2]:
         print(f"    - {method['name']}: {method['formula'][:40]}...")
 
     print("\n✓ Voxel extraction complete\n")
@@ -153,19 +155,19 @@ def example_lbm_boundaries():
     flags = np.zeros((nx, ny, nz), dtype=np.int32)
 
     # Set up boundaries
-    flags[:, 0, :] = 1   # Wall at ymin
+    flags[:, 0, :] = 1  # Wall at ymin
     flags[:, -1, :] = 1  # Wall at ymax
-    flags[:, :, 0] = 1   # Wall at zmin
+    flags[:, :, 0] = 1  # Wall at zmin
     flags[:, :, -1] = 1  # Wall at zmax
-    flags[0, :, :] = 2   # Inlet at xmin
+    flags[0, :, :] = 2  # Inlet at xmin
     flags[-1, :, :] = 3  # Outlet at xmax
 
     extractor = LBMBoundaryExtractor()
 
     boundaries = extractor.extract_boundaries(
         flag_field=flags,
-        lattice_model='D3Q19',
-        collision_model='BGK',
+        lattice_model="D3Q19",
+        collision_model="BGK",
     )
 
     print(f"\nDetected {len(boundaries)} boundaries:")
@@ -176,7 +178,9 @@ def example_lbm_boundaries():
         print(f"    Affected directions: {len(bc.lattice_directions)}")
 
         if bc.implementation_details:
-            print(f"    Implementation: {bc.implementation_details.get('description', 'N/A')}")
+            print(
+                f"    Implementation: {bc.implementation_details.get('description', 'N/A')}"
+            )
 
     print("\n✓ LBM boundary analysis complete\n")
 
@@ -196,7 +200,7 @@ def example_llm_prompt():
         voxel_data=voxel_data,
         physical_origin=(0.0, 0.0, 0.0),
         voxel_size=1e-4,  # 0.1mm
-        simulation_type='lattice_boltzmann',
+        simulation_type="lattice_boltzmann",
     )
 
     # Generate prompt
@@ -233,7 +237,9 @@ def example_scale_mapping():
     print("\nIndex → Physical Coordinate Mapping:")
     for i, j, k in test_indices:
         phys = mapping.index_to_physical(i, j, k)
-        print(f"  ({i:3d}, {j:3d}, {k:3d}) → ({phys[0]:.4f}, {phys[1]:.4f}, {phys[2]:.4f}) m")
+        print(
+            f"  ({i:3d}, {j:3d}, {k:3d}) → ({phys[0]:.4f}, {phys[1]:.4f}, {phys[2]:.4f}) m"
+        )
 
     # Convert physical to index
     test_physical = [(0.0, 0.0, 0.0), (0.01, 0.005, 0.003), (0.05, 0.03, 0.02)]
@@ -241,7 +247,9 @@ def example_scale_mapping():
     print("\nPhysical → Index Mapping:")
     for x, y, z in test_physical:
         idx = mapping.physical_to_index(x, y, z)
-        print(f"  ({x:.4f}, {y:.4f}, {z:.4f}) m → ({idx[0]:3d}, {idx[1]:3d}, {idx[2]:3d})")
+        print(
+            f"  ({x:.4f}, {y:.4f}, {z:.4f}) m → ({idx[0]:3d}, {idx[1]:3d}, {idx[2]:3d})"
+        )
 
     print("\n✓ Scale mapping demonstration complete\n")
 
@@ -262,6 +270,7 @@ def main():
     except Exception as e:
         print(f"\nError: {e}")
         import traceback
+
         traceback.print_exc()
 
     print("=" * 60)

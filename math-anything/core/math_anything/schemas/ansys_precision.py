@@ -8,26 +8,23 @@ Design Principles:
 - Zero judgment: Describe what is, not what should be
 """
 
-from typing import Dict, Any, List
-from .precision import (
-    MathematicalStructure,
-    VariableDependency,
-    DiscretizationScheme,
-    SolutionStrategy,
-    Approximation,
-    MathematicalDecoding,
-    PrecisionMetadata,
-    BasePrecisionExtractor,
-)
+from typing import Any, Dict, List
+
+from .precision import (Approximation, BasePrecisionExtractor,
+                        DiscretizationScheme, MathematicalDecoding,
+                        MathematicalStructure, PrecisionMetadata,
+                        SolutionStrategy, VariableDependency)
 
 
 class AnsysMathematicalPrecisionExtractor(BasePrecisionExtractor):
     """Extract precise mathematical structures from Ansys inputs."""
-    
-    def extract_mathematical_structure(self, params: Dict[str, Any]) -> MathematicalStructure:
+
+    def extract_mathematical_structure(
+        self, params: Dict[str, Any]
+    ) -> MathematicalStructure:
         """Extract the mathematical structure."""
         analysis_type = params.get("analysis_type", "static")
-        
+
         type_map = {
             "static": ("boundary_value_problem", "∇·σ + f = 0"),
             "modal": ("eigenvalue_problem", "Kφ = λMφ"),
@@ -35,10 +32,11 @@ class AnsysMathematicalPrecisionExtractor(BasePrecisionExtractor):
             "harmonic": ("frequency_domain", "(-ω²M + iωC + K)u = F"),
             "transient": ("initial_boundary_value_problem", "Mü + Cu̇ + Ku = F(t)"),
         }
-        
-        problem_type, canonical_form = type_map.get(analysis_type,
-            ("boundary_value_problem", "∇·σ + f = 0"))
-        
+
+        problem_type, canonical_form = type_map.get(
+            analysis_type, ("boundary_value_problem", "∇·σ + f = 0")
+        )
+
         return MathematicalStructure(
             problem_type=problem_type,
             canonical_form=canonical_form,
@@ -50,8 +48,10 @@ class AnsysMathematicalPrecisionExtractor(BasePrecisionExtractor):
             dimension=3,
             function_space="H¹(Ω)",
         )
-    
-    def extract_variable_dependencies(self, params: Dict[str, Any]) -> List[VariableDependency]:
+
+    def extract_variable_dependencies(
+        self, params: Dict[str, Any]
+    ) -> List[VariableDependency]:
         """Extract variable dependencies."""
         dependencies = [
             VariableDependency(
@@ -62,19 +62,23 @@ class AnsysMathematicalPrecisionExtractor(BasePrecisionExtractor):
                 physical_interpretation="stress from strain via stiffness matrix",
             ),
         ]
-        
+
         if params.get("analysis_type") == "modal":
-            dependencies.append(VariableDependency(
-                relation="Kφ = λMφ",
-                depends_on=["K", "M"],
-                circular=False,
-                mathematical_form="generalized_eigenvalue",
-                physical_interpretation="natural frequencies and mode shapes",
-            ))
-        
+            dependencies.append(
+                VariableDependency(
+                    relation="Kφ = λMφ",
+                    depends_on=["K", "M"],
+                    circular=False,
+                    mathematical_form="generalized_eigenvalue",
+                    physical_interpretation="natural frequencies and mode shapes",
+                )
+            )
+
         return dependencies
-    
-    def extract_discretization_scheme(self, params: Dict[str, Any]) -> DiscretizationScheme:
+
+    def extract_discretization_scheme(
+        self, params: Dict[str, Any]
+    ) -> DiscretizationScheme:
         """Extract discretization scheme."""
         return DiscretizationScheme(
             method="finite_element",
@@ -86,11 +90,11 @@ class AnsysMathematicalPrecisionExtractor(BasePrecisionExtractor):
             basis_type="polynomial_shape_functions",
             completeness="C⁰ continuous",
         )
-    
+
     def extract_solution_strategy(self, params: Dict[str, Any]) -> SolutionStrategy:
         """Extract solution strategy."""
         analysis_type = params.get("analysis_type", "static")
-        
+
         strategy_map = {
             "static": ("direct_solver", "Ku = F"),
             "modal": ("eigenvalue_solver", "Kφ = λMφ (Lanczos/Subspace)"),
@@ -98,15 +102,15 @@ class AnsysMathematicalPrecisionExtractor(BasePrecisionExtractor):
             "harmonic": ("complex_solver", "(-ω²M + iωC + K)u = F"),
             "transient": ("time_integration", "Newmark/HTT method"),
         }
-        
+
         method, form = strategy_map.get(analysis_type, ("direct_solver", "Ku = F"))
-        
+
         return SolutionStrategy(
             method=method,
             mathematical_form=form,
             convergence_criterion=params.get("tolerance", "default"),
         )
-    
+
     def extract_approximations(self, params: Dict[str, Any]) -> List[Approximation]:
         """Extract approximations."""
         approximations = [
@@ -123,21 +127,25 @@ class AnsysMathematicalPrecisionExtractor(BasePrecisionExtractor):
                 affected_quantities=["accuracy", "convergence"],
             ),
         ]
-        
+
         if params.get("material_model") == "isotropic_elastic":
-            approximations.append(Approximation(
-                name="isotropic_elasticity",
-                mathematical_form="σ = E/(1+ν) [ε + ν/(1-2ν) tr(ε)I]",
-                consequence="simplified material behavior",
-                affected_quantities=["anisotropic_response"],
-            ))
-        
+            approximations.append(
+                Approximation(
+                    name="isotropic_elasticity",
+                    mathematical_form="σ = E/(1+ν) [ε + ν/(1-2ν) tr(ε)I]",
+                    consequence="simplified material behavior",
+                    affected_quantities=["anisotropic_response"],
+                )
+            )
+
         return approximations
-    
-    def extract_mathematical_decoding(self, params: Dict[str, Any]) -> MathematicalDecoding:
+
+    def extract_mathematical_decoding(
+        self, params: Dict[str, Any]
+    ) -> MathematicalDecoding:
         """Extract complete decoding."""
         structure = self.extract_mathematical_structure(params)
-        
+
         return MathematicalDecoding(
             core_problem={
                 "type": structure.problem_type,
@@ -157,8 +165,10 @@ class AnsysMathematicalPrecisionExtractor(BasePrecisionExtractor):
                 {"level": "numerical", "description": "linear algebra solver"},
             ],
         )
-    
-    def extract_precision_metadata(self, params: Dict[str, Any]) -> Dict[str, PrecisionMetadata]:
+
+    def extract_precision_metadata(
+        self, params: Dict[str, Any]
+    ) -> Dict[str, PrecisionMetadata]:
         """Extract precision metadata."""
         metadata = {}
         for key in ["EX", "PRXY", "DENS", "element_type", "analysis_type"]:

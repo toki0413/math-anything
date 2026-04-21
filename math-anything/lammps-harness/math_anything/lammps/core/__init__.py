@@ -1,8 +1,8 @@
 """LAMMPS harness core modules."""
 
-from .parser import LammpsInputParser, LammpsLogParser
 from .extractor import LammpsExtractor
 from .harness import LammpsHarness
+from .parser import LammpsInputParser, LammpsLogParser
 
 __all__ = [
     "LammpsInputParser",

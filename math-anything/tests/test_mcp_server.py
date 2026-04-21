@@ -8,7 +8,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "core"))
 
-from mcp_server import MCPServer, extract_mathematical_structure, list_supported_engines
+from mcp_server import (MCPServer, extract_mathematical_structure,
+                        list_supported_engines)
 
 
 class TestMCPTools(unittest.TestCase):
@@ -81,13 +82,15 @@ class TestMCPServerProtocol(unittest.TestCase):
 
     def test_tools_call_extract(self):
         """Test calling extract tool."""
-        result = self.server.handle_tools_call({
-            "name": "extract_mathematical_structure",
-            "arguments": {
-                "engine": "vasp",
-                "parameters": {"encut": 520},
-            },
-        })
+        result = self.server.handle_tools_call(
+            {
+                "name": "extract_mathematical_structure",
+                "arguments": {
+                    "engine": "vasp",
+                    "parameters": {"encut": 520},
+                },
+            }
+        )
 
         self.assertNotIn("isError", result)
         content = json.loads(result["content"][0]["text"])
@@ -95,10 +98,12 @@ class TestMCPServerProtocol(unittest.TestCase):
 
     def test_tools_call_list_engines(self):
         """Test calling list engines tool."""
-        result = self.server.handle_tools_call({
-            "name": "list_supported_engines",
-            "arguments": {},
-        })
+        result = self.server.handle_tools_call(
+            {
+                "name": "list_supported_engines",
+                "arguments": {},
+            }
+        )
 
         content = json.loads(result["content"][0]["text"])
         self.assertIn("vasp", content)
@@ -106,10 +111,12 @@ class TestMCPServerProtocol(unittest.TestCase):
 
     def test_tools_call_unknown(self):
         """Test calling unknown tool."""
-        result = self.server.handle_tools_call({
-            "name": "unknown_tool",
-            "arguments": {},
-        })
+        result = self.server.handle_tools_call(
+            {
+                "name": "unknown_tool",
+                "arguments": {},
+            }
+        )
 
         self.assertTrue(result["isError"])
         self.assertIn("Unknown tool", result["content"][0]["text"])
@@ -153,7 +160,9 @@ class TestMCPServerStdio(unittest.TestCase):
             response = json.loads(output)
 
             self.assertEqual(response["id"], 1)
-            self.assertEqual(response["result"]["serverInfo"]["name"], "math-anything-mcp")
+            self.assertEqual(
+                response["result"]["serverInfo"]["name"], "math-anything-mcp"
+            )
 
         finally:
             sys.stdin = old_stdin

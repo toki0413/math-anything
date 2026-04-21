@@ -1,8 +1,8 @@
 """VASP harness core modules."""
 
-from .parser import VaspInputParser, VaspOutputParser
 from .extractor import VaspExtractor
 from .harness import VaspHarness
+from .parser import VaspInputParser, VaspOutputParser
 
 __all__ = [
     "VaspInputParser",

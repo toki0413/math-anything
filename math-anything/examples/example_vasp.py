@@ -4,16 +4,15 @@ This example demonstrates extracting mathematical structures from
 VASP density functional theory calculations.
 """
 
-import sys
 import os
+import sys
 import tempfile
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'core'))
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'vasp-harness'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "core"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "vasp-harness"))
 
 from math_anything import load_harness
 from math_anything.vasp.core.harness import VaspHarness
-
 
 # Example VASP input files
 EXAMPLE_INCAR = """
@@ -94,31 +93,31 @@ def main():
     print("Math Anything - VASP DFT Extraction Example")
     print("=" * 70)
     print()
-    
+
     # Create temporary files
     temp_dir = tempfile.mkdtemp()
-    
+
     incar_path = os.path.join(temp_dir, "INCAR")
     poscar_path = os.path.join(temp_dir, "POSCAR")
     kpoints_path = os.path.join(temp_dir, "KPOINTS")
     outcar_path = os.path.join(temp_dir, "OUTCAR")
-    
-    with open(incar_path, 'w') as f:
+
+    with open(incar_path, "w") as f:
         f.write(EXAMPLE_INCAR)
-    with open(poscar_path, 'w') as f:
+    with open(poscar_path, "w") as f:
         f.write(EXAMPLE_POSCAR)
-    with open(kpoints_path, 'w') as f:
+    with open(kpoints_path, "w") as f:
         f.write(EXAMPLE_KPOINTS)
-    with open(outcar_path, 'w') as f:
+    with open(outcar_path, "w") as f:
         f.write(EXAMPLE_OUTCAR)
-    
+
     print("Created example VASP input files:")
     print(f"  - INCAR: {incar_path}")
     print(f"  - POSCAR: {poscar_path}")
     print(f"  - KPOINTS: {kpoints_path}")
     print(f"  - OUTCAR: {outcar_path}")
     print()
-    
+
     try:
         # Load VASP harness
         print("Loading VASP harness...")
@@ -126,36 +125,38 @@ def main():
         print(f"✓ Loaded harness: {harness.engine_name}")
         print(f"  Schema version: {harness.supported_schema_version}")
         print()
-        
+
         # Extract mathematical structure
         print("Extracting mathematical structure from DFT calculation...")
-        schema = harness.extract({
-            "incar": incar_path,
-            "poscar": poscar_path,
-            "kpoints": kpoints_path,
-            "outcar": outcar_path,
-        })
+        schema = harness.extract(
+            {
+                "incar": incar_path,
+                "poscar": poscar_path,
+                "kpoints": kpoints_path,
+                "outcar": outcar_path,
+            }
+        )
         print("✓ Extraction complete")
         print()
-        
+
         # Display key findings
         data = schema.to_dict()
-        
+
         print("-" * 70)
         print("EXTRACTED DFT MATHEMATICAL MODEL")
         print("-" * 70)
-        
+
         # Governing equations
         print("\n1. GOVERNING EQUATIONS (DFT Core)")
         for eq in data["mathematical_model"]["governing_equations"]:
             print(f"   [{eq['id']}] {eq['name']}")
             print(f"       Type: {eq['type']}")
             print(f"       Form: {eq['mathematical_form']}")
-            if eq.get('description'):
+            if eq.get("description"):
                 print(f"       Description: {eq['description']}")
-            if eq.get('parameters'):
+            if eq.get("parameters"):
                 print(f"       Parameters: {eq['parameters']}")
-        
+
         # Boundary conditions
         print("\n2. BOUNDARY CONDITIONS")
         for bc in data["mathematical_model"]["boundary_conditions"]:
@@ -165,7 +166,7 @@ def main():
                 print(f"       Tensor Form: {mo['tensor_form']}")
             if mo.get("tensor_rank") is not None:
                 print(f"       Tensor Rank: {mo['tensor_rank']}")
-        
+
         # Numerical method
         print("\n3. NUMERICAL METHOD")
         nm = data["numerical_method"]
@@ -174,8 +175,10 @@ def main():
         print(f"   Time Integrator: {disc.get('time_integrator')}")
         solver = nm.get("solver", {})
         print(f"   Algorithm: {solver.get('algorithm')}")
-        print(f"   Convergence: {solver.get('convergence_criterion')} < {solver.get('tolerance')}")
-        
+        print(
+            f"   Convergence: {solver.get('convergence_criterion')} < {solver.get('tolerance')}"
+        )
+
         # Computational graph
         print("\n4. COMPUTATIONAL GRAPH (SCF Cycle)")
         cg = data["computational_graph"]
@@ -188,7 +191,7 @@ def main():
             semantics = node.get("math_semantics", {})
             updates = semantics.get("updates", {})
             print(f"       Mode: {updates.get('mode', 'N/A')}")
-        
+
         # Conservation properties
         print("\n5. CONSERVATION PROPERTIES")
         for prop_name, prop_data in data.get("conservation_properties", {}).items():
@@ -197,25 +200,26 @@ def main():
             print(f"   {status} {prop_name}")
             if prop_data.get("mechanism"):
                 print(f"       Mechanism: {prop_data['mechanism']}")
-        
+
         # Save to JSON
         output_file = os.path.join(temp_dir, "dft_model.json")
         schema.save(output_file)
         print()
         print("-" * 70)
         print(f"✓ Saved DFT schema to: {output_file}")
-        
+
         # Show JSON preview
         import json
+
         print("\nJSON Preview (first 50 lines):")
         print("-" * 70)
-        with open(output_file, 'r') as f:
+        with open(output_file, "r") as f:
             lines = f.readlines()
             for line in lines[:50]:
                 print(line.rstrip())
             if len(lines) > 50:
                 print(f"... ({len(lines) - 50} more lines)")
-        
+
         print()
         print("=" * 70)
         print("VASP DFT Extraction Complete!")
@@ -236,12 +240,13 @@ Physics Captured:
 - Brillouin zone sampling
 - Fermi-Dirac occupation
 """)
-        
+
     finally:
         # Cleanup
         import shutil
+
         shutil.rmtree(temp_dir)
-    
+
     return 0
 
 

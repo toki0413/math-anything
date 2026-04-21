@@ -8,38 +8,36 @@ Design Principles:
 - Zero judgment: Describe what is, not what should be
 """
 
-from typing import Dict, Any, List
-from .precision import (
-    MathematicalStructure,
-    VariableDependency,
-    DiscretizationScheme,
-    SolutionStrategy,
-    Approximation,
-    MathematicalDecoding,
-    PrecisionMetadata,
-    BasePrecisionExtractor,
-)
+from typing import Any, Dict, List
+
+from .precision import (Approximation, BasePrecisionExtractor,
+                        DiscretizationScheme, MathematicalDecoding,
+                        MathematicalStructure, PrecisionMetadata,
+                        SolutionStrategy, VariableDependency)
 
 
 class AbaqusMathematicalPrecisionExtractor(BasePrecisionExtractor):
     """Extract precise mathematical structures from Abaqus inputs.
-    
+
     Abaqus solves continuum mechanics problems using finite element method.
     """
-    
-    def extract_mathematical_structure(self, params: Dict[str, Any]) -> MathematicalStructure:
+
+    def extract_mathematical_structure(
+        self, params: Dict[str, Any]
+    ) -> MathematicalStructure:
         """Extract the mathematical structure of FEM problem."""
         analysis_type = params.get("analysis_type", "static")
-        
+
         type_map = {
             "static": ("boundary_value_problem", "∇·σ + f = 0"),
             "dynamic": ("initial_boundary_value_problem", "ρü - ∇·σ = f"),
             "thermal": ("parabolic_pde", "ρc ∂T/∂t - ∇·(k∇T) = Q"),
         }
-        
-        problem_type, canonical_form = type_map.get(analysis_type,
-            ("boundary_value_problem", "∇·σ + f = 0"))
-        
+
+        problem_type, canonical_form = type_map.get(
+            analysis_type, ("boundary_value_problem", "∇·σ + f = 0")
+        )
+
         return MathematicalStructure(
             problem_type=problem_type,
             canonical_form=canonical_form,
@@ -51,8 +49,10 @@ class AbaqusMathematicalPrecisionExtractor(BasePrecisionExtractor):
             dimension=3,
             function_space="H¹(Ω)",
         )
-    
-    def extract_variable_dependencies(self, params: Dict[str, Any]) -> List[VariableDependency]:
+
+    def extract_variable_dependencies(
+        self, params: Dict[str, Any]
+    ) -> List[VariableDependency]:
         """Extract variable dependencies in FEM."""
         dependencies = [
             VariableDependency(
@@ -70,23 +70,27 @@ class AbaqusMathematicalPrecisionExtractor(BasePrecisionExtractor):
                 physical_interpretation="strain from displacement gradient",
             ),
         ]
-        
+
         if params.get("nonlinear", False):
-            dependencies.append(VariableDependency(
-                relation="σ = σ(ε, state_variables)",
-                depends_on=["ε", "history"],
-                circular=True,
-                mathematical_form="nonlinear_constitutive",
-                physical_interpretation="nonlinear material requires iteration",
-            ))
-        
+            dependencies.append(
+                VariableDependency(
+                    relation="σ = σ(ε, state_variables)",
+                    depends_on=["ε", "history"],
+                    circular=True,
+                    mathematical_form="nonlinear_constitutive",
+                    physical_interpretation="nonlinear material requires iteration",
+                )
+            )
+
         return dependencies
-    
-    def extract_discretization_scheme(self, params: Dict[str, Any]) -> DiscretizationScheme:
+
+    def extract_discretization_scheme(
+        self, params: Dict[str, Any]
+    ) -> DiscretizationScheme:
         """Extract the FEM discretization scheme."""
         element_type = params.get("element_type", "C3D8R")
         mesh_size = params.get("mesh_size", 0.01)
-        
+
         return DiscretizationScheme(
             method="finite_element",
             mathematical_meaning="u(x) ≈ Σᵢ Nᵢ(x)uᵢ, where Nᵢ are shape functions",
@@ -98,11 +102,11 @@ class AbaqusMathematicalPrecisionExtractor(BasePrecisionExtractor):
             completeness="C⁰ or C¹ continuity",
             convergence_order="O(h^p) where p is polynomial order",
         )
-    
+
     def extract_solution_strategy(self, params: Dict[str, Any]) -> SolutionStrategy:
         """Extract the solution strategy."""
         analysis_type = params.get("analysis_type", "static")
-        
+
         if analysis_type == "static":
             if params.get("nonlinear", False):
                 return SolutionStrategy(
@@ -117,14 +121,14 @@ class AbaqusMathematicalPrecisionExtractor(BasePrecisionExtractor):
                 convergence_criterion="N/A (direct solve)",
                 iteration_type="none",
             )
-        
+
         return SolutionStrategy(
             method="time_integration",
             mathematical_form="Mü + Cu̇ + Ku = F(t)",
             convergence_criterion=f"Δt = {params.get('dt', 0.001)} s",
             iteration_type="explicit_or_implicit",
         )
-    
+
     def extract_approximations(self, params: Dict[str, Any]) -> List[Approximation]:
         """Extract the approximations in FEM."""
         approximations = [
@@ -150,22 +154,26 @@ class AbaqusMathematicalPrecisionExtractor(BasePrecisionExtractor):
                 theoretical_basis="numerical discretization",
             ),
         ]
-        
+
         if params.get("material_model") == "elastic":
-            approximations.append(Approximation(
-                name="linear_elastic",
-                mathematical_form="σ = Eε (Hooke's law)",
-                consequence="no plasticity or damage considered",
-                affected_quantities=["large_deformation", "failure"],
-                theoretical_basis="linear elasticity theory",
-            ))
-        
+            approximations.append(
+                Approximation(
+                    name="linear_elastic",
+                    mathematical_form="σ = Eε (Hooke's law)",
+                    consequence="no plasticity or damage considered",
+                    affected_quantities=["large_deformation", "failure"],
+                    theoretical_basis="linear elasticity theory",
+                )
+            )
+
         return approximations
-    
-    def extract_mathematical_decoding(self, params: Dict[str, Any]) -> MathematicalDecoding:
+
+    def extract_mathematical_decoding(
+        self, params: Dict[str, Any]
+    ) -> MathematicalDecoding:
         """Extract complete mathematical decoding."""
         structure = self.extract_mathematical_structure(params)
-        
+
         return MathematicalDecoding(
             core_problem={
                 "type": structure.problem_type,
@@ -178,18 +186,28 @@ class AbaqusMathematicalPrecisionExtractor(BasePrecisionExtractor):
                 "solver": "Newton-Raphson" if params.get("nonlinear") else "direct",
             },
             mathematical_hierarchy=[
-                {"level": "physical", "description": "conservation laws (momentum, energy)"},
+                {
+                    "level": "physical",
+                    "description": "conservation laws (momentum, energy)",
+                },
                 {"level": "approximation_1", "description": "continuum hypothesis"},
                 {"level": "approximation_2", "description": "constitutive law"},
                 {"level": "discretization", "description": "finite element mesh"},
                 {"level": "numerical", "description": "linear/nonlinear solver"},
             ],
         )
-    
-    def extract_precision_metadata(self, params: Dict[str, Any]) -> Dict[str, PrecisionMetadata]:
+
+    def extract_precision_metadata(
+        self, params: Dict[str, Any]
+    ) -> Dict[str, PrecisionMetadata]:
         """Extract precision metadata."""
         metadata = {}
-        for param_name in ["element_type", "mesh_size", "material_model", "analysis_type"]:
+        for param_name in [
+            "element_type",
+            "mesh_size",
+            "material_model",
+            "analysis_type",
+        ]:
             if param_name in params:
                 metadata[param_name] = PrecisionMetadata(
                     extraction_confidence=1.0,

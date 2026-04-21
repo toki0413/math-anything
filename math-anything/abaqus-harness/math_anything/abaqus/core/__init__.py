@@ -1,8 +1,8 @@
 """Abaqus harness core modules."""
 
-from .parser import AbaqusInputParser
 from .extractor import AbaqusExtractor
 from .harness import AbaqusHarness
+from .parser import AbaqusInputParser
 
 __all__ = [
     "AbaqusInputParser",

@@ -15,28 +15,25 @@ Design Principles:
     - Mathematical precision: Expresses structures in canonical forms
 """
 
+import argparse
 import json
 import sys
-import argparse
 import traceback
-from typing import Dict, List, Any, Optional
 from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 # Add core to path
 sys.path.insert(0, str(Path(__file__).parent / "core"))
 
-from math_anything.schemas import (
-    EnhancedMathSchema,
-    VaspMathematicalPrecisionExtractor,
-    LammpsMathematicalPrecisionExtractor,
-    AbaqusMathematicalPrecisionExtractor,
-    AnsysMathematicalPrecisionExtractor,
-    ComsolMathematicalPrecisionExtractor,
-    GromacsMathematicalPrecisionExtractor,
-    MultiwfnMathematicalPrecisionExtractor,
-)
+from math_anything.schemas import (AbaqusMathematicalPrecisionExtractor,
+                                   AnsysMathematicalPrecisionExtractor,
+                                   ComsolMathematicalPrecisionExtractor,
+                                   EnhancedMathSchema,
+                                   GromacsMathematicalPrecisionExtractor,
+                                   LammpsMathematicalPrecisionExtractor,
+                                   MultiwfnMathematicalPrecisionExtractor,
+                                   VaspMathematicalPrecisionExtractor)
 from math_anything.utils.math_diff import MathDiffer
-
 
 # Registry of available extractors
 EXTRACTORS = {
@@ -69,9 +66,7 @@ def extract_mathematical_structure(
     engine = engine.lower()
     if engine not in EXTRACTORS:
         available = ", ".join(EXTRACTORS.keys())
-        raise ValueError(
-            f"Unknown engine '{engine}'. Available: {available}"
-        )
+        raise ValueError(f"Unknown engine '{engine}'. Available: {available}")
 
     extractor_class = EXTRACTORS[engine]
     extractor = extractor_class()
@@ -105,13 +100,11 @@ def compare_calculations(
 
     if critical_only:
         result["changes"] = [
-            c.to_dict() if hasattr(c, "to_dict") else c
-            for c in report.critical_changes
+            c.to_dict() if hasattr(c, "to_dict") else c for c in report.critical_changes
         ]
     else:
         result["changes"] = [
-            c.to_dict() if hasattr(c, "to_dict") else c
-            for c in report.all_changes
+            c.to_dict() if hasattr(c, "to_dict") else c for c in report.all_changes
         ]
 
     return result
@@ -134,18 +127,20 @@ def validate_constraints(
     for constraint in constraints:
         expr = constraint.get("expression", "")
         desc = constraint.get("description", "")
-        results.append({
-            "expression": expr,
-            "description": desc,
-            "status": "unknown",
-            "note": "Constraint validation requires runtime parameter values",
-        })
+        results.append(
+            {
+                "expression": expr,
+                "description": desc,
+                "status": "unknown",
+                "note": "Constraint validation requires runtime parameter values",
+            }
+        )
 
     return {
         "total_constraints": len(results),
         "constraints": results,
         "note": "Zero-judgment validation: reports what constraints exist, "
-                "not whether they are satisfied",
+        "not whether they are satisfied",
     }
 
 
@@ -155,6 +150,7 @@ def list_supported_engines() -> List[str]:
 
 
 # MCP Protocol Implementation
+
 
 class MCPServer:
     """Minimal MCP server implementation over stdio."""
@@ -234,11 +230,13 @@ class MCPServer:
         """Handle MCP tools/list request."""
         tools = []
         for name, tool in self.tools.items():
-            tools.append({
-                "name": name,
-                "description": tool["description"],
-                "inputSchema": tool["input_schema"],
-            })
+            tools.append(
+                {
+                    "name": name,
+                    "description": tool["description"],
+                    "inputSchema": tool["input_schema"],
+                }
+            )
         return {"tools": tools}
 
     def handle_tools_call(self, params: Dict[str, Any]) -> Dict[str, Any]:

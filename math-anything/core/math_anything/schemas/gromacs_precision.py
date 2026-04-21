@@ -8,29 +8,26 @@ Design Principles:
 - Zero judgment: Describe what is, not what should be
 """
 
-from typing import Dict, Any, List
-from .precision import (
-    MathematicalStructure,
-    VariableDependency,
-    DiscretizationScheme,
-    SolutionStrategy,
-    Approximation,
-    MathematicalDecoding,
-    PrecisionMetadata,
-    BasePrecisionExtractor,
-)
+from typing import Any, Dict, List
+
+from .precision import (Approximation, BasePrecisionExtractor,
+                        DiscretizationScheme, MathematicalDecoding,
+                        MathematicalStructure, PrecisionMetadata,
+                        SolutionStrategy, VariableDependency)
 
 
 class GromacsMathematicalPrecisionExtractor(BasePrecisionExtractor):
     """Extract precise mathematical structures from GROMACS inputs.
-    
+
     GROMACS specializes in biomolecular molecular dynamics.
     """
-    
-    def extract_mathematical_structure(self, params: Dict[str, Any]) -> MathematicalStructure:
+
+    def extract_mathematical_structure(
+        self, params: Dict[str, Any]
+    ) -> MathematicalStructure:
         """Extract the mathematical structure of MD problem."""
         integrator = params.get("integrator", "md")
-        
+
         if integrator in ["md", "md-vv"]:
             problem_type = "initial_value_ode"
             canonical_form = "m_i d²r_i/dt² = F_i(r)"
@@ -43,7 +40,7 @@ class GromacsMathematicalPrecisionExtractor(BasePrecisionExtractor):
         else:
             problem_type = "initial_value_ode"
             canonical_form = "m_i d²r_i/dt² = F_i(r)"
-        
+
         return MathematicalStructure(
             problem_type=problem_type,
             canonical_form=canonical_form,
@@ -55,8 +52,10 @@ class GromacsMathematicalPrecisionExtractor(BasePrecisionExtractor):
             dimension=3 * params.get("n_atoms", 1),
             function_space="ℝ^{3N}",
         )
-    
-    def extract_variable_dependencies(self, params: Dict[str, Any]) -> List[VariableDependency]:
+
+    def extract_variable_dependencies(
+        self, params: Dict[str, Any]
+    ) -> List[VariableDependency]:
         """Extract variable dependencies."""
         dependencies = [
             VariableDependency(
@@ -74,32 +73,36 @@ class GromacsMathematicalPrecisionExtractor(BasePrecisionExtractor):
                 physical_interpretation="bonded + nonbonded interactions",
             ),
         ]
-        
+
         if params.get("constraints"):
-            dependencies.append(VariableDependency(
-                relation="constraint: |r_i - r_j| = d_ij",
-                depends_on=["r"],
-                circular=True,
-                mathematical_form="holonomic_constraint",
-                physical_interpretation="SHAKE/LINCS constraint algorithm",
-            ))
-        
+            dependencies.append(
+                VariableDependency(
+                    relation="constraint: |r_i - r_j| = d_ij",
+                    depends_on=["r"],
+                    circular=True,
+                    mathematical_form="holonomic_constraint",
+                    physical_interpretation="SHAKE/LINCS constraint algorithm",
+                )
+            )
+
         return dependencies
-    
-    def extract_discretization_scheme(self, params: Dict[str, Any]) -> DiscretizationScheme:
+
+    def extract_discretization_scheme(
+        self, params: Dict[str, Any]
+    ) -> DiscretizationScheme:
         """Extract time discretization scheme."""
         dt = params.get("dt", 0.002)
         integrator = params.get("integrator", "md")
-        
+
         integrator_info = {
             "md": ("leap_frog", "r(t+Δt) = r(t) + v(t+Δt/2)Δt"),
             "md-vv": ("velocity_verlet", "symplectic, O(Δt²)"),
             "sd": ("stochastic_dynamics", "Langevin dynamics"),
             "minimize": ("steepest_descent", "gradient descent"),
         }
-        
+
         method, form = integrator_info.get(integrator, ("leap_frog", "standard MD"))
-        
+
         return DiscretizationScheme(
             method=method,
             mathematical_meaning=form,
@@ -110,11 +113,11 @@ class GromacsMathematicalPrecisionExtractor(BasePrecisionExtractor):
             basis_type="taylor_expansion",
             convergence_order="O(Δt²)",
         )
-    
+
     def extract_solution_strategy(self, params: Dict[str, Any]) -> SolutionStrategy:
         """Extract solution strategy."""
         dt = params.get("dt", 0.002)
-        
+
         return SolutionStrategy(
             method="time_integration",
             mathematical_form="propagate r(t) → r(t+Δt)",
@@ -122,7 +125,7 @@ class GromacsMathematicalPrecisionExtractor(BasePrecisionExtractor):
             iteration_type="explicit_timestep",
             stability_requirement=f"Δt < τ_fastest_mode, typically {dt} ps",
         )
-    
+
     def extract_approximations(self, params: Dict[str, Any]) -> List[Approximation]:
         """Extract approximations."""
         approximations = [
@@ -148,32 +151,38 @@ class GromacsMathematicalPrecisionExtractor(BasePrecisionExtractor):
                 theoretical_basis="computational efficiency",
             ),
         ]
-        
+
         if params.get("pbc"):
-            approximations.append(Approximation(
-                name="periodic_boundary",
-                mathematical_form="infinite periodic replication",
-                consequence="bulk behavior, no surface effects",
-                affected_quantities=["surface_phenomena"],
-                theoretical_basis="thermodynamic limit",
-            ))
-        
+            approximations.append(
+                Approximation(
+                    name="periodic_boundary",
+                    mathematical_form="infinite periodic replication",
+                    consequence="bulk behavior, no surface effects",
+                    affected_quantities=["surface_phenomena"],
+                    theoretical_basis="thermodynamic limit",
+                )
+            )
+
         if params.get("constraints"):
-            approximations.append(Approximation(
-                name="bond_constraints",
-                mathematical_form="SHAKE/LINCS algorithm",
-                consequence="bonds frozen, allows larger timestep",
-                affected_quantities=["fast_vibrations"],
-                theoretical_basis="timescale separation",
-            ))
-        
+            approximations.append(
+                Approximation(
+                    name="bond_constraints",
+                    mathematical_form="SHAKE/LINCS algorithm",
+                    consequence="bonds frozen, allows larger timestep",
+                    affected_quantities=["fast_vibrations"],
+                    theoretical_basis="timescale separation",
+                )
+            )
+
         return approximations
-    
-    def extract_mathematical_decoding(self, params: Dict[str, Any]) -> MathematicalDecoding:
+
+    def extract_mathematical_decoding(
+        self, params: Dict[str, Any]
+    ) -> MathematicalDecoding:
         """Extract complete decoding."""
         dt = params.get("dt", 0.002)
         nsteps = params.get("nsteps", 0)
-        
+
         return MathematicalDecoding(
             core_problem={
                 "type": "initial_value_ode",
@@ -196,8 +205,10 @@ class GromacsMathematicalPrecisionExtractor(BasePrecisionExtractor):
                 {"level": "numerical", "description": "timestep integration"},
             ],
         )
-    
-    def extract_precision_metadata(self, params: Dict[str, Any]) -> Dict[str, PrecisionMetadata]:
+
+    def extract_precision_metadata(
+        self, params: Dict[str, Any]
+    ) -> Dict[str, PrecisionMetadata]:
         """Extract precision metadata."""
         metadata = {}
         for key in ["dt", "nsteps", "integrator", "forcefield", "rvdw"]:

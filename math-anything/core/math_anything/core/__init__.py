@@ -1,16 +1,10 @@
 """Math Anything Core Engine."""
 
-from .harness import MathAnythingHarness, HarnessRegistry
+from .cross_engine import (CoupledSchema, CouplingInterface, CouplingType,
+                           CrossEngineSession, ModelScale, ScaleModel)
 from .extractor import ExtractorEngine
+from .harness import HarnessRegistry, MathAnythingHarness
 from .session import ExtractionSession
-from .cross_engine import (
-    CrossEngineSession,
-    CoupledSchema,
-    ScaleModel,
-    CouplingInterface,
-    ModelScale,
-    CouplingType,
-)
 
 __all__ = [
     "MathAnythingHarness",
