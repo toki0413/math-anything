@@ -426,17 +426,19 @@ class MathAnything:
             >>> equation = ma.discover(data[:, :-1], data[:, -1], ['t', 'x'])
         """
         import numpy as np
-        from .eml import SymbolicRegression
+        from .eml_v2 import ImprovedSymbolicRegression
         
         # Convert inputs to numpy arrays
         X_arr = np.array(X)
         y_arr = np.array(y)
         
-        # Run symbolic regression
-        sr = SymbolicRegression(**kwargs)
+        # Run improved symbolic regression
+        sr = ImprovedSymbolicRegression(**kwargs)
         best_tree = sr.fit(X_arr, y_arr, variable_names)
         
         # Convert to standard form
+        if best_tree is None:
+            return "No equation found"
         return best_tree.to_standard_form()
 
 
