@@ -447,6 +447,71 @@ class MathAnything:
             return "No equation found"
         return best_tree.to_standard_form()
 
+    def translate(
+        self, result: ExtractionResult
+    ) -> "MathematicalPropositions":
+        """Translate extracted schema into LLM-solvable mathematical propositions.
+
+        This is the core Translate functionality of Math Anything. It converts
+        structured mathematical models into formal propositions and proof tasks
+        that LLMs can reason about symbolically.
+
+        Args:
+            result: Extraction result from extract() or extract_file()
+
+        Returns:
+            MathematicalPropositions containing proof tasks, validation tasks,
+            consistency checks, and error analysis
+
+        Example:
+            >>> ma = MathAnything()
+            >>> result = ma.extract_file("lammps", "equil.lmp")
+            >>> props = ma.translate(result)
+            >>>
+            >>> # Access proof tasks
+            >>> for task in props.proof_tasks:
+            ...     print(task.llm_prompt)
+            >>>
+            >>> # Access all tasks
+            >>> all_tasks = props.all_tasks()
+            >>> print(f"Generated {len(all_tasks)} mathematical tasks")
+        """
+        from .proposition import PropositionGenerator
+
+        generator = PropositionGenerator()
+        return generator.translate(result.schema)
+
+    def translate_comparison(
+        self, result1: ExtractionResult, result2: ExtractionResult
+    ) -> "MathematicalPropositions":
+        """Translate two schemas into cross-model comparison propositions.
+
+        Generates mathematical tasks for proving relationships between
+        different models (e.g., atomistic vs continuum).
+
+        Args:
+            result1: First extraction result
+            result2: Second extraction result
+
+        Returns:
+            MathematicalPropositions with comparison tasks
+
+        Example:
+            >>> ma = MathAnything()
+            >>> lmp = ma.extract_file("lammps", "equil.lmp")
+            >>> abq = ma.extract_file("abaqus", "job.inp")
+            >>>
+            >>> props = ma.translate_comparison(lmp, abq)
+            >>> for task in props.comparison_tasks:
+            ...     print(task.statement)
+        """
+        from .proposition import PropositionGenerator
+
+        generator = PropositionGenerator()
+        return generator.translate_comparison(
+            result1.schema, result2.schema
+        )
+
 
 # Convenience function for quick extraction
 def extract(engine: str, params: Dict[str, Any]) -> Dict[str, Any]:

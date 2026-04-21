@@ -450,7 +450,6 @@ class ImprovedSymbolicRegression:
                 )
 
         if best_tree is None:
-            # Return simple tree if nothing found
             return (
                 self.builder.var(self.variables[0])
                 if self.variables
@@ -458,6 +457,73 @@ class ImprovedSymbolicRegression:
             )
 
         return best_tree
+
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """Predict using the best discovered tree.
+
+        Args:
+            X: Input features (n_samples, n_features)
+
+        Returns:
+            Predicted values
+        """
+        if self.best_tree_ is None:
+            raise ValueError("Model not fitted. Call fit() first.")
+
+        return self._evaluate_tree(self.best_tree_, X)
+
+    def _evaluate_tree(self, tree: Node, X: np.ndarray) -> np.ndarray:
+        """Evaluate tree on input data."""
+        if tree.node_type == NodeType.CONST:
+            return np.full(X.shape[0], tree.value)
+
+        if tree.node_type == NodeType.VAR:
+            var_idx = self.variables.index(tree.name) if tree.name in self.variables else 0
+            return X[:, var_idx]
+
+        if tree.node_type == NodeType.ADD:
+            return self._evaluate_tree(tree.left, X) + self._evaluate_tree(tree.right, X)
+
+        if tree.node_type == NodeType.SUB:
+            return self._evaluate_tree(tree.left, X) - self._evaluate_tree(tree.right, X)
+
+        if tree.node_type == NodeType.MUL:
+            return self._evaluate_tree(tree.left, X) * self._evaluate_tree(tree.right, X)
+
+        if tree.node_type == NodeType.DIV:
+            left = self._evaluate_tree(tree.left, X)
+            right = self._evaluate_tree(tree.right, X)
+            with np.errstate(divide='ignore', invalid='ignore'):
+                return np.where(np.abs(right) > 1e-10, left / right, 0.0)
+
+        if tree.node_type == NodeType.SIN:
+            return np.sin(self._evaluate_tree(tree.left, X))
+
+        if tree.node_type == NodeType.COS:
+            return np.cos(self._evaluate_tree(tree.left, X))
+
+        if tree.node_type == NodeType.SQRT:
+            val = self._evaluate_tree(tree.left, X)
+            return np.sqrt(np.abs(val))
+
+        if tree.node_type == NodeType.ABS:
+            return np.abs(self._evaluate_tree(tree.left, X))
+
+        if tree.node_type == NodeType.EML:
+            left = self._evaluate_tree(tree.left, X)
+            right = self._evaluate_tree(tree.right, X)
+            with np.errstate(over='ignore', under='ignore', invalid='ignore'):
+                result = np.exp(left - np.log(np.abs(right) + 1e-10))
+            return np.where(np.isfinite(result), result, 0.0)
+
+        if tree.node_type == NodeType.POW:
+            base = self._evaluate_tree(tree.left, X)
+            exp = self._evaluate_tree(tree.right, X)
+            with np.errstate(over='ignore', under='ignore', invalid='ignore'):
+                result = np.power(np.abs(base), exp)
+            return np.where(np.isfinite(result), result, 0.0)
+
+        return np.zeros(X.shape[0])
 
     def _init_population(self) -> List[Node]:
         """Initialize with random trees using ramped half-and-half."""

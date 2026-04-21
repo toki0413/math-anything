@@ -64,6 +64,14 @@ from .schemas import (
 # Expression Simplification
 from .simplifier import ExpressionSimplifier, simplify
 
+# Math Proposition Generation
+from .proposition import (
+    MathematicalPropositions,
+    MathematicalTask,
+    PropositionGenerator,
+    TaskType,
+)
+
 # Visualization
 from .visualization import Visualizer, save_html, to_graphviz, to_mermaid
 
@@ -136,6 +144,11 @@ __all__ = [
     "MultiVariableDiscovery",
     "discover_multivar",
     "analyze_interactions",
+    # Math Proposition Generation
+    "PropositionGenerator",
+    "MathematicalPropositions",
+    "MathematicalTask",
+    "TaskType",
     # Legacy API
     "load_harness",
     "list_engines",
