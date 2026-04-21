@@ -1,0 +1,152 @@
+name: CI | 持续集成
+
+on:
+  push:
+    branches: [main, master, develop]
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+  pull_request:
+    branches: [main, master, develop]
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint & Format | 代码检查
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout | 检出代码
+        uses: actions/checkout@v4
+
+      - name: Set up Python | 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache pip packages | 缓存 pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-lint-${{ hashFiles('**/pyproject.toml', '**/setup.py') }}
+
+      - name: Install lint tools | 安装检查工具
+        run: |
+          python -m pip install --upgrade pip
+          pip install black flake8 isort
+
+      - name: Check code formatting | 检查代码格式
+        run: black --check --diff math-anything/
+
+      - name: Check import sorting | 检查导入排序
+        run: isort --check-only --diff math-anything/
+
+      - name: Run flake8 | 运行 flake8
+        run: flake8 math-anything/ --max-line-length=100 --extend-ignore=E203,W503
+
+  test:
+    name: Test | 测试 (${{ matrix.python-version }}, ${{ matrix.os }})
+    needs: lint
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - name: Checkout | 检出代码
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }} | 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache pip packages | 缓存 pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ hashFiles('**/pyproject.toml', '**/setup.py') }}
+
+      - name: Install dependencies | 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Run tests | 运行测试
+        run: pytest --cov=math_anything --cov-report=xml --cov-report=term-missing -v
+
+      - name: Upload coverage | 上传覆盖率
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+          verbose: true
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  type-check:
+    name: Type Check | 类型检查
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout | 检出代码
+        uses: actions/checkout@v4
+
+      - name: Set up Python | 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache pip packages | 缓存 pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-type-${{ hashFiles('**/pyproject.toml') }}
+
+      - name: Install mypy | 安装 mypy
+        run: |
+          python -m pip install --upgrade pip
+          pip install mypy types-click
+          pip install -e ".[dev]"
+
+      - name: Run mypy | 运行类型检查
+        run: mypy math-anything/ --ignore-missing-imports --show-error-codes
+
+  security:
+    name: Security Scan | 安全扫描
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout | 检出代码
+        uses: actions/checkout@v4
+
+      - name: Set up Python | 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies | 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit safety
+
+      - name: Run bandit | 运行 bandit
+        run: bandit -r math-anything/ -f json -o bandit-report.json || true
+
+      - name: Run safety check | 运行 safety 检查
+        run: safety check || true
+
+      - name: Upload bandit report | 上传安全报告
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-report
+          path: bandit-report.json

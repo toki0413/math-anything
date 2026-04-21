@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions & Discussions | 问题与讨论
+    url: https://github.com/toki0413/math-anything/discussions
+    about: 如果您有疑问或想要讨论，请使用 Discussions | Please use Discussions for questions and general discussions
+  - name: Gitee Mirror | Gitee 镜像
+    url: https://gitee.com/crested-ibis-0413/math-anything
+    about: 国内用户也可以访问 Gitee 镜像 | Chinese users can also access the Gitee mirror

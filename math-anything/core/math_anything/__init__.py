@@ -4,21 +4,54 @@ Math Anything extracts universal mathematical structures (governing equations,
 boundary conditions, numerical methods, computational graphs) from computational
 software (VASP, LAMMPS, Abaqus, etc.) and outputs them as LLM-native structured data.
 
-Example:
+Quick Start:
     ```python
-    import math_anything as ma
+    from math_anything import MathAnything
     
-    # Extract from LAMMPS
-    harness = ma.load_harness("lammps")
-    schema = harness.extract({"input": "in.file"})
+    # Simple API
+    ma = MathAnything()
+    result = ma.extract("vasp", {"ENCUT": 520, "SIGMA": 0.05})
+    print(result.schema["mathematical_structure"]["canonical_form"])
     
-    # Save as JSON
-    schema.save("model.json")
+    # With file parsing
+    result = ma.extract_file("vasp", "INCAR")
+    print(result.to_mermaid())  # Visualize as diagram
     ```
 """
 
-__version__ = "0.1.0"
+__version__ = "1.0.0"
 
+# New simplified API
+from .api import (
+    MathAnything,
+    ExtractionResult,
+    extract,
+    extract_file,
+    MathAnythingError,
+    UnsupportedEngineError,
+    FileNotFoundError,
+    ParseError,
+)
+
+# Visualization
+from .visualization import (
+    Visualizer,
+    to_mermaid,
+    to_graphviz,
+    save_html,
+)
+
+# EML Symbolic Regression
+from .eml import (
+    NodeType,
+    EMLNode,
+    EMLBuilder,
+    SymbolicRegression,
+    discover_equation,
+    eml,
+)
+
+# Legacy API (for backward compatibility)
 from .core.harness import MathAnythingHarness, HarnessRegistry
 from .core.extractor import ExtractorEngine
 from .core.session import ExtractionSession
@@ -71,7 +104,23 @@ def list_engines() -> list:
 
 
 __all__ = [
+    # Version
     "__version__",
+    # New API
+    "MathAnything",
+    "ExtractionResult",
+    "extract",
+    "extract_file",
+    "MathAnythingError",
+    "UnsupportedEngineError",
+    "FileNotFoundError",
+    "ParseError",
+    # Visualization
+    "Visualizer",
+    "to_mermaid",
+    "to_graphviz",
+    "save_html",
+    # Legacy API
     "load_harness",
     "list_engines",
     "MathAnythingHarness",

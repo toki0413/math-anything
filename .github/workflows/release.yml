@@ -1,0 +1,159 @@
+name: Release | 自动发布
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    name: Pre-release Test | 发布前测试
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout | 检出代码
+        uses: actions/checkout@v4
+
+      - name: Set up Python | 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies | 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Run tests | 运行测试
+        run: pytest -v
+
+  build:
+    name: Build Package | 构建包
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout | 检出代码
+        uses: actions/checkout@v4
+
+      - name: Set up Python | 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build tools | 安装构建工具
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Build package | 构建包
+        run: python -m build
+
+      - name: Check package | 检查包
+        run: twine check dist/*
+
+      - name: Upload artifacts | 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  github-release:
+    name: GitHub Release | GitHub 发布
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout | 检出代码
+        uses: actions/checkout@v4
+
+      - name: Download artifacts | 下载构建产物
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Generate changelog | 生成更新日志
+        id: changelog
+        run: |
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          git log --pretty=format:"- %s (%h)" $(git describe --tags --abbrev=0 HEAD^)..HEAD >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create Release | 创建发布
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/*
+          body: |
+            ## 更新日志 | Changelog
+
+            ${{ steps.changelog.outputs.changelog }}
+
+            ## 安装 | Installation
+
+            ```bash
+            pip install math-anything==${{ github.ref_name }}
+            ```
+
+            ## 双平台仓库 | Dual Platform
+
+            - GitHub: https://github.com/toki0413/math-anything
+            - Gitee: https://gitee.com/crested-ibis-0413/math-anything
+          draft: false
+          prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  pypi-publish:
+    name: Publish to PyPI | 发布到 PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/math-anything
+    permissions:
+      id-token: write
+    steps:
+      - name: Download artifacts | 下载构建产物
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish to PyPI | 发布到 PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        # 需要先在 PyPI 配置 trusted publisher
+        # 或者使用 secrets.PYPI_API_TOKEN
+
+  sync-gitee:
+    name: Sync to Gitee | 同步到 Gitee
+    needs: github-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout | 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Sync to Gitee | 同步到 Gitee
+        uses: wearerequired/git-mirror-action@v1
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.GITEE_SSH_KEY }}
+        with:
+          source-repo: "git@github.com:toki0413/math-anything.git"
+          destination-repo: "git@gitee.com:crested-ibis-0413/math-anything.git"
+
+      - name: Create Gitee Release | 创建 Gitee 发布
+        run: |
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -d '{
+              "tag_name": "${{ github.ref_name }}",
+              "name": "Release ${{ github.ref_name }}",
+              "body": "自动同步自 GitHub Release",
+              "target_commitish": "main"
+            }' \
+            https://gitee.com/api/v5/repos/crested-ibis-0413/math-anything/releases
+        env:
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}

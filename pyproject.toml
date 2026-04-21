@@ -49,6 +49,8 @@ dev = [
     "pytest-cov>=4.0.0",
     "black>=23.0.0",
     "flake8>=6.0.0",
+    "isort>=5.12.0",
+    "mypy>=1.5.0",
 ]
 mcp = [
     "mcp>=1.0.0",
@@ -58,10 +60,15 @@ mcp = [
 math-anything = "math_anything.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/toki0413/math-anything"
-Repository = "https://github.com/toki0413/math-anything"
-Issues = "https://github.com/toki0413/math-anything/issues"
-Documentation = "https://github.com/toki0413/math-anything#readme"
+# 国内镜像（Gitee）
+Homepage = "https://gitee.com/crested-ibis-0413/math-anything"
+Repository = "https://gitee.com/crested-ibis-0413/math-anything"
+Issues = "https://gitee.com/crested-ibis-0413/math-anything/issues"
+Documentation = "https://gitee.com/crested-ibis-0413/math-anything#readme"
+# 国际镜像（GitHub）
+GitHub-Homepage = "https://github.com/toki0413/math-anything"
+GitHub-Repository = "https://github.com/toki0413/math-anything"
+GitHub-Issues = "https://github.com/toki0413/math-anything/issues"
 
 [tool.setuptools.packages.find]
 where = ["math-anything/core"]

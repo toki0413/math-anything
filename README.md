@@ -43,12 +43,21 @@ When you run extraction, you get the mathematical structure, variable dependenci
 
 ## Quick start
 
+### 安装方式（选择其一）
+
+**从 GitHub 安装（国际用户）**
 ```bash
-# Install
-git clone https://github.com/toki/math-anything.git
+git clone https://github.com/toki0413/math-anything.git
 cd math-anything
 pip install -r requirements.txt
+```
 
+**从 Gitee 安装（国内用户，速度更快）**
+```bash
+git clone https://gitee.com/crested-ibis-0413/math-anything.git
+cd math-anything
+pip install -r requirements.txt
+```
 # Interactive REPL
 math-anything repl
 

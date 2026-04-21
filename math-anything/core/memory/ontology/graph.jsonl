@@ -1,0 +1,37 @@
+{"op":"create","entity":{"id":"proj_math_anything","type":"Project","properties":{"name":"Math Anything","description":"计算材料科学数学语义层 - 从仿真软件输入中提取数学结构、约束和关系","path":"C:\\Users\\wanzh\\Desktop\\math-anything","status":"active","language":"Python","goals":["提取数学结构：控制方程、边界条件、本构关系","揭示数学本质：不仅是参数值，而是数学问题类型","验证符号约束：物理/数学一致性检查","跨引擎参数映射","语义比较计算"]}}}
+{"op":"create","entity":{"id":"engine_vasp","type":"Document","properties":{"title":"VASP Engine Support","description":"密度泛函理论(DFT)计算引擎","problem_type":"nonlinear_eigenvalue","canonical_form":"H[n]ψ = εψ","features":["SCF迭代","平面波基组","K点采样"]}}}
+{"op":"create","entity":{"id":"engine_lammps","type":"Document","properties":{"title":"LAMMPS Engine Support","description":"分子动力学模拟引擎","problem_type":"initial_value_ode","canonical_form":"m_i d²r_i/dt² = F_i","features":["Velocity Verlet积分","时间步进","力场计算"]}}}
+{"op":"create","entity":{"id":"engine_abaqus","type":"Document","properties":{"title":"Abaqus Engine Support","description":"有限元分析(FEM)引擎","problem_type":"boundary_value","canonical_form":"∇·σ + f = 0","features":["结构力学","边界值问题","网格离散"]}}}
+{"op":"create","entity":{"id":"engine_ansys","type":"Document","properties":{"title":"Ansys Engine Support","description":"有限元分析(FEM)引擎","problem_type":"eigenvalue","canonical_form":"Kφ = λMφ","features":["模态分析","特征值问题","自然频率"]}}}
+{"op":"create","entity":{"id":"engine_comsol","type":"Document","properties":{"title":"COMSOL Engine Support","description":"多物理场耦合仿真引擎","problem_type":"coupled_pde_system","canonical_form":"Multi-physics coupling","features":["多物理场","PDE耦合","复杂边界条件"]}}}
+{"op":"create","entity":{"id":"engine_gromacs","type":"Document","properties":{"title":"GROMACS Engine Support","description":"生物分子动力学引擎","problem_type":"stochastic_ode","canonical_form":"Langevin dynamics","features":["生物分子模拟","随机微分方程","温度控制"]}}}
+{"op":"create","entity":{"id":"engine_multiwfn","type":"Document","properties":{"title":"Multiwfn Engine Support","description":"波函数分析引擎","problem_type":"topological_analysis","canonical_form":"∇ρ(r) = 0","features":["拓扑分析","电子密度","临界点寻找"]}}}
+{"op":"relate","from":"proj_math_anything","rel":"has_document","to":"engine_vasp"}
+{"op":"relate","from":"proj_math_anything","rel":"has_document","to":"engine_lammps"}
+{"op":"relate","from":"proj_math_anything","rel":"has_document","to":"engine_abaqus"}
+{"op":"relate","from":"proj_math_anything","rel":"has_document","to":"engine_ansys"}
+{"op":"relate","from":"proj_math_anything","rel":"has_document","to":"engine_comsol"}
+{"op":"relate","from":"proj_math_anything","rel":"has_document","to":"engine_gromacs"}
+{"op":"relate","from":"proj_math_anything","rel":"has_document","to":"engine_multiwfn"}
+{"op":"create","entity":{"id":"core_module","type":"Document","properties":{"title":"Core Module","description":"核心功能模块","components":["数学模式推断","语义映射器","代码生成器","约束推断","交叉引擎比较"]}}}
+{"op":"create","entity":{"id":"repl_module","type":"Document","properties":{"title":"REPL Module","description":"交互式命令行接口","features":["交互式提取","计算比较","差异分析"]}}}
+{"op":"create","entity":{"id":"schema_system","type":"Document","properties":{"title":"Schema System","description":"数学模式定义系统","schemas":["math_schema","vasp_precision","lammps_precision","abaqus_precision","ansys_precision","comsol_precision","gromacs_precision","multiwfn_precision"]}}}
+{"op":"relate","from":"proj_math_anything","rel":"has_document","to":"core_module"}
+{"op":"relate","from":"proj_math_anything","rel":"has_document","to":"repl_module"}
+{"op":"relate","from":"proj_math_anything","rel":"has_document","to":"schema_system"}
+{"op":"create","entity":{"id":"work_record_001","type":"Note","properties":{"title":"工作记录初始化","content":"首次建立math-anything项目的长时记忆系统，记录项目结构、支持的仿真引擎和核心模块","created":"2026-04-21","tags":["初始化","项目概览"]}}}
+{"op":"relate","from":"proj_math_anything","rel":"has_note","to":"work_record_001"}
+{"op":"create","entity":{"id":"repo_config","type":"Document","properties":{"title":"仓库配置","description":"双平台仓库配置","primary":"Gitee（国内镜像）","secondary":"GitHub（国际镜像）","gitee_url":"https://gitee.com/crested-ibis-0413/math-anything","github_url":"https://github.com/toki0413/math-anything"}}}
+{"op":"relate","from":"proj_math_anything","rel":"has_document","to":"repo_config"}
+{"op":"create","entity":{"id":"work_record_002","type":"Note","properties":{"title":"双平台下载支持","content":"发现README、setup.py、pyproject.toml中的下载链接都只指向GitHub，而项目配置了Gitee和GitHub双远程仓库。已修复：1) README添加Gitee下载方式；2) setup.py主URL改为Gitee并保留GitHub链接；3) pyproject.toml主URL改为Gitee并添加GitHub镜像链接","created":"2026-04-21","tags":["修复","多平台","GitHub","Gitee"],"files_modified":["README.md","setup.py","pyproject.toml"]}}}
+{"op":"relate","from":"proj_math_anything","rel":"has_note","to":"work_record_002"}
+{"op":"create","entity":{"id":"contributing_doc","type":"Document","properties":{"title":"贡献指南","description":"双平台贡献指南，支持GitHub和Gitee用户","features":["双语说明","双平台仓库信息","开发流程","代码规范","PR模板"],"path":"CONTRIBUTING.md"}}}
+{"op":"relate","from":"proj_math_anything","rel":"has_document","to":"contributing_doc"}
+{"op":"create","entity":{"id":"github_templates","type":"Document","properties":{"title":"GitHub 模板","description":"GitHub仓库维护模板文件","files":["ISSUE_TEMPLATE/bug_report.md","ISSUE_TEMPLATE/feature_request.md","ISSUE_TEMPLATE/config.yml","PULL_REQUEST_TEMPLATE.md"],"features":["双语模板","双平台链接","引擎选择","检查清单"]}}}
+{"op":"relate","from":"proj_math_anything","rel":"has_document","to":"github_templates"}
+{"op":"create","entity":{"id":"work_record_003","type":"Note","properties":{"title":"GitHub仓库维护","content":"为GitHub版本添加完整的社区维护文件：1) 创建CONTRIBUTING.md双语贡献指南，明确双平台协作流程；2) 创建.github/ISSUE_TEMPLATE/bug_report.md双语Bug报告模板；3) 创建.github/ISSUE_TEMPLATE/feature_request.md双语功能建议模板；4) 创建.github/PULL_REQUEST_TEMPLATE.md双语PR模板；5) 创建.github/ISSUE_TEMPLATE/config.yml配置issue模板选择器。所有模板都包含双平台仓库链接。","created":"2026-04-21","tags":["GitHub","社区","模板","贡献指南","多语言"]}}}
+{"op":"relate","from":"proj_math_anything","rel":"has_note","to":"work_record_003"}
+{"op":"create","entity":{"id":"ci_cd_config","type":"Document","properties":{"title":"CI/CD 配置","description":"GitHub Actions 持续集成和自动发布配置","files":["workflows/ci.yml","workflows/release.yml","codecov.yml"],"features":["多平台测试","代码格式检查","类型检查","安全扫描","自动发布到PyPI","同步到Gitee","覆盖率报告"],"python_versions":["3.10","3.11","3.12","3.13"],"os_platforms":["ubuntu","windows","macos"]}}}
+{"op":"relate","from":"proj_math_anything","rel":"has_document","to":"ci_cd_config"}
+{"op":"create","entity":{"id":"work_record_004","type":"Note","properties":{"title":"CI/CD自动化","content":"为项目添加完整的持续集成和自动发布流程：1) 创建.github/workflows/ci.yml - 包含代码格式检查(black/isort/flake8)、多平台多Python版本测试(ubuntu/windows/macos x 3.10/3.11/3.12/3.13)、类型检查(mypy)、安全扫描(bandit/safety)；2) 创建.github/workflows/release.yml - 打tag时自动运行测试、构建wheel、创建GitHub Release、发布到PyPI、同步到Gitee；3) 创建codecov.yml - 覆盖率报告配置，目标70%以上；4) 更新pyproject.toml - 添加isort和mypy到dev依赖","created":"2026-04-21","tags":["CI/CD","GitHub Actions","自动化","测试","覆盖率","PyPI"]}}}
+{"op":"relate","from":"proj_math_anything","rel":"has_note","to":"work_record_004"}

@@ -26,7 +26,7 @@ setup(
     description="Mathematical structure extraction for computational materials science engines (VASP, LAMMPS, Abaqus, Ansys, COMSOL, GROMACS, Multiwfn)",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/toki0413/math-anything",
+    url="https://gitee.com/crested-ibis-0413/math-anything",  # 国内镜像，GitHub: https://github.com/toki0413/math-anything
     packages=find_namespace_packages(
         include=[
             "math_anything",
@@ -72,8 +72,12 @@ setup(
     },
     zip_safe=False,
     project_urls={
-        "Bug Reports": "https://github.com/toki0413/math-anything/issues",
-        "Source": "https://github.com/toki0413/math-anything",
-        "Documentation": "https://github.com/toki0413/math-anything#readme",
+        # 国内镜像地址
+        "Bug Reports": "https://gitee.com/crested-ibis-0413/math-anything/issues",
+        "Source": "https://gitee.com/crested-ibis-0413/math-anything",
+        "Documentation": "https://gitee.com/crested-ibis-0413/math-anything#readme",
+        # GitHub 镜像地址
+        "GitHub Issues": "https://github.com/toki0413/math-anything/issues",
+        "GitHub Source": "https://github.com/toki0413/math-anything",
     },
 )
