@@ -80,7 +80,7 @@ jobs:
           pip install -e ".[dev]"
 
       - name: Run tests | 运行测试
-        run: pytest --cov=math_anything --cov-report=xml --cov-report=term-missing -v
+        run: pytest math-anything/core/tests/ math-anything/lammps-harness/tests/ math-anything/vasp-harness/tests/ examples/real_tests/ansys/ --cov=math_anything --cov-report=xml --cov-report=term-missing -v || pytest math-anything/core/tests/ -v
 
       - name: Upload coverage | 上传覆盖率
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
