@@ -41,10 +41,10 @@ jobs:
           pip install black flake8 isort
 
       - name: Check code formatting | 检查代码格式
-        run: black --check --diff math-anything/
+        run: black --check --diff --target-version py310 math-anything/
 
       - name: Check import sorting | 检查导入排序
-        run: isort --check-only --diff math-anything/
+        run: isort --check-only --diff --profile black math-anything/
 
       - name: Run flake8 | 运行 flake8
         run: flake8 math-anything/ --max-line-length=100 --extend-ignore=E203,W503
