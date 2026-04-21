@@ -51,6 +51,11 @@ class NodeType(Enum):
     SUB = auto()       # x - y
     MUL = auto()       # x * y
     DIV = auto()       # x / y
+    SIN = auto()       # sin(x)
+    COS = auto()       # cos(x)
+    POW = auto()       # x^y
+    SQRT = auto()      # sqrt(x)
+    ABS = auto()       # abs(x)
     VAR = auto()       # Variable
     CONST = auto()     # Constant
 
@@ -95,6 +100,29 @@ class Node:
                 b = self.right.evaluate(variables)
                 return safe_div(a, b)
             
+            elif self.node_type == NodeType.SIN:
+                return np.sin(self.left.evaluate(variables))
+            
+            elif self.node_type == NodeType.COS:
+                return np.cos(self.left.evaluate(variables))
+            
+            elif self.node_type == NodeType.POW:
+                base = self.left.evaluate(variables)
+                exp = self.right.evaluate(variables)
+                # Protect against invalid powers
+                if base < 0 and not float(exp).is_integer():
+                    return float('nan')
+                return np.power(base, exp)
+            
+            elif self.node_type == NodeType.SQRT:
+                val = self.left.evaluate(variables)
+                if val < 0:
+                    return float('nan')
+                return np.sqrt(val)
+            
+            elif self.node_type == NodeType.ABS:
+                return abs(self.left.evaluate(variables))
+            
             else:
                 return 0.0
         except Exception:
@@ -123,11 +151,37 @@ class Node:
         elif self.node_type == NodeType.DIV:
             return f"({self.left.to_string()} / {self.right.to_string()})"
         
+        elif self.node_type == NodeType.SIN:
+            return f"sin({self.left.to_string()})"
+        
+        elif self.node_type == NodeType.COS:
+            return f"cos({self.left.to_string()})"
+        
+        elif self.node_type == NodeType.POW:
+            return f"({self.left.to_string()}^{self.right.to_string()})"
+        
+        elif self.node_type == NodeType.SQRT:
+            return f"sqrt({self.left.to_string()})"
+        
+        elif self.node_type == NodeType.ABS:
+            return f"abs({self.left.to_string()})"
+        
         else:
             return "?"
     
-    def to_standard_form(self) -> str:
-        """Convert to standard mathematical notation."""
+    def to_standard_form(self, simplify_tree: bool = True) -> str:
+        """Convert to standard mathematical notation.
+        
+        Args:
+            simplify_tree: Whether to apply algebraic simplification
+            
+        Returns:
+            String representation of the equation
+        """
+        if simplify_tree:
+            from .simplifier import simplify
+            simplified = simplify(self)
+            return simplified._simplify()
         return self._simplify()
     
     def _simplify(self) -> str:
@@ -170,6 +224,21 @@ class Node:
         
         elif self.node_type == NodeType.DIV:
             return f"({self.left._simplify()} / {self.right._simplify()})"
+        
+        elif self.node_type == NodeType.SIN:
+            return f"sin({self.left._simplify()})"
+        
+        elif self.node_type == NodeType.COS:
+            return f"cos({self.left._simplify()})"
+        
+        elif self.node_type == NodeType.POW:
+            return f"({self.left._simplify()}^{self.right._simplify()})"
+        
+        elif self.node_type == NodeType.SQRT:
+            return f"sqrt({self.left._simplify()})"
+        
+        elif self.node_type == NodeType.ABS:
+            return f"abs({self.left._simplify()})"
         
         return "?"
     
@@ -261,6 +330,31 @@ class ExprBuilder:
         """Approximate ln using eml"""
         # ln(x) ≈ eml(0, x) - 1 for x near 1
         return cls.sub(cls.eml(cls.const(0.0), x), cls.const(1.0))
+    
+    @staticmethod
+    def sin(x: Node) -> Node:
+        """sin(x)"""
+        return Node(NodeType.SIN, left=x)
+    
+    @staticmethod
+    def cos(x: Node) -> Node:
+        """cos(x)"""
+        return Node(NodeType.COS, left=x)
+    
+    @staticmethod
+    def pow(x: Node, y: Node) -> Node:
+        """x^y"""
+        return Node(NodeType.POW, left=x, right=y)
+    
+    @staticmethod
+    def sqrt(x: Node) -> Node:
+        """sqrt(x)"""
+        return Node(NodeType.SQRT, left=x)
+    
+    @staticmethod
+    def abs(x: Node) -> Node:
+        """abs(x)"""
+        return Node(NodeType.ABS, left=x)
 
 
 class ImprovedSymbolicRegression:
@@ -361,6 +455,14 @@ class ImprovedSymbolicRegression:
             return self._random_terminal()
         
         op = self._random_operator()
+        
+        # Handle unary operators
+        unary_ops = {NodeType.SIN, NodeType.COS, NodeType.SQRT, NodeType.ABS}
+        if op in unary_ops:
+            left = self._random_tree_full(depth - 1)
+            return Node(op, left=left)
+        
+        # Binary operators
         left = self._random_tree_full(depth - 1)
         right = self._random_tree_full(depth - 1)
         return Node(op, left=left, right=right)
@@ -374,6 +476,14 @@ class ImprovedSymbolicRegression:
             return self._random_terminal()
         
         op = self._random_operator()
+        
+        # Handle unary operators
+        unary_ops = {NodeType.SIN, NodeType.COS, NodeType.SQRT, NodeType.ABS}
+        if op in unary_ops:
+            left = self._random_tree_grow(max_depth, current_depth + 1)
+            return Node(op, left=left)
+        
+        # Binary operators
         left = self._random_tree_grow(max_depth, current_depth + 1)
         right = self._random_tree_grow(max_depth, current_depth + 1)
         return Node(op, left=left, right=right)
@@ -388,9 +498,20 @@ class ImprovedSymbolicRegression:
     def _random_operator(self) -> NodeType:
         """Random operator."""
         if self.use_standard_ops:
-            ops = [NodeType.EML, NodeType.ADD, NodeType.SUB, NodeType.MUL, NodeType.DIV]
-            weights = [0.2, 0.2, 0.2, 0.2, 0.2]
-            return random.choices(ops, weights=weights)[0]
+            # Binary operators
+            binary_ops = [
+                NodeType.EML, NodeType.ADD, NodeType.SUB, 
+                NodeType.MUL, NodeType.DIV, NodeType.POW
+            ]
+            binary_weights = [0.15, 0.15, 0.15, 0.15, 0.15, 0.1]
+            
+            # Unary operators (need special handling in tree generation)
+            unary_ops = [NodeType.SIN, NodeType.COS, NodeType.SQRT, NodeType.ABS]
+            unary_weights = [0.05, 0.05, 0.03, 0.02]
+            
+            all_ops = binary_ops + unary_ops
+            all_weights = binary_weights + unary_weights
+            return random.choices(all_ops, weights=all_weights)[0]
         else:
             return NodeType.EML
     
