@@ -113,8 +113,8 @@ class SCFIteration:
 @dataclass
 class CalculationResults:
     """Results from VASP calculation."""
-    total_energy: Optional[float]
-    fermi_energy: Optional[float]
+    total_energy: Optional[float] = None
+    fermi_energy: Optional[float] = None
     scf_iterations: List[SCFIteration] = field(default_factory=list)
     converged: bool = False
     n_scf_steps: int = 0
@@ -203,6 +203,13 @@ class VaspInputParser:
         with open(filepath, 'r') as f:
             lines = f.readlines()
         
+        # Skip leading empty lines
+        while lines and lines[0].strip() == '':
+            lines = lines[1:]
+        
+        if len(lines) < 8:
+            raise ValueError("POSCAR file too short")
+        
         # System name
         system_name = lines[0].strip()
         
@@ -214,19 +221,33 @@ class VaspInputParser:
         for i in range(3):
             lattice[i] = [float(x) for x in lines[2+i].split()]
         
-        # Atom types and counts
-        atom_types = lines[5].split()
-        atom_counts = [int(x) for x in lines[6].split()]
+        # Atom types and counts - handle both formats
+        # Format 1: atom_types on line 5, atom_counts on line 6
+        # Format 2: atom_counts only (no atom_types line)
+        line5_parts = lines[5].split()
+        
+        # Check if line 5 contains strings (atom types) or only numbers (counts)
+        if all(p.replace('.', '').replace('-', '').isdigit() for p in line5_parts):
+            # Format 2: No atom types, only counts
+            atom_counts = [int(x) for x in line5_parts]
+            atom_types = [f"Type{i+1}" for i in range(len(atom_counts))]
+            coord_type_line = 6
+        else:
+            # Format 1: Atom types on line 5, counts on line 6
+            atom_types = line5_parts
+            atom_counts = [int(x) for x in lines[6].split()]
+            coord_type_line = 7
         
         # Coordinate type
-        coord_type = lines[7].strip()[0].upper()  # D or C
+        coord_type = lines[coord_type_line].strip()[0].upper()  # D or C
         coord_type = "Direct" if coord_type == "D" else "Cartesian"
         
         # Positions
         n_atoms = sum(atom_counts)
         positions = np.zeros((n_atoms, 3))
+        pos_start = coord_type_line + 1
         for i in range(n_atoms):
-            positions[i] = [float(x) for x in lines[8+i].split()[:3]]
+            positions[i] = [float(x) for x in lines[pos_start+i].split()[:3]]
         
         self.structure = CrystalStructure(
             system_name=system_name,
@@ -252,34 +273,54 @@ class VaspInputParser:
         with open(filepath, 'r') as f:
             lines = f.readlines()
         
-        # Skip title
-        kpt_mode = lines[1].strip().lower()
+        # Skip leading empty lines
+        while lines and lines[0].strip() == '':
+            lines = lines[1:]
         
-        if kpt_mode == "auto":
+        if len(lines) < 2:
+            raise ValueError("KPOINTS file too short")
+        
+        # Skip title (line 0)
+        # Line 1: number of k-points (0 for automatic)
+        kpt_num = lines[1].strip().lower()
+        
+        if kpt_num == "0":
             # Automatic k-point generation
-            grid_line = lines[2].strip().split()
-            grid = [int(x) for x in grid_line[:3]]
-            shift = [0.0, 0.0, 0.0]
+            # Line 2: mode (Gamma, Monkhorst-Pack, etc.)
+            mode_line = lines[2].strip()
+            mode_upper = mode_line[0].upper() + mode_line[1:].lower() if mode_line else "Gamma"
+            if mode_upper.lower() == "gamma":
+                mode_name = "Gamma"
+            elif mode_upper.lower() in ("monkhorst-pack", "mp"):
+                mode_name = "Monkhorst-Pack"
+            else:
+                mode_name = mode_upper
             
-            if len(grid_line) > 3:
-                shift = [float(x) for x in grid_line[3:6]]
+            # Line 3: grid
+            grid = [int(x) for x in lines[3].split()[:3]]
+            
+            # Line 4: shift (optional)
+            shift = [0.0, 0.0, 0.0]
+            if len(lines) > 4:
+                shift_line = lines[4].strip().split()
+                if len(shift_line) >= 3:
+                    shift = [float(x) for x in shift_line[:3]]
             
             self.kpoints = KpointGrid(
-                mode="Automatic",
+                mode=mode_name,
                 grid=grid,
                 shift=shift,
             )
         
-        elif kpt_mode in ("gamma", "monkhorst-pack", "mp"):
-            # Gamma or Monkhorst-Pack grid
+        elif kpt_num in ("gamma", "monkhorst-pack", "mp"):
+            # Some files put mode on line 1 instead of line 2
+            mode_name = "Gamma" if kpt_num == "gamma" else "Monkhorst-Pack"
             grid = [int(x) for x in lines[2].split()[:3]]
             shift_line = lines[3].strip().split()
             shift = [float(x) for x in shift_line[:3]] if len(shift_line) >= 3 else [0.0, 0.0, 0.0]
             
-            mode = "Gamma" if kpt_mode == "gamma" else "Monkhorst-Pack"
-            
             self.kpoints = KpointGrid(
-                mode=mode,
+                mode=mode_name,
                 grid=grid,
                 shift=shift,
             )
@@ -346,8 +387,8 @@ class VaspOutputParser:
         with open(filepath, 'r') as f:
             content = f.read()
         
-        # Extract total energy
-        energy_match = re.search(r"free energy\s+TOTEN\s+=\s+([-\d.]+)", content)
+        # Extract total energy - handle multiple spaces
+        energy_match = re.search(r"free\s+energy\s+TOTEN\s+=\s+([-\d.]+)", content)
         if energy_match:
             self.results.total_energy = float(energy_match.group(1))
         
