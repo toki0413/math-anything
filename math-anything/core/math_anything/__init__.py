@@ -42,13 +42,27 @@ from .visualization import (
 )
 
 # EML Symbolic Regression
-from .eml import (
+from .eml_v2 import (
     NodeType,
-    EMLNode,
-    EMLBuilder,
+    Node,
+    ExprBuilder,
+    ImprovedSymbolicRegression,
     SymbolicRegression,
     discover_equation,
     eml,
+)
+
+# Expression Simplification
+from .simplifier import (
+    ExpressionSimplifier,
+    simplify,
+)
+
+# Multi-variable Discovery
+from .multivar import (
+    MultiVariableDiscovery,
+    discover_multivar,
+    analyze_interactions,
 )
 
 # Legacy API (for backward compatibility)
@@ -120,6 +134,21 @@ __all__ = [
     "to_mermaid",
     "to_graphviz",
     "save_html",
+    # EML Symbolic Regression
+    "NodeType",
+    "Node",
+    "ExprBuilder",
+    "ImprovedSymbolicRegression",
+    "SymbolicRegression",
+    "discover_equation",
+    "eml",
+    # Expression Simplification
+    "ExpressionSimplifier",
+    "simplify",
+    # Multi-variable Discovery
+    "MultiVariableDiscovery",
+    "discover_multivar",
+    "analyze_interactions",
     # Legacy API
     "load_harness",
     "list_engines",
