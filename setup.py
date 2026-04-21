@@ -68,6 +68,7 @@ setup(
     entry_points={
         "console_scripts": [
             "math-anything=math_anything.cli:main",
+            "cli-anything=math_anything.cli:main",
         ],
     },
     zip_safe=False,

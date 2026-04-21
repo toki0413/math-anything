@@ -58,6 +58,7 @@ mcp = [
 
 [project.scripts]
 math-anything = "math_anything.cli:main"
+cli-anything = "math_anything.cli:main"
 
 [project.urls]
 # 国内镜像（Gitee）

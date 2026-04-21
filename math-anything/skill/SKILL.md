@@ -21,6 +21,28 @@ arguments:
   - parameters
 ---
 
+---
+name: cli-anything
+description: Command-line interface for Math Anything - provides interactive REPL, extraction, diff comparison, and validation tools for computational materials science engines. Use when needing command-line access to math-anything functionality.
+allowed-tools:
+  - Read
+  - Write
+  - Bash
+when_to_use: |
+  Trigger when user mentions:
+  - "cli anything" or "cli-anything"
+  - "command line" interface for math-anything
+  - "terminal" or "shell" access to math-anything
+  - "run math-anything from command line"
+  - "math-anything repl" or "interactive mode"
+  - "extract from command line"
+  - "compare schemas via CLI"
+argument-hint: "[command] [options]"
+arguments:
+  - command
+  - options
+---
+
 # Math Anything
 
 A mathematical semantic layer for computational materials science. Extract equations, constraints, and relationships from simulation inputs so LLMs can reason about physics, not just read numbers.
@@ -44,6 +66,53 @@ A mathematical semantic layer for computational materials science. Extract equat
 | COMSOL | Multiphysics | Coupled PDE system | Multi-physics coupling |
 | GROMACS | Biomolecular MD | Stochastic ODE | Langevin dynamics |
 | Multiwfn | Wavefunction | Topological analysis | `∇ρ(r) = 0` |
+
+## CLI Anything Commands
+
+### Interactive REPL Mode
+
+Start an interactive session for exploring mathematical structures:
+
+```bash
+cli-anything repl                    # Start REPL
+cli-anything repl --session file     # Load existing session
+```
+
+### Extract Mathematical Structure
+
+Extract schema from simulation input files:
+
+```bash
+cli-anything extract vasp INCAR POSCAR KPOINTS
+cli-anything extract lammps input.in
+cli-anything extract ansys model.inp --output schema.json
+```
+
+### Compare Calculations
+
+Compare two mathematical schemas:
+
+```bash
+cli-anything diff schema1.json schema2.json
+cli-anything diff schema1.json schema2.json --format json
+```
+
+### Cross-Engine Mapping
+
+Map parameters between different simulation engines:
+
+```bash
+cli-anything cross vasp_schema.json quantum_espresso
+cli-anything cross lammps_schema.json gromacs
+```
+
+### Validate Constraints
+
+Validate symbolic constraints in a schema:
+
+```bash
+cli-anything validate schema.json
+```
 
 ## Actions
 
@@ -137,13 +206,25 @@ Return all supported simulation engines.
 < SIGMA = 0.05 > 0 ✓
 ```
 
+**CLI usage**:
+```bash
+# Extract and save
+cli-anything extract vasp INCAR POSCAR --output vasp_schema.json
+
+# Compare via CLI
+cli-anything diff vasp_schema.json lammps_schema.json
+
+# Interactive exploration
+cli-anything repl
+```
+
 ## Guardrails
 
-- Never modify user input files
-- Never judge parameter values as "right" or "wrong"
-- Always express structures in canonical mathematical forms
-- Always report approximation hierarchies honestly
-- Never hide the mathematical consequences of approximations
+- Never modifies user input files
+- Never judges parameter values as "right" or "wrong"
+- Always expresses structures in canonical mathematical forms
+- Always reports approximation hierarchies honestly
+- Never hides the mathematical consequences of approximations
 
 ## Outputs
 

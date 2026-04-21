@@ -7,6 +7,7 @@ Provides command-line interface for:
 """
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -17,26 +18,26 @@ from repl import MathAnythingREPL, MathDiff
 from schemas import MathSchema
 
 
-def create_parser() -> argparse.ArgumentParser:
+def create_parser(prog_name: str = "math-anything") -> argparse.ArgumentParser:
     """Create argument parser."""
     parser = argparse.ArgumentParser(
-        prog="math-anything",
+        prog=prog_name,
         description="Math Anything - Mathematical Semantic Layer for Computational Materials Science",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
+        epilog=f"""
 Examples:
   # Interactive REPL mode
-  math-anything repl
-  
+  {prog_name} repl
+
   # Extract from VASP files
-  math-anything extract vasp INCAR POSCAR KPOINTS --output schema.json
-  
+  {prog_name} extract vasp INCAR POSCAR KPOINTS --output schema.json
+
   # Compare two schemas
-  math-anything diff schema1.json schema2.json
-  
+  {prog_name} diff schema1.json schema2.json
+
   # Cross-engine comparison (VASP vs QE)
-  math-anything cross vasp_INCAR.json quantum_espresso
-  
+  {prog_name} cross vasp_INCAR.json quantum_espresso
+
 For more information: https://github.com/toki/math-anything
         """,
     )
@@ -405,7 +406,9 @@ def _print_pretty_diff(diff, file1: str, file2: str):
 
 def main():
     """Main entry point."""
-    parser = create_parser()
+    # Determine program name from how it was invoked
+    prog_name = os.path.basename(sys.argv[0]) if sys.argv else "math-anything"
+    parser = create_parser(prog_name=prog_name)
     args = parser.parse_args()
 
     if not args.command:
