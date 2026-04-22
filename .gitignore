@@ -79,3 +79,12 @@ reorganize_*.py
 
 # Academic analysis files
 Polya_Analysis_CBES.md
+
+# Research study files
+CBES_*.py
+CBES_*.md
+analyze_*.py
+comprehensive_*.py
+core_*.py
+eml_*.py
+model_*.py
