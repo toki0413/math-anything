@@ -77,7 +77,7 @@ jobs:
       - name: Install dependencies | 安装依赖
         run: |
           python -m pip install --upgrade pip
-          pip install pytest numpy
+          pip install pytest numpy pydantic
           pip install -e .
 
       - name: Run tests | 运行测试
