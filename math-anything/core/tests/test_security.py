@@ -64,12 +64,11 @@ class TestPathSecurityValidator:
     def test_absolute_path_denied(self):
         """Test absolute path denial."""
         validator = PathSecurityValidator(allow_absolute_paths=False)
-        # Use platform-appropriate absolute path
-        abs_path = (
-            os.path.abspath("/test/file.lmp")
-            if os.name != "nt"
-            else "C:\\test\\file.lmp"
-        )
+        # Use platform-appropriate absolute path format
+        if os.name == "nt":
+            abs_path = "C:\\test\\file.lmp"
+        else:
+            abs_path = "/test/file.lmp"
         with pytest.raises(FileAccessError) as exc_info:
             validator.validate(abs_path)
         assert "Absolute paths are not allowed" in str(exc_info.value)
@@ -91,9 +90,10 @@ class TestPathSecurityValidator:
         with tempfile.TemporaryDirectory() as tmpdir:
             validator = PathSecurityValidator(allowed_base_dirs=[tmpdir])
             # Use platform-appropriate absolute path outside temp dir
-            outside_path = (
-                "/etc/passwd" if os.name != "nt" else "C:\\Windows\\system32\\file.lmp"
-            )
+            if os.name == "nt":
+                outside_path = "C:\\Windows\\system32\\file.lmp"
+            else:
+                outside_path = "/etc/passwd"
             with pytest.raises(FileAccessError) as exc_info:
                 validator.validate(outside_path)
             assert "within allowed directories" in str(exc_info.value)
