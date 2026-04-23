@@ -1,12 +1,13 @@
 """Abaqus input file parser."""
 
-from typing import Any, Dict, List, Optional
 from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional
 
 
 @dataclass
 class Material:
     """Material definition from Abaqus input."""
+
     name: str = ""
     elastic_modulus: Optional[float] = None
     poisson_ratio: Optional[float] = None
@@ -18,6 +19,7 @@ class Material:
 @dataclass
 class Step:
     """Analysis step definition."""
+
     name: str = ""
     step_type: str = "static"
     nlgeom: bool = False
@@ -29,6 +31,7 @@ class Step:
 @dataclass
 class BoundaryCondition:
     """Boundary condition definition."""
+
     name: str = ""
     bc_type: str = "displacement"
     node_set: str = ""
@@ -54,7 +57,7 @@ class AbaqusInputParser:
 
     def parse(self, content: str) -> List[Dict[str, Any]]:
         """Parse Abaqus input content.
-        
+
         Returns a list of command dictionaries with 'keyword' and 'data' keys.
         """
         commands = []
@@ -126,13 +129,14 @@ class AbaqusInputParser:
                     parts = line.split(",")
                     if len(parts) >= 2:
                         bc = BoundaryCondition(
-                            node_set=parts[0].strip(),
-                            bc_type="displacement"
+                            node_set=parts[0].strip(), bc_type="displacement"
                         )
                         if len(parts) >= 3:
                             try:
                                 bc.dof = [int(parts[1])]
-                                bc.magnitude = float(parts[2]) if len(parts) > 2 else 0.0
+                                bc.magnitude = (
+                                    float(parts[2]) if len(parts) > 2 else 0.0
+                                )
                             except ValueError:
                                 pass
                         self.boundary_conditions.append(bc)

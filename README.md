@@ -26,6 +26,8 @@ This matters because LLMs (and humans new to a code) can't validate what they do
 - **Validates symbolic constraints**: are the parameters physically/mathematically consistent?
 - **Maps parameters across engines**: VASP's `ENCUT` ↔ Quantum ESPRESSO's `ecutwfc`
 - **Compares calculations semantically**: what changed mathematically, not just what lines differ
+- **Generates mathematical propositions**: formulates existence, uniqueness, stability theorems
+- **Provides tiered analysis**: 5 levels from quick screening to complete mathematical framework
 
 ## Supported engines
 
@@ -43,21 +45,25 @@ When you run extraction, you get the mathematical structure, variable dependenci
 
 ## Quick start
 
-### 安装方式（选择其一）
+### Installation
 
-**从 GitHub 安装（国际用户）**
+**From GitHub (International users)**
 ```bash
 git clone https://github.com/toki0413/math-anything.git
 cd math-anything
-pip install -r requirements.txt
+pip install -e .
 ```
 
-**从 Gitee 安装（国内用户，速度更快）**
+**From Gitee (China users, faster)**
 ```bash
 git clone https://gitee.com/crested-ibis-0413/math-anything.git
 cd math-anything
-pip install -r requirements.txt
+pip install -e .
 ```
+
+### CLI Usage
+
+```bash
 # Interactive REPL
 math-anything repl
 
@@ -71,27 +77,106 @@ math-anything diff calc1.json calc2.json
 math-anything cross vasp_schema.json quantum_espresso
 ```
 
-Python API:
+### Python API
+
+#### Basic Extraction
 
 ```python
-from math_anything.vasp.core.extractor_v2 import VaspExtractor
-from math_anything.schemas import extract_vasp_mathematical_precision
+from math_anything import extract, MathAnything
 
-extractor = VaspExtractor()
-schema = extractor.extract({'incar': 'INCAR', 'poscar': 'POSCAR', 'kpoints': 'KPOINTS'})
+# Simple extraction
+result = extract("vasp", {"ENCUT": 520, "SIGMA": 0.05})
+print(result.schema["mathematical_structure"]["canonical_form"])
+# Output: H[n]ψ = εψ
 
-# Get mathematical precision
-precision = extract_vasp_mathematical_precision(schema.raw_symbols)
-print(precision['mathematical_structure']['problem_type'])  # nonlinear_eigenvalue
+# With file parsing
+ma = MathAnything()
+result = ma.extract_file("lammps", "in.file")
+print(result.to_mermaid())  # Visualize as diagram
+```
 
-# Check constraints
-for c in schema.symbolic_constraints:
-    print(f"{'✓' if 'SATISFIED' in c.description else '✗'} {c.expression}")
+#### Tiered Analysis (New)
+
+```python
+from math_anything import TieredAnalyzer, AnalysisTier, tiered_analyze
+
+# Auto-detect analysis level based on complexity
+result = tiered_analyze("large_simulation.lmp")
+print(f"Recommended tier: {result.tier.name}")
+# Output: ADVANCED (for large system with long simulation)
+
+# Or specify exact tier
+analyzer = TieredAnalyzer()
+result = analyzer.analyze("simulation.lmp", tier=AnalysisTier.PROFESSIONAL)
+
+# Get recommendation without running
+rec = analyzer.get_recommendation("simulation.lmp")
+print(f"Complexity score: {rec.complexity_score.total}")
+print(f"Estimated time: {rec.estimated_time}")
+print(f"Suitable tiers: {[t.name for t in rec.suitable_tiers]}")
+```
+
+#### Mathematical Proposition Generation
+
+```python
+from math_anything import PropositionGenerator, MathematicalTask, TaskType
+
+# Generate mathematical propositions from simulation
+extractor = PropositionGenerator()
+propositions = extractor.generate(
+    engine="lammps",
+    parameters={"timestep": 0.5, "run": 80000, "fix": "nvt"},
+    task_type=TaskType.WELL_POSEDNESS
+)
+
+print(propositions)
+# Output: Theorem (Well-posedness of MD simulation):
+#   Given m·r̈ = F(r) with Lipschitz continuous F,
+#   and initial conditions r(0) = r₀, ṙ(0) = v₀,
+#   there exists a unique solution for t ∈ [0, T].
+```
+
+## Tiered Analysis System
+
+Math Anything provides 5 levels of analysis depth, automatically selected based on system complexity:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    Tiered Analysis Levels                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  Level 1: Basic        → Quick screening, simple feature extraction     │
+│  Level 2: Enhanced     → Detailed parameters and validation             │
+│  Level 3: Professional → + Topology analysis (Betti numbers)            │
+│  Level 4: Advanced     → + Geometric methods (symplectic integrator)    │
+│  Level 5: Complete     → Five-layer unified framework + latent space    │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Five-Layer Unified Framework (Level 5)
+
+The complete analysis combines advanced mathematical methods:
+
+1. **Symplectic Integrator**: Preserves energy and phase space structure (O(Δt²) error)
+2. **Constrained Manifold**: Reduces dimensionality for systems with constraints
+3. **Topology Analysis**: Betti numbers identify connected components, loops, voids
+4. **Morse Theory**: Critical points analysis of energy landscape
+5. **Latent Space**: E(3)-equivariant neural representations for acceleration
+
+```python
+# Level 5: Complete analysis with all methods
+result = analyzer.analyze("complex_system.lmp", tier=AnalysisTier.COMPLETE)
+
+print(result.topology_info)    # Betti numbers: [1, 0, 0]
+print(result.manifold_info)    # Dimension, metric, symplectic structure
+print(result.morse_info)       # Critical points of energy landscape
+print(result.latent_info)      # Recommended encoder, speedup estimate
 ```
 
 ## Real use cases
 
-**Catch bad inputs early**
+### Catch bad inputs early
 
 ```
 ✓ ENCUT > 0
@@ -99,7 +184,7 @@ for c in schema.symbolic_constraints:
 ✗ SIGMA > 0  ← SIGMA = -0.2 is invalid!
 ```
 
-**Understand what you're computing**
+### Understand what you're computing
 
 ```
 VASP isn't just "running DFT":
@@ -109,7 +194,7 @@ VASP isn't just "running DFT":
   → SCF iteration required
 ```
 
-**Decrypt black-box calculations**
+### Decrypt black-box calculations
 
 ```
 LAMMPS input script:
@@ -118,15 +203,19 @@ LAMMPS input script:
   Hierarchy: quantum → Born-Oppenheimer → classical → empirical
 ```
 
-**Guide ML with physics context**
+### Guide ML with physics context
 
 ```
 ML model predicting formation energies:
   Approximating: DFT total energy calculation
   Missing: explicit physics constraints (symmetry, conservation)
+  
+Recommendation based on E(3) symmetry:
+  → Use SchNet or NequIP (E(3)-equivariant networks)
+  → Compatibility proof: message passing rotation-invariant
 ```
 
-**Compare across physics scales**
+### Compare across physics scales
 
 ```
 VASP (DFT):     H[n]ψ = εψ              (quantum)
@@ -143,6 +232,17 @@ Abaqus (FEM):   ∇·σ + f = 0             (continuum)
 
 **Mathematical precision**: Expresses structures in canonical forms. `H[n]ψ = εψ` means the same thing to any physicist.
 
+**Tiered complexity**: From quick checks to deep mathematical analysis, match the effort to the problem.
+
+## Documentation
+
+- [QUICK_START.md](QUICK_START.md) - Get started in 5 minutes
+- [WORKFLOW.md](WORKFLOW.md) - Complete workflow from file to math proposition
+- [TIERED_SYSTEM.md](TIERED_SYSTEM.md) - Tiered analysis system design
+- [UNIFIED_MATH_FRAMEWORK.md](UNIFIED_MATH_FRAMEWORK.md) - Five-layer unified framework
+- [TOPOLOGY_MANIFOLD_ANALYSIS.md](TOPOLOGY_MANIFOLD_ANALYSIS.md) - Topology and manifold efficiency analysis
+- [LATENT_SPACE_ANALYSIS.md](LATENT_SPACE_ANALYSIS.md) - Latent space acceleration analysis
+
 ## Acknowledgments
 
 Inspired by [CLI-Anything](https://github.com/fzdwx/cli-anything), which showed that CLI tools can be made intelligible to AI agents through structured extraction. We extend this from CLI semantics to mathematical semantics.
@@ -152,4 +252,3 @@ The EML (Exp-Minus-Log) symbolic regression implementation is based on the work 
 ## License
 
 MIT
- 
