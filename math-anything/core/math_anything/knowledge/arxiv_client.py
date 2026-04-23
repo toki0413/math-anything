@@ -159,7 +159,7 @@ class ArxivClient:
             # Extract key terms from pattern
             terms = self._extract_math_terms(pattern)
             if terms:
-                query_parts.append(f"({ ' OR '.join(terms) })")
+                query_parts.append(f"({' OR '.join(terms)})")
 
         # Add numerical methods
         methods = fingerprint.get("numerical_methods", [])
