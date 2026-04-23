@@ -49,6 +49,18 @@ from .eml_v2 import (
     eml,
 )
 
+# Exception Handling
+from .exceptions import (
+    ConfigurationError,
+    FileAccessError,
+    MathAnythingError,
+    ParseError,
+    SecurityError,
+    TierAnalysisError,
+    UnsupportedEngineError,
+    ValidationError,
+)
+
 # Multi-variable Discovery
 from .multivar import MultiVariableDiscovery, analyze_interactions, discover_multivar
 
@@ -67,6 +79,16 @@ from .schemas import (
     MathSchema,
     NumericalMethod,
     SchemaValidator,
+)
+
+# Security Utilities
+from .security import (
+    FileSizeValidator,
+    PathSecurityValidator,
+    default_path_validator,
+    default_size_validator,
+    validate_file_size,
+    validate_filepath,
 )
 
 # Expression Simplification
@@ -134,10 +156,23 @@ __all__ = [
     "ExtractionResult",
     "extract",
     "extract_file",
+    # Exceptions
     "MathAnythingError",
     "UnsupportedEngineError",
     "FileNotFoundError",
+    "FileAccessError",
     "ParseError",
+    "ValidationError",
+    "SecurityError",
+    "TierAnalysisError",
+    "ConfigurationError",
+    # Security
+    "PathSecurityValidator",
+    "FileSizeValidator",
+    "validate_filepath",
+    "validate_file_size",
+    "default_path_validator",
+    "default_size_validator",
     # Visualization
     "Visualizer",
     "to_mermaid",
