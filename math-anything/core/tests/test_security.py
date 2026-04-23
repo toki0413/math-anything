@@ -64,15 +64,15 @@ class TestPathSecurityValidator:
     def test_absolute_path_denied(self):
         """Test absolute path denial."""
         validator = PathSecurityValidator(allow_absolute_paths=False)
-        # Use platform-appropriate absolute path format
-        # Use a path that is clearly absolute but doesn't need to exist
-        if os.name == "nt":
-            abs_path = "C:\\Windows\\file.lmp"
-        else:
-            abs_path = "/etc/file.lmp"
-        with pytest.raises(FileAccessError) as exc_info:
-            validator.validate(abs_path)
-        assert "Absolute paths are not allowed" in str(exc_info.value)
+        # Create a temporary directory and get its absolute path
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Construct an absolute path that doesn't exist
+            abs_path = os.path.join(tmpdir, "nonexistent", "file.lmp")
+            # Ensure this is recognized as absolute
+            assert os.path.isabs(abs_path)
+            with pytest.raises(FileAccessError) as exc_info:
+                validator.validate(abs_path)
+            assert "Absolute paths are not allowed" in str(exc_info.value)
 
     def test_absolute_path_allowed(self):
         """Test absolute path with allowed directories."""
@@ -90,14 +90,12 @@ class TestPathSecurityValidator:
         """Test path outside allowed directories."""
         with tempfile.TemporaryDirectory() as tmpdir:
             validator = PathSecurityValidator(allowed_base_dirs=[tmpdir])
-            # Use platform-appropriate absolute path outside temp dir
-            if os.name == "nt":
-                outside_path = "C:\\Windows\\system32\\file.lmp"
-            else:
-                outside_path = "/etc/passwd"
-            with pytest.raises(FileAccessError) as exc_info:
-                validator.validate(outside_path)
-            assert "within allowed directories" in str(exc_info.value)
+            # Create a different temp dir to simulate "outside" path
+            with tempfile.TemporaryDirectory() as other_tmpdir:
+                outside_path = os.path.join(other_tmpdir, "file.lmp")
+                with pytest.raises(FileAccessError) as exc_info:
+                    validator.validate(outside_path)
+                assert "within allowed directories" in str(exc_info.value)
 
     def test_path_too_long(self):
         """Test path length validation."""
