@@ -6,6 +6,7 @@ Supports various quantum chemical analyses including electron density,
 """
 
 from .core.extractor import MultiwfnExtractor
+from .core.extractor_enhanced import EnhancedMultiwfnExtractor
 from .core.harness import MultiwfnHarness
 from .core.parser import CubeFileParser, MultiwfnInputParser, WfnFileParser
 
@@ -14,6 +15,7 @@ __version__ = "1.0.0"
 __all__ = [
     "MultiwfnHarness",
     "MultiwfnExtractor",
+    "EnhancedMultiwfnExtractor",
     "MultiwfnInputParser",
     "WfnFileParser",
     "CubeFileParser",

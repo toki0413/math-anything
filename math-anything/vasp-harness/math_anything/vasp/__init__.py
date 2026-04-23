@@ -7,9 +7,11 @@ self-consistent field iterations, and electronic structure.
 
 from .core.extractor import VaspExtractor
 from .core.parser import VaspInputParser, VaspOutputParser
+from .core.extractor_enhanced import EnhancedVaspExtractor
 
 __all__ = [
     "VaspExtractor",
     "VaspInputParser",
     "VaspOutputParser",
+    "EnhancedVaspExtractor",
 ]

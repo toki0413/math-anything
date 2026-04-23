@@ -1,90 +1,33 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
+# Model files
+Qwen3.5-*/
+Qwen*/
 
-# Virtual environments
-.env
-.venv
-env/
-venv/
-ENV/
+# Temporary files
+*.pyc
+__pycache__/
+*.json
+!mcp_config.json
+
+# Test files
+test_*.py
+demo_*.py
+*_test.py
+
+# Scripts
+download_*.py
+setup_*.py
+install.*
+load_model_*.py
+verify_*.py
+quick_*.py
+count_*.py
+extract_*.py
+inspect_*.py
+
+# Archives
+*.zip
+release/
 
 # IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Jupyter
-.ipynb_checkpoints/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Project specific
-*.log
-papers/
-download_papers.py
-CLI-Anything/
-
-# Generated/temporary files
-examples/generated_harness/
-math-anything/*-harness-auto/
-ANALYSIS_SUMMARY.md
-REVIEW_CHECKLIST.md
-
-# Research/temporary files
-Deep_Research_Report_CBES.md
-crawl_academic_papers.py
-crawled_papers/
-generate_enhanced_v2.py
-generate_all_figures.py
-generate_figure7_8.py
-generate_final_revised.py
-generate_final_simple.py
-scientific_skills_analysis.py
-
-# Demo and temporary scripts
-demo_*.py
-test_*.py
-solve_*.py
-add_*.py
-generate_*.py
-reorganize_*.py
-
-# Academic analysis files
-Polya_Analysis_CBES.md
-
-# Research study files
-CBES_*.py
-CBES_*.md
-analyze_*.py
-comprehensive_*.py
-core_*.py
-eml_*.py
-model_*.py
+.claude/
+.trae/
