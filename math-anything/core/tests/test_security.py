@@ -65,10 +65,11 @@ class TestPathSecurityValidator:
         """Test absolute path denial."""
         validator = PathSecurityValidator(allow_absolute_paths=False)
         # Use platform-appropriate absolute path format
+        # Use a path that is clearly absolute but doesn't need to exist
         if os.name == "nt":
-            abs_path = "C:\\test\\file.lmp"
+            abs_path = "C:\\Windows\\file.lmp"
         else:
-            abs_path = "/test/file.lmp"
+            abs_path = "/etc/file.lmp"
         with pytest.raises(FileAccessError) as exc_info:
             validator.validate(abs_path)
         assert "Absolute paths are not allowed" in str(exc_info.value)
