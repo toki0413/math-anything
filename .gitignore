@@ -1,33 +1,65 @@
-# Model files
-Qwen3.5-*/
-Qwen*/
-
-# Temporary files
+# Python
 *.pyc
 __pycache__/
-*.json
-!mcp_config.json
+*.pyo
+*.egg-info/
+*.egg
+dist/
+build/
+*.whl
+*.tar.gz
 
-# Test files
-test_*.py
-demo_*.py
-*_test.py
-
-# Scripts
-download_*.py
-setup_*.py
-install.*
-load_model_*.py
-verify_*.py
-quick_*.py
-count_*.py
-extract_*.py
-inspect_*.py
-
-# Archives
-*.zip
-release/
+# Virtual environments
+.venv/
+venv/
+env/
 
 # IDE
 .claude/
 .trae/
+.vscode/
+.idea/
+*.swp
+*.swo
+.mypy_cache/
+
+# Model files
+Qwen3.5-*/
+Qwen*/
+
+# Temporary / one-off scripts
+download_*.py
+download_*.bat
+setup_ollama.*
+check_gpu.py
+
+# CBES paper generation scripts (not part of math-anything)
+CBES_*.py
+generate_academic_figures*.py
+generate_comparison_doc.py
+generate_enhanced_v2.py
+generate_final_*.py
+generate_main_plus_si.py
+generate_response_letter.py
+add_methodology_section.py
+add_normalized_tables.py
+add_theoretical_analysis.py
+reorganize_lifecycle_strategy.py
+solve_propositions.py
+workflow_demo.py
+workflow_report.txt
+crawl_academic_papers.py
+
+# Qwen validation reports (models deleted)
+Qwen3.5*Validation_Report*.md
+Qwen3.5*validation*.md
+
+# Unrelated projects
+CLI-Anything/
+math-driven-academic-writing/
+crawled_papers/
+papers/
+
+# OS
+.DS_Store
+Thumbs.db

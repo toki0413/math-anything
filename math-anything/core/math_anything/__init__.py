@@ -72,6 +72,20 @@ from .schemas import (
 # Expression Simplification
 from .simplifier import ExpressionSimplifier, simplify
 
+# Tiered Analysis System
+from .tiered import (
+    AnalysisTier,
+    ComplexityScore,
+    FileAnalysis,
+    ResourceRequirements,
+    TieredAnalysisResult,
+    TieredAnalyzer,
+    TierRecommendation,
+    TierRecommender,
+)
+from .tiered.tier_recommender import analyze_file_properties
+from .tiered.tiered_analyzer import analyze as tiered_analyze
+
 # Visualization
 from .visualization import Visualizer, save_html, to_graphviz, to_mermaid
 
@@ -163,4 +177,15 @@ __all__ = [
     "ComputationalGraph",
     "BoundaryCondition",
     "GoverningEquation",
+    # Tiered Analysis
+    "TieredAnalyzer",
+    "AnalysisTier",
+    "TierRecommender",
+    "TierRecommendation",
+    "TieredAnalysisResult",
+    "FileAnalysis",
+    "ComplexityScore",
+    "ResourceRequirements",
+    "tiered_analyze",
+    "analyze_file_properties",
 ]
