@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "math-guard"
+version = "0.1.0"
+description = "Math-driven academic integrity detection engine"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "toki"}
+]
+keywords = [
+    "academic-integrity",
+    "plagiarism-detection",
+    "math-driven",
+    "scientific-misconduct",
+    "research-ethics",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Education",
+    "Topic :: Scientific/Engineering",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "pydantic>=2.0",
+    "numpy>=1.20.0",
+]
+
+[project.optional-dependencies]
+server = [
+    "fastapi>=0.100",
+    "uvicorn>=0.20",
+]
+dev = [
+    "pytest>=7.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+]
+
+[project.scripts]
+math-guard = "math_guard.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/toki0413/math-guard"
+Repository = "https://github.com/toki0413/math-guard"
+Issues = "https://github.com/toki0413/math-guard/issues"
+
+[tool.isort]
+profile = "black"
+line_length = 100

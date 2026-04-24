@@ -11,9 +11,9 @@ Traditional parsers give you the value. Math Anything gives you the math:
 ```
 Traditional:  ENCUT = 520
 Math Anything: ENCUT = 520
-               Constraint: ENCUT > 0 ✓
-               Constraint: ENCUT > max(ENMAX) ✓
-               Relationship: ENCUT = ENMAX × factor(PREC)
+               Constraint: ENCUT > 0
+               Constraint: ENCUT > max(ENMAX)
+               Relationship: ENCUT = ENMAX x factor(PREC)
                Semantics: "Plane-wave energy cutoff for basis set expansion"
 ```
 
@@ -24,7 +24,7 @@ This matters because LLMs (and humans new to a code) can't validate what they do
 - **Extracts mathematical structures**: governing equations, boundary conditions, constitutive relations
 - **Reveals mathematical essence**: not just "ENCUT=520" but "this is a nonlinear eigenvalue problem requiring SCF iteration"
 - **Validates symbolic constraints**: are the parameters physically/mathematically consistent?
-- **Maps parameters across engines**: VASP's `ENCUT` ↔ Quantum ESPRESSO's `ecutwfc`
+- **Maps parameters across engines**: VASP's `ENCUT` <-> Quantum ESPRESSO's `ecutwfc`
 - **Compares calculations semantically**: what changed mathematically, not just what lines differ
 - **Generates mathematical propositions**: formulates existence, uniqueness, stability theorems
 - **Provides tiered analysis**: 5 levels from quick screening to complete mathematical framework
@@ -33,13 +33,13 @@ This matters because LLMs (and humans new to a code) can't validate what they do
 
 | Engine | Type | Mathematical Problem | What LLM Understands |
 |--------|------|---------------------|---------------------|
-| VASP | DFT | H[n]ψ = εψ (nonlinear eigenvalue) | "Needs SCF iteration, V_eff depends on density" |
-| LAMMPS | MD | m d²r/dt² = F(r) (initial value ODE) | "Time integration, not iterative solving" |
-| Abaqus | FEM | ∇·σ + f = 0 (boundary value) | "FEM solving equilibrium" |
-| Ansys | FEM | Kφ = λMφ (eigenvalue) | "Finding natural frequencies" |
+| VASP | DFT | H[n]psi = epsilon psi (nonlinear eigenvalue) | "Needs SCF iteration, V_eff depends on density" |
+| LAMMPS | MD | m d2r/dt2 = F(r) (initial value ODE) | "Time integration, not iterative solving" |
+| Abaqus | FEM | div sigma + f = 0 (boundary value) | "FEM solving equilibrium" |
+| Ansys | FEM | K phi = lambda M phi (eigenvalue) | "Finding natural frequencies" |
 | COMSOL | Multiphysics | Coupled PDE system | "Multiple physics coupled together" |
 | GROMACS | Biomolecular MD | Stochastic ODE | "Biomolecular dynamics with constraints" |
-| Multiwfn | Wavefunction | ∇ρ(r) = 0 (topological) | "Finding critical points in density" |
+| Multiwfn | Wavefunction | grad rho(r) = 0 (topological) | "Finding critical points in density" |
 
 When you run extraction, you get the mathematical structure, variable dependencies, and the full hierarchy of approximations from physics to numerics.
 
@@ -87,7 +87,7 @@ from math_anything import extract, MathAnything
 # Simple extraction
 result = extract("vasp", {"ENCUT": 520, "SIGMA": 0.05})
 print(result.schema["mathematical_structure"]["canonical_form"])
-# Output: H[n]ψ = εψ
+# Output: H[n]psi = epsilon psi
 
 # With file parsing
 ma = MathAnything()
@@ -131,9 +131,9 @@ propositions = extractor.generate(
 
 print(propositions)
 # Output: Theorem (Well-posedness of MD simulation):
-#   Given m·r̈ = F(r) with Lipschitz continuous F,
-#   and initial conditions r(0) = r₀, ṙ(0) = v₀,
-#   there exists a unique solution for t ∈ [0, T].
+#   Given m r_ddot = F(r) with Lipschitz continuous F,
+#   and initial conditions r(0) = r0, r_dot(0) = v0,
+#   there exists a unique solution for t in [0, T].
 ```
 
 ## Tiered Analysis System
@@ -141,24 +141,24 @@ print(propositions)
 Math Anything provides 5 levels of analysis depth, automatically selected based on system complexity:
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    Tiered Analysis Levels                                │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                         │
-│  Level 1: Basic        → Quick screening, simple feature extraction     │
-│  Level 2: Enhanced     → Detailed parameters and validation             │
-│  Level 3: Professional → + Topology analysis (Betti numbers)            │
-│  Level 4: Advanced     → + Geometric methods (symplectic integrator)    │
-│  Level 5: Complete     → Five-layer unified framework + latent space    │
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
++-------------------------------------------------------------------------+
+|                    Tiered Analysis Levels                                |
++-------------------------------------------------------------------------+
+|                                                                         |
+|  Level 1: Basic        -> Quick screening, simple feature extraction    |
+|  Level 2: Enhanced     -> Detailed parameters and validation            |
+|  Level 3: Professional -> + Topology analysis (Betti numbers)           |
+|  Level 4: Advanced     -> + Geometric methods (symplectic integrator)   |
+|  Level 5: Complete     -> Five-layer unified framework + latent space   |
+|                                                                         |
++-------------------------------------------------------------------------+
 ```
 
 ### Five-Layer Unified Framework (Level 5)
 
 The complete analysis combines advanced mathematical methods:
 
-1. **Symplectic Integrator**: Preserves energy and phase space structure (O(Δt²) error)
+1. **Symplectic Integrator**: Preserves energy and phase space structure (O(dt^2) error)
 2. **Constrained Manifold**: Reduces dimensionality for systems with constraints
 3. **Topology Analysis**: Betti numbers identify connected components, loops, voids
 4. **Morse Theory**: Critical points analysis of energy landscape
@@ -179,9 +179,9 @@ print(result.latent_info)      # Recommended encoder, speedup estimate
 ### Catch bad inputs early
 
 ```
-✓ ENCUT > 0
-✓ EDIFF > 0
-✗ SIGMA > 0  ← SIGMA = -0.2 is invalid!
+[OK] ENCUT > 0
+[OK] EDIFF > 0
+[FAIL] SIGMA > 0  <- SIGMA = -0.2 is invalid!
 ```
 
 ### Understand what you're computing
@@ -189,9 +189,9 @@ print(result.latent_info)      # Recommended encoder, speedup estimate
 ```
 VASP isn't just "running DFT":
   Problem Type: nonlinear_eigenvalue
-  Canonical Form: H[n]ψ = εψ
-  Variable Dependencies: V_eff → n → ψ → V_eff (circular)
-  → SCF iteration required
+  Canonical Form: H[n]psi = epsilon psi
+  Variable Dependencies: V_eff -> n -> psi -> V_eff (circular)
+  -> SCF iteration required
 ```
 
 ### Decrypt black-box calculations
@@ -199,8 +199,8 @@ VASP isn't just "running DFT":
 ```
 LAMMPS input script:
   Core Problem: initial_value_ode
-  Approximations: classical mechanics → force field → cutoff
-  Hierarchy: quantum → Born-Oppenheimer → classical → empirical
+  Approximations: classical mechanics -> force field -> cutoff
+  Hierarchy: quantum -> Born-Oppenheimer -> classical -> empirical
 ```
 
 ### Guide ML with physics context
@@ -209,19 +209,19 @@ LAMMPS input script:
 ML model predicting formation energies:
   Approximating: DFT total energy calculation
   Missing: explicit physics constraints (symmetry, conservation)
-  
+
 Recommendation based on E(3) symmetry:
-  → Use SchNet or NequIP (E(3)-equivariant networks)
-  → Compatibility proof: message passing rotation-invariant
+  -> Use SchNet or NequIP (E(3)-equivariant networks)
+  -> Compatibility proof: message passing rotation-invariant
 ```
 
 ### Compare across physics scales
 
 ```
-VASP (DFT):     H[n]ψ = εψ              (quantum)
-LAMMPS (MD):    m d²r/dt² = F(r)        (classical)
-Abaqus (FEM):   ∇·σ + f = 0             (continuum)
-→ Different mathematical frameworks, careful upscaling needed
+VASP (DFT):     H[n]psi = epsilon psi         (quantum)
+LAMMPS (MD):    m d2r/dt2 = F(r)              (classical)
+Abaqus (FEM):   div sigma + f = 0             (continuum)
+-> Different mathematical frameworks, careful upscaling needed
 ```
 
 ## Design principles
@@ -230,24 +230,26 @@ Abaqus (FEM):   ∇·σ + f = 0             (continuum)
 
 **Zero judgment**: Doesn't tell you "ENCUT=200 is wrong." Reports "ENCUT=200 is outside typical range 200-800 eV." The decision is yours.
 
-**Mathematical precision**: Expresses structures in canonical forms. `H[n]ψ = εψ` means the same thing to any physicist.
+**Mathematical precision**: Expresses structures in canonical forms. `H[n]psi = epsilon psi` means the same thing to any physicist.
 
 **Tiered complexity**: From quick checks to deep mathematical analysis, match the effort to the problem.
 
 ## Documentation
 
-- [QUICK_START.md](QUICK_START.md) - Get started in 5 minutes
-- [WORKFLOW.md](WORKFLOW.md) - Complete workflow from file to math proposition
-- [TIERED_SYSTEM.md](TIERED_SYSTEM.md) - Tiered analysis system design
-- [UNIFIED_MATH_FRAMEWORK.md](UNIFIED_MATH_FRAMEWORK.md) - Five-layer unified framework
-- [TOPOLOGY_MANIFOLD_ANALYSIS.md](TOPOLOGY_MANIFOLD_ANALYSIS.md) - Topology and manifold efficiency analysis
-- [LATENT_SPACE_ANALYSIS.md](LATENT_SPACE_ANALYSIS.md) - Latent space acceleration analysis
+- [TUTORIAL.md](TUTORIAL.md) - Get started in 5 minutes
+- [TUTORIAL_EN.md](TUTORIAL_EN.md) - English tutorial
+- [TUTORIAL_QUANTUM_CN.md](TUTORIAL_QUANTUM_CN.md) - Quantum chemistry tutorial (Chinese)
+- [TUTORIAL_FLUID_EN.md](TUTORIAL_FLUID_EN.md) - Fluid dynamics tutorial (English)
+- [TUTORIAL_AERO_EN.md](TUTORIAL_AERO_EN.md) - Aerospace tutorial (English)
+- [TUTORIAL_MANUFACTURING_CN.md](TUTORIAL_MANUFACTURING_CN.md) - Manufacturing tutorial (Chinese)
+- [TUTORIAL_HYDROGEN_CN.md](TUTORIAL_HYDROGEN_CN.md) - Hydrogen storage tutorial (Chinese)
+- [README_CN.md](README_CN.md) - Chinese README
 
 ## Acknowledgments
 
 Inspired by [CLI-Anything](https://github.com/fzdwx/cli-anything), which showed that CLI tools can be made intelligible to AI agents through structured extraction. We extend this from CLI semantics to mathematical semantics.
 
-The EML (Exp-Minus-Log) symbolic regression implementation is based on the work by **Andrzej Odrzywołek** and his paper *"All elementary functions from a single binary operator"* (arXiv:2603.21852), which demonstrates that all elementary functions can be constructed from a single binary operator `eml(x,y) = exp(x) - ln(y)`.
+The EML (Exp-Minus-Log) symbolic regression implementation is based on the work by **Andrzej Odrzywolek** and his paper *"All elementary functions from a single binary operator"* (arXiv:2603.21852), which demonstrates that all elementary functions can be constructed from a single binary operator `eml(x,y) = exp(x) - ln(y)`.
 
 ## License
 

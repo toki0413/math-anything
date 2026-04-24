@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "math-trend"
+version = "0.1.0"
+description = "Dynamical systems analysis for scientific research trends"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "toki"}
+]
+keywords = [
+    "research-trends",
+    "scientometrics",
+    "dynamical-systems",
+    "knowledge-transfer",
+    "cross-domain",
+    "academic-analytics",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.20.0",
+    "scipy>=1.7.0",
+    "click>=8.0.0",
+    "scikit-learn>=1.0.0",
+]
+
+[project.optional-dependencies]
+viz = [
+    "matplotlib>=3.5.0",
+]
+deep = [
+    "sentence-transformers>=2.0.0",
+]
+dev = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+]
+
+[project.scripts]
+math-trend = "math_trend.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/toki0413/math-trend"
+Repository = "https://github.com/toki0413/math-trend"
+Issues = "https://github.com/toki0413/math-trend/issues"
+
+[tool.isort]
+profile = "black"
+line_length = 100

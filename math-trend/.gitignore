@@ -1,0 +1,33 @@
+# Python
+*.pyc
+__pycache__/
+*.pyo
+*.egg-info/
+*.egg
+dist/
+build/
+*.whl
+*.tar.gz
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.mypy_cache/
+
+# Output / runtime
+cache/
+*.png
+*.jpg
+*.json
+output/
+
+# OS
+.DS_Store
+Thumbs.db
