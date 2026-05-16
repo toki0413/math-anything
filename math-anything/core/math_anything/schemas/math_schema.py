@@ -444,6 +444,20 @@ class MathSchema:
         with open(path, "w", encoding="utf-8") as f:
             f.write(self.to_json())
 
+    @classmethod
+    def load(cls, path: str) -> "MathSchema":
+        """Load MathSchema from a JSON file.
+
+        Args:
+            path: Path to JSON file.
+
+        Returns:
+            Reconstructed MathSchema instance.
+        """
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return cls.from_dict(data)
+
     def add_symbolic_constraint(self, constraint: SymbolicConstraint):
         """Add a symbolic constraint to the schema."""
         self.symbolic_constraints.append(constraint)

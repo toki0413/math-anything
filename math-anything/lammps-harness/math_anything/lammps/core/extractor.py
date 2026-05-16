@@ -88,8 +88,10 @@ class LammpsExtractor:
 
         # Parse log file if provided
         log_data = None
+        self.dynamics_result = None
         if "log" in files:
             log_data = self.log_parser.parse_file(files["log"])
+            self.dynamics_result = self._analyze_dynamics(log_data)
 
         # Build Math Schema
         schema = MathSchema(
@@ -814,4 +816,35 @@ class LammpsExtractor:
             "groups": self.settings.groups,
             "units": self.settings.units,
         }
+        if self.dynamics_result:
+            symbols["dynamics_analysis"] = self.dynamics_result
         return symbols
+
+    def _analyze_dynamics(self, log_data: Any) -> Optional[Dict[str, Any]]:
+        """Run dynamics analysis on log file thermo data."""
+        try:
+            import numpy as np
+            from math_anything.tools.dynamics import DynamicsAnalyzer
+
+            if not log_data or not hasattr(log_data, "thermo_data") or not log_data.thermo_data:
+                return None
+
+            thermo = log_data.thermo_data
+            energy_key = None
+            for key in ["TotEng", "PotEng", "Temp", "Press"]:
+                if key in thermo[0]:
+                    energy_key = key
+                    break
+
+            if energy_key is None:
+                return None
+
+            ts = np.array([row[energy_key] for row in thermo])
+            if len(ts) < 50:
+                return None
+
+            analyzer = DynamicsAnalyzer()
+            result = analyzer.analyze(ts)
+            return result.to_dict()
+        except Exception:
+            return None

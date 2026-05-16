@@ -53,7 +53,7 @@ class Visualizer:
 
         # Root node
         engine = schema.get("engine", "unknown")
-        lines.append(f'    Root["{engine.upper()}\\nMathematical Structure"]')
+        lines.append(f'    Root["{engine.upper()}<br/>Mathematical Structure"]')
 
         # Mathematical structure
         math_struct = schema.get("mathematical_structure", {})
@@ -61,7 +61,7 @@ class Visualizer:
             problem_type = math_struct.get("problem_type", "unknown")
             canonical = math_struct.get("canonical_form", "N/A")
 
-            lines.append(f'    Root --> ProblemType["Problem Type\\n{problem_type}"]')
+            lines.append(f'    Root --> ProblemType["Problem Type<br/>{problem_type}"]')
             lines.append(f'    Root --> Canonical["{canonical}"]')
 
         # Variable dependencies
@@ -90,7 +90,7 @@ class Visualizer:
         constraints = decoding.get("constraints", [])
         if constraints and self.config.show_constraints:
             lines.append(
-                f'    Root --> ConstRoot["Constraints\\n({len(constraints)} total)"]'
+                f'    Root --> ConstRoot["Constraints<br/>({len(constraints)} total)"]'
             )
             satisfied = sum(1 for c in constraints if c.get("satisfied"))
             lines.append(
@@ -117,7 +117,7 @@ class Visualizer:
         lines.append(f"    class ConstRoot,ConstStatus constraint")
         lines.append(f"    class ApproxRoot approximation")
 
-        return "\\n".join(lines)
+        return "\n".join(lines)
 
     def _to_graphviz(self, schema: Dict[str, Any]) -> str:
         """Generate Graphviz DOT format."""
@@ -169,7 +169,7 @@ class Visualizer:
             lines.append("    root -> const;")
 
         lines.append("}")
-        return "\\n".join(lines)
+        return "\n".join(lines)
 
     def _to_text(self, schema: Dict[str, Any]) -> str:
         """Generate text-based tree visualization."""
@@ -179,21 +179,21 @@ class Visualizer:
         lines.append("=" * 60)
 
         engine = schema.get("engine", "unknown")
-        lines.append(f"\\nEngine: {engine.upper()}")
+        lines.append(f"\nEngine: {engine.upper()}")
         lines.append("-" * 40)
 
         # Mathematical structure
         math_struct = schema.get("mathematical_structure", {})
         if math_struct:
-            lines.append(f"\\n[PROBLEM TYPE]")
+            lines.append(f"\n[PROBLEM TYPE]")
             lines.append(f"  {math_struct.get('problem_type', 'N/A')}")
-            lines.append(f"\\n[CANONICAL FORM]")
+            lines.append(f"\n[CANONICAL FORM]")
             lines.append(f"  {math_struct.get('canonical_form', 'N/A')}")
 
         # Approximations tree
         approxs = schema.get("approximations", [])
         if approxs:
-            lines.append(f"\\n[APPROXIMATION HIERARCHY]")
+            lines.append(f"\n[APPROXIMATION HIERARCHY]")
             for i, app in enumerate(approxs):
                 indent = "  " + "  " * i
                 name = app.get("name", f"Level {i}")
@@ -203,15 +203,15 @@ class Visualizer:
         decoding = schema.get("mathematical_decoding", {})
         constraints = decoding.get("constraints", [])
         if constraints:
-            lines.append(f"\\n[CONSTRAINTS]")
+            lines.append(f"\n[CONSTRAINTS]")
             for const in constraints:
                 expr = const.get("expression", "unknown")
                 satisfied = const.get("satisfied", False)
                 status = "✓" if satisfied else "✗"
                 lines.append(f"  [{status}] {expr}")
 
-        lines.append("\\n" + "=" * 60)
-        return "\\n".join(lines)
+        lines.append("\n" + "=" * 60)
+        return "\n".join(lines)
 
     def generate_html(self, schema: Dict[str, Any], interactive: bool = True) -> str:
         """Generate HTML visualization with Mermaid.js.

@@ -3,9 +3,14 @@
 Provides 5 levels of analysis complexity:
 - Level 1: Basic - Quick screening
 - Level 2: Enhanced - Detailed parameters
-- Level 3: Professional - Topology analysis
-- Level 4: Advanced - Geometric methods
-- Level 5: Complete - Five-layer unified framework
+- Level 3: Professional - Topology analysis + Symbolic Regression
+- Level 4: Advanced - Geometric methods + Symbolic-Geometric integration
+- Level 5: Complete - Five-layer unified framework with Symbolic-Geometric synthesis
+
+Integration with Symbolic Regression:
+- Level 3+: Uses EnhancedPSRN to discover mathematical relationships
+- Level 4+: Combines symbolic expressions with geometric analysis
+- Level 5: Unified symbolic-geometric representation
 """
 
 from .tier_recommender import TierRecommendation, TierRecommender
@@ -17,7 +22,15 @@ from .tiered_schema import (
     TieredAnalysisResult,
 )
 
+# Symbolic Regression Integration
+from .symbolic_regression_integration import (
+    TieredSymbolicRegressionAnalyzer,
+    IntegratedTieredAnalyzer,
+    tiered_symbolic_regression_analysis,
+)
+
 __all__ = [
+    # Core Tiered Analysis
     "TieredAnalyzer",
     "AnalysisTier",
     "TierRecommender",
@@ -26,4 +39,8 @@ __all__ = [
     "FileAnalysis",
     "ComplexityScore",
     "ResourceRequirements",
+    # Symbolic Regression Integration
+    "TieredSymbolicRegressionAnalyzer",
+    "IntegratedTieredAnalyzer",
+    "tiered_symbolic_regression_analysis",
 ]

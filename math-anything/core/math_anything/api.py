@@ -62,7 +62,7 @@ class UnsupportedEngineError(MathAnythingError):
     pass
 
 
-class FileNotFoundError(MathAnythingError):
+class InputFileNotFoundError(MathAnythingError):
     """Raised when input file is not found."""
 
     pass
@@ -282,7 +282,7 @@ class MathAnything:
             filepath = Path(filepath)
 
             if not filepath.exists():
-                raise FileNotFoundError(f"File not found: {filepath}")
+                raise InputFileNotFoundError(f"File not found: {filepath}")
 
             # Auto-detect file type from extension or name
             file_type = self._detect_file_type(filepath, engine)
@@ -293,7 +293,7 @@ class MathAnything:
             for ftype, fpath in filepath.items():
                 p = Path(fpath)
                 if not p.exists():
-                    raise FileNotFoundError(f"File not found: {fpath}")
+                    raise InputFileNotFoundError(f"File not found: {fpath}")
                 files[ftype] = str(fpath)
 
         # Parse files based on engine
@@ -324,33 +324,203 @@ class MathAnything:
         params = {}
 
         if engine == "vasp":
-            # Parse INCAR
             if "incar" in files:
                 try:
                     from .vasp.core.incar_parser import parse_incar
-
                     incar_result = parse_incar(files["incar"])
                     params.update(
-                        {
-                            name: param.value
-                            for name, param in incar_result.parameters.items()
-                        }
+                        {name: param.value for name, param in incar_result.parameters.items()}
                     )
                 except Exception as e:
                     self._warnings.append(f"Failed to parse INCAR: {e}")
-
-            # Try to load other files
             if "poscar" in files:
                 params["_has_poscar"] = True
             if "kpoints" in files:
                 params["_has_kpoints"] = True
 
-        # For other engines, use file presence as parameters
+        elif engine == "lammps":
+            params = self._parse_lammps_files(files)
+
+        elif engine == "gromacs":
+            params = self._parse_gromacs_files(files)
+
+        elif engine in ("abaqus", "ansys"):
+            params = self._parse_keyword_files(files)
+
         for ftype, fpath in files.items():
             if ftype not in params:
                 params[f"_{ftype}_path"] = fpath
 
         return params
+
+    def _parse_lammps_files(self, files: Dict[str, str]) -> Dict[str, Any]:
+        """Parse LAMMPS input/data files to extract mathematical parameters."""
+        params = {}
+        input_path = files.get("input") or files.get("lmp") or files.get("in")
+        if not input_path:
+            for v in files.values():
+                if os.path.exists(v):
+                    input_path = v
+                    break
+
+        if not input_path or not os.path.exists(input_path):
+            return params
+
+        try:
+            from math_anything.lammps.core.parser import LammpsInputParser
+            parser = LammpsInputParser()
+            commands = parser.parse_file(input_path)
+            settings = parser.extract_settings(commands)
+
+            if settings.pair_style:
+                params["pair_style"] = settings.pair_style.style
+                cutoff = self._extract_pair_cutoff(settings.pair_style.style, settings.pair_style.args)
+                if cutoff is not None:
+                    params["pair_cutoff"] = cutoff
+
+            integrators = settings.get_integrator_fixes()
+            if integrators:
+                fix = integrators[0]
+                params["ensemble"] = fix.fix_style.upper()
+                params["integrator"] = {
+                    "nve": "velocity_verlet",
+                    "nvt": "velocity_verlet_with_nose_hoover",
+                    "npt": "velocity_verlet_with_nose_hoover_and_barostat",
+                    "langevin": "langevin",
+                }.get(fix.fix_style, fix.fix_style)
+
+            if settings.timestep is not None:
+                params["timestep"] = settings.timestep
+
+            if hasattr(settings, "n_atoms") and settings.n_atoms:
+                params["n_atoms"] = settings.n_atoms
+
+            if settings.units:
+                params["units"] = settings.units
+
+            if settings.pair_coeffs:
+                params["n_pair_types"] = len(settings.pair_coeffs)
+
+            if settings.boundary_style:
+                params["boundary"] = " ".join(settings.boundary_style)
+
+            params["_lammps_settings"] = settings
+
+            self._warnings.append(f"Parsed LAMMPS input: {settings.units} units, "
+                                  f"ensemble={params.get('ensemble','NVE')}, "
+                                  f"pair={params.get('pair_style','none')}")
+
+        except ImportError:
+            self._warnings.append("LAMMPS harness not installed, extracting generic structure")
+        except Exception as e:
+            self._warnings.append(f"LAMMPS parsing skipped: {e}")
+
+        return params
+
+    def _parse_gromacs_files(self, files: Dict[str, str]) -> Dict[str, Any]:
+        """Parse GROMACS .mdp files for mathematical parameters."""
+        params = {}
+        mdp_path = files.get("mdp") or files.get("input")
+        if not mdp_path:
+            for v in files.values():
+                if os.path.exists(v):
+                    mdp_path = v
+                    break
+        if not mdp_path or not os.path.exists(mdp_path):
+            return params
+
+        try:
+            with open(mdp_path) as f:
+                for line in f:
+                    line = line.strip()
+                    if not line or line.startswith((";", "#", "!")):
+                        continue
+                    if "=" in line:
+                        key, _, val = line.partition("=")
+                        key, val = key.strip(), val.strip().split(";")[0].strip()
+                        if key in ("integrator", "tcoupl", "pcoupl", "cutoff-scheme",
+                                    "constraints", "constraint-algorithm"):
+                            params[key] = val
+                        elif key in ("dt", "nsteps", "rvdw", "rcoulomb", "ref-t", "ref-p"):
+                            try:
+                                params[key] = float(val)
+                            except ValueError:
+                                params[key] = val
+            integrator = params.get("integrator", "md")
+            params["pair_style"] = params.get("cutoff-scheme", "Verlet")
+            params["ensemble"] = {
+                "md": "NVE", "md-vv": "NVE", "sd": "NVT",
+                "bd": "NVT", "steep": "minimization",
+            }.get(integrator, "NVE")
+            if integrator == "sd":
+                params["ensemble"] = "NVT"
+                params["integrator"] = "langevin"
+            if params.get("tcoupl") and params["tcoupl"] != "no":
+                params["ensemble"] = "NVT"
+            if "nsteps" in params and "dt" in params:
+                params["run"] = int(params["nsteps"])
+                params["timestep"] = params["dt"]
+            self._warnings.append(f"Parsed GROMACS mdp: integrator={integrator}")
+        except Exception as e:
+            self._warnings.append(f"GROMACS parsing skipped: {e}")
+        return params
+
+    def _parse_keyword_files(self, files: Dict[str, str]) -> Dict[str, Any]:
+        """Parse keyword-structured input files (Abaqus .inp, ANSYS APDL)."""
+        params = {}
+        inp_path = None
+        for v in files.values():
+            if os.path.exists(v):
+                inp_path = v
+                break
+        if not inp_path or not os.path.exists(inp_path):
+            return params
+
+        try:
+            with open(inp_path) as f:
+                content = f.read()
+            for line in content.split("\n"):
+                line = line.strip().lower()
+                if line.startswith("*material"):
+                    params["has_material"] = True
+                if line.startswith("*elastic"):
+                    params["material_model"] = "isotropic_elastic"
+                if line.startswith("*plastic"):
+                    params["material_model"] = "elastoplastic"
+                if line.startswith("*step"):
+                    if "static" in line:
+                        params["analysis_type"] = "static"
+                    elif "dynamic" in line:
+                        params["analysis_type"] = "dynamic"
+                if line.startswith("*boundary"):
+                    params["has_boundary"] = True
+                if "ex," in line or "ex =" in line:
+                    import re
+                    m = re.search(r'ex[,=]\s*([\d.]+)', line)
+                    if m: params["elastic_modulus"] = float(m.group(1))
+            params["element_type"] = params.get("element_type", "C3D8R")
+            self._warnings.append("Parsed keyword-structured input file")
+        except Exception as e:
+            self._warnings.append(f"Keyword parsing skipped: {e}")
+        return params
+
+    @staticmethod
+    def _extract_pair_cutoff(style: str, args: list) -> Optional[float]:
+        """Extract cutoff radius from pair_style arguments intelligently."""
+        if not args:
+            return None
+        cutoff_styles = {"lj/cut", "lj/cut/coul/long", "lj/cut/coul/cut",
+                         "lj/cut/coul/msm", "lj/cut/coul/wolf", "lj/cut/tip4p/long"}
+        if style not in cutoff_styles:
+            return None
+        for arg in reversed(args):
+            try:
+                val = float(arg)
+                if 0 < val < 100:
+                    return val
+            except (ValueError, TypeError):
+                continue
+        return None
 
     def compare(
         self,
@@ -402,16 +572,21 @@ class MathAnything:
     def discover(
         self, X: Any, y: Any, variable_names: Optional[List[str]] = None, **kwargs
     ) -> str:
-        """Discover mathematical equation from data using EML symbolic regression.
+        """Discover mathematical equation from data using symbolic regression.
 
-        Based on Andrzej Odrzywołek's paper "All elementary functions from a
-        single binary operator" (arXiv:2603.21852).
+        Default: Uses GP with EML operator (exp(x) - ln(y)), which can represent
+        all elementary functions. Based on Andrzej Odrzywołek's paper
+        "All elementary functions from a single binary operator" (arXiv:2603.21852).
 
         Args:
             X: Input data (numpy array or list), shape (n_samples, n_features)
             y: Target values (numpy array or list), shape (n_samples,)
             variable_names: Names of variables (default: x0, x1, ...)
-            **kwargs: Additional options for SymbolicRegression
+            **kwargs: Additional options:
+                - use_psrn: Use PSRN mode (default: False). Set True for faster but less accurate.
+                - use_eml: Use EML operator (default: True). Set False for standard math ops.
+                - For GP: population_size (default: 200), generations (default: 100)
+                - For PSRN: n_layers, max_iterations
 
         Returns:
             Discovered equation in standard mathematical notation
@@ -419,12 +594,17 @@ class MathAnything:
         Example:
             >>> ma = MathAnything()
             >>>
-            >>> # Discover damped oscillation: y = exp(-x) * cos(2*x)
+            >>> # Default: GP + EML (accurate, ~3-5s)
             >>> x = np.linspace(0, 10, 100)
-            >>> y = np.exp(-x) * np.cos(2*x)
+            >>> y = x**2 + 2*x + 1
             >>> equation = ma.discover(x.reshape(-1, 1), y, ['x'])
-            >>> print(equation)
-            "exp(-x) * cos(2*x)"
+            >>> print(equation)  # e.g., "eml(x, 0.58)"
+            >>>
+            >>> # PSRN mode (faster but less accurate)
+            >>> equation = ma.discover(X, y, ['x'], use_psrn=True)
+            >>>
+            >>> # Standard math operators (no EML)
+            >>> equation = ma.discover(X, y, ['x'], use_eml=False)
 
             >>> # From simulation output
             >>> data = load_simulation_output("vasp_output.dat")
@@ -432,20 +612,48 @@ class MathAnything:
         """
         import numpy as np
 
-        from .eml_v2 import ImprovedSymbolicRegression
-
         # Convert inputs to numpy arrays
         X_arr = np.array(X)
         y_arr = np.array(y)
 
-        # Run improved symbolic regression
-        sr = ImprovedSymbolicRegression(**kwargs)
-        best_tree = sr.fit(X_arr, y_arr, variable_names)
+        # Get mode options
+        use_psrn = kwargs.pop("use_psrn", False)  # Default: use GP
+        use_eml = kwargs.pop("use_eml", True)     # Default: use EML operator
 
-        # Convert to standard form
-        if best_tree is None:
+        if use_psrn:
+            # PSRN mode (faster but less accurate for EML)
+            from .psrn import PSRNSymbolicRegression
+
+            psrn_kwargs = {
+                "n_layers": kwargs.pop("n_layers", 2),
+                "max_iterations": kwargs.pop("max_iterations", 3),
+            }
+            sr = PSRNSymbolicRegression(**psrn_kwargs)
+            best_tree = sr.fit(X_arr, y_arr, variable_names)
+
+            if hasattr(sr, "_best_expr") and sr._best_expr:
+                return sr._best_expr
+            elif best_tree is not None:
+                return best_tree.to_standard_form()
             return "No equation found"
-        return best_tree.to_standard_form()
+        else:
+            # GP mode (default, more accurate)
+            from .eml_v2 import ImprovedSymbolicRegression
+
+            # Set defaults for GP
+            gp_kwargs = {
+                "population_size": kwargs.pop("population_size", 200),
+                "generations": kwargs.pop("generations", 100),
+                "use_standard_ops": not use_eml,  # False = EML, True = standard ops
+            }
+            gp_kwargs.update(kwargs)  # Allow override
+
+            sr = ImprovedSymbolicRegression(**gp_kwargs)
+            best_tree = sr.fit(X_arr, y_arr, variable_names)
+
+            if best_tree is None:
+                return "No equation found"
+            return best_tree.to_standard_form()
 
     def translate(self, result: ExtractionResult) -> "MathematicalPropositions":
         """Translate extracted schema into LLM-solvable mathematical propositions.

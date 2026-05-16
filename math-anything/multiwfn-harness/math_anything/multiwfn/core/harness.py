@@ -131,7 +131,31 @@ class MultiwfnHarness(Harness):
         # Add computational graph
         self._add_computational_graph(schema, analysis_type)
 
+        # Add TDA analysis if cube data available
+        if isinstance(wfn_data, dict) and "data" in wfn_data:
+            tda_result = self._analyze_tda(wfn_data)
+            if tda_result:
+                if not hasattr(schema, "raw_symbols") or schema.raw_symbols is None:
+                    schema.raw_symbols = {}
+                schema.raw_symbols["tda_analysis"] = tda_result
+
         return schema
+
+    def _analyze_tda(self, wfn_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Run TDA analysis on cube volumetric data."""
+        try:
+            import numpy as np
+            from math_anything.tools.tda import TDAAnalyzer
+
+            volume = np.asarray(wfn_data["data"])
+            if volume.ndim != 3 or volume.size < 64:
+                return None
+
+            analyzer = TDAAnalyzer()
+            result = analyzer.analyze(volume, data_type="volume", max_dim=2)
+            return result.to_dict()
+        except Exception:
+            return None
 
     def _add_quantum_equations(
         self,

@@ -29,8 +29,8 @@ jobs:
       - name: Run tests | 运行测试
         run: pytest -v
 
-  build:
-    name: Build Package | 构建包
+  build-pypi:
+    name: Build PyPI Package | 构建 PyPI 包
     needs: test
     runs-on: ubuntu-latest
     steps:
@@ -56,21 +56,91 @@ jobs:
       - name: Upload artifacts | 上传构建产物
         uses: actions/upload-artifact@v4
         with:
-          name: dist
+          name: pypi-dist
           path: dist/
+
+  build-tauri:
+    name: Build Tauri Desktop | 构建桌面端 (${{ matrix.platform }})
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: windows-latest
+            target: x86_64-pc-windows-msvc
+          - platform: macos-latest
+            target: aarch64-apple-darwin
+          - platform: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Checkout | 检出代码
+        uses: actions/checkout@v4
+
+      - name: Set up Python | 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies | 安装 Python 依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+
+      - name: Set up Node.js | 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Rust | 安装 Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Linux dependencies | 安装 Linux 依赖
+        if: matrix.platform == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Build sidecar | 构建 Python sidecar
+        run: python build.py --target sidecar
+
+      - name: Install frontend dependencies | 安装前端依赖
+        working-directory: math-anything-app
+        run: npm install
+
+      - name: Build Tauri app | 构建 Tauri 应用
+        uses: tauri-apps/tauri-action@v0
+        with:
+          projectPath: math-anything-app
+          tagName: ${{ github.ref_name }}
+          releaseName: "Math Anything ${{ github.ref_name }}"
+          releaseBody: "Desktop application for mathematical structure extraction"
+          releaseDraft: true
+          prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
+
+      - name: Upload Tauri artifacts | 上传桌面端产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: tauri-${{ matrix.target }}
+          path: |
+            math-anything-app/src-tauri/target/release/bundle/
+            math-anything-app/src-tauri/target/release/bundle/msi/*.msi
+            math-anything-app/src-tauri/target/release/bundle/dmg/*.dmg
+            math-anything-app/src-tauri/target/release/bundle/deb/*.deb
+            math-anything-app/src-tauri/target/release/bundle/appimage/*.AppImage
 
   github-release:
     name: GitHub Release | GitHub 发布
-    needs: build
+    needs: [build-pypi, build-tauri]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout | 检出代码
         uses: actions/checkout@v4
 
-      - name: Download artifacts | 下载构建产物
+      - name: Download PyPI artifacts | 下载 PyPI 产物
         uses: actions/download-artifact@v4
         with:
-          name: dist
+          name: pypi-dist
           path: dist/
 
       - name: Generate changelog | 生成更新日志
@@ -92,9 +162,13 @@ jobs:
 
             ## 安装 | Installation
 
+            ### Python Package
             ```bash
             pip install math-anything==${{ github.ref_name }}
             ```
+
+            ### Desktop Application
+            Download the installer for your platform from the assets below.
 
             ## 双平台仓库 | Dual Platform
 
@@ -107,7 +181,7 @@ jobs:
 
   pypi-publish:
     name: Publish to PyPI | 发布到 PyPI
-    needs: build
+    needs: build-pypi
     runs-on: ubuntu-latest
     environment:
       name: pypi
@@ -118,13 +192,11 @@ jobs:
       - name: Download artifacts | 下载构建产物
         uses: actions/download-artifact@v4
         with:
-          name: dist
+          name: pypi-dist
           path: dist/
 
       - name: Publish to PyPI | 发布到 PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-        # 需要先在 PyPI 配置 trusted publisher
-        # 或者使用 secrets.PYPI_API_TOKEN
 
   sync-gitee:
     name: Sync to Gitee | 同步到 Gitee

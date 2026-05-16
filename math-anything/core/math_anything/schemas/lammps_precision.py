@@ -36,15 +36,43 @@ class LammpsMathematicalPrecisionExtractor(BasePrecisionExtractor):
         """Extract the mathematical structure of the MD problem.
 
         LAMMPS solves Newton's equations of motion for many-body systems.
+        Different pair_styles imply different force field functional forms.
         """
         ensemble = params.get("ensemble", "NVE")
+        pair_style = params.get("pair_style", "")
+
+        FORCE_FORM = {
+            "lj/cut": "F_i = Σ_j 24ε[(2(σ/r_ij)^12 - (σ/r_ij)^6)] r̂_ij / r_ij",
+            "lj/cut/coul/long": "F_i = Σ_j [24ε(2(σ/r_ij)^12 - (σ/r_ij)^6)/r_ij + qᵢqⱼ/(4πε₀r_ij²)] r̂_ij",
+            "eam": "F_i = -∂[Σⱼ Fᵢ(ρᵢ) + ½Σⱼ φᵢⱼ(r_ij)]/∂r_i",
+            "meam": "F_i = -∂[Σⱼ Fᵢ(ρᵢ, tᵢ¹, tᵢ², tᵢ³) + ½Σⱼ φᵢⱼ(r_ij)]/∂r_i",
+            "tersoff": "F_i = -∂[½Σⱼ f_c(r_ij)(f_R(r_ij) + b_ij f_A(r_ij))]/∂r_i",
+            "sw": "F_i = -∂[Σⱼ φ₂(r_ij) + Σⱼ<k φ₃(r_ij, r_ik, θ_ijk)]/∂r_i",
+            "reax/c": "F_i = -∂[E_bond+E_over+E_val+E_pen+E_conj+E_vdW+E_Coul]/∂r_i",
+            "buck": "F_i = Σ_j [A_ijexp(-r_ij/ρ_ij)/ρ_ij - 6C_ij/r_ij⁷] r̂_ij",
+            "morse": "F_i = Σ_j 2aDₑ[1-exp(-a(r_ij-rₑ))]exp(-a(r_ij-rₑ)) r̂_ij",
+            "dpd": "F_i = Σ_j [F_ij^C + F_ij^D + F_ij^R], F_ij^D = -γw_D(r_ij)(v_ij·r̂_ij)r̂_ij",
+            "gran/hooke/history": "F_i = Σ_j [k_nδ_ij n̂ - γ_n v_n,ij] (Hertz-Mindlin contact)",
+        }
 
         if ensemble in ["NVT", "NPT"]:
             problem_type = "stochastic_ode"
-            canonical_form = "m_i d²r_i/dt² = F_i + γv_i + R_i(t)"
+            canonical_form = f"m_i d²r_i/dt² = F_i + γv_i + R_i(t)"
         else:
             problem_type = "initial_value_ode"
-            canonical_form = "m_i d²r_i/dt² = F_i(r_1, ..., r_N)"
+            if pair_style and pair_style in FORCE_FORM:
+                canonical_form = FORCE_FORM[pair_style]
+            else:
+                for key in FORCE_FORM:
+                    if key in (pair_style or ""):
+                        canonical_form = FORCE_FORM[key]
+                        break
+                else:
+                    canonical_form = "m_i d²r_i/dt² = F_i(r_1, ..., r_N)"
+
+        is_pairwise = any(k in (pair_style or "") for k in ["lj/cut", "buck", "morse", "dpd"])
+        is_manybody = any(k in (pair_style or "") for k in ["eam", "meam", "tersoff", "sw"])
+        is_reactive = "reax" in (pair_style or "")
 
         return MathematicalStructure(
             problem_type=problem_type,
@@ -53,6 +81,9 @@ class LammpsMathematicalPrecisionExtractor(BasePrecisionExtractor):
                 "hamiltonian": ensemble == "NVE",
                 "symplectic": True,
                 "reversible": True,
+                "pairwise": is_pairwise,
+                "manybody": is_manybody,
+                "reactive": is_reactive,
             },
             dimension=3 * params.get("n_atoms", 1),
             function_space="ℝ^{3N}",

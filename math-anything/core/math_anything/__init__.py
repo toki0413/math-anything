@@ -24,7 +24,7 @@ __version__ = "1.0.0"
 # New simplified API
 from .api import (
     ExtractionResult,
-    FileNotFoundError,
+    InputFileNotFoundError,
     MathAnything,
     MathAnythingError,
     ParseError,
@@ -71,6 +71,27 @@ from .proposition import (
     PropositionGenerator,
     TaskType,
 )
+
+# Proof Verification (Closed Loop)
+from .proof_verifier import (
+    ProofReviser,
+    ProofVerifier,
+    VerificationPipeline,
+    VerificationResult,
+    VerificationStatus,
+)
+
+# Agent Architecture
+from .agents import (
+    AgentOrchestrator,
+    AgentResult,
+    BaseAgent,
+    CompareAgent,
+    ExtractAgent,
+    PropositionAgent,
+    ValidateAgent,
+    VerifyAgent,
+)
 from .schemas import (
     BoundaryCondition,
     ComputationalGraph,
@@ -111,6 +132,114 @@ from .tiered.tiered_analyzer import analyze as tiered_analyze
 # Visualization
 from .visualization import Visualizer, save_html, to_graphviz, to_mermaid
 
+# Differential Geometry Layer
+from .geometry import (
+    CurvatureInfo,
+    CurvatureType,
+    DifferentialGeometryLayer,
+    FiberBundle,
+    GeometricStructure,
+    Manifold,
+    ManifoldType,
+    MetricTensor,
+    SymmetryGroup,
+    SymmetryType,
+    compute_christoffel,
+)
+
+# Math Advisor
+from .advisor import MathAdvisor, DISCIPLINE_STATUS
+
+# Analysis Tools
+from .tools.symmetry import SymmetryAnalyzer, SymmetryAnalysisResult
+from .tools.tda import TDAAnalyzer, TopologyResult
+from .tools.spectral import SpectralAnalyzer, SpectralAnalysisResult
+from .tools.dynamics import DynamicsAnalyzer, DynamicsAnalysisResult
+from .tools.viz import InteractiveVisualizer
+from .tools.ml_potential import MLPotentialAnalyzer, MLPotentialResult
+from .tools.langlands import LanglandsAnalyzer, LanglandsResult
+from .tools.sindy import SINDyDiscoverer, SINDyResult
+from .sandbox import SandboxExecutor, SandboxResult, SandboxConfig
+
+# Provenance & References
+from .provenance import Provenance, ProvenanceChain, ProvenanceTracker
+from .references import ConstraintReference, ReferenceTracker
+
+# Data Flywheel
+from .flywheel import (
+    DataFlywheel,
+    EngineDegradation,
+    FailurePattern,
+    FlywheelRecord,
+    FlywheelStats,
+    RecordType,
+)
+
+# Formal Verification (Multi-layer)
+from .formal_verifier import (
+    Dimension,
+    FormalStatus,
+    FormalVerificationResult,
+    FormalVerifier,
+    LayerResult,
+    LogicVerifier,
+    LLMSemanticVerifier,
+    MathType,
+    SymbolicVerifier,
+    TypeSystemVerifier,
+    TypedSymbol,
+    VerificationLayer,
+)
+
+# Lean4 + Mathlib Bridge (Optional Layer 5)
+from .lean4_bridge import (
+    Lean4Bridge,
+    LeanVerificationResult,
+    LeanVerificationStatus,
+    get_lean4_bridge,
+    schema_to_lean,
+    verify_with_lean4,
+)
+
+# Validation Toolkit (Cross-validation, Falsifiable Predictions, Dual Perspective)
+from .validation_toolkit import (
+    CrossValidationMatrix,
+    DualPerspectiveAnalyzer,
+    DualPerspectiveResult,
+    FalsifiablePrediction,
+    FalsifiablePredictionTable,
+    MethodConclusionCell,
+    PredictionStatus,
+    ValidationStatus,
+    create_cross_validation_from_schema,
+    create_prediction_table_from_schema,
+)
+
+# Tool System + Agent Loop
+from .tool_system import (
+    MathTool,
+    PermissionResult,
+    ToolContext,
+    ToolResult,
+    build_math_tool,
+)
+from .tool_registry import (
+    ToolRegistry,
+    build_default_registry,
+)
+from .agent_loop import (
+    AgentEvent,
+    DoneEvent,
+    ErrorEvent,
+    MathAgentLoop,
+    TextDeltaEvent,
+    ToolCallStartEvent,
+    ToolProgressEvent,
+    ToolResultEvent,
+)
+
+FormalResult = FormalVerificationResult
+
 
 def load_harness(engine_name: str) -> MathAnythingHarness:
     """Load a harness by engine name.
@@ -145,7 +274,11 @@ def list_engines() -> list:
     Returns:
         List of engine names.
     """
-    return HarnessRegistry.list_engines()
+    try:
+        from .api import ENGINE_EXTRACTORS
+        return list(ENGINE_EXTRACTORS.keys())
+    except Exception:
+        return HarnessRegistry.list_engines()
 
 
 __all__ = [
@@ -159,7 +292,7 @@ __all__ = [
     # Exceptions
     "MathAnythingError",
     "UnsupportedEngineError",
-    "FileNotFoundError",
+    "InputFileNotFoundError",
     "FileAccessError",
     "ParseError",
     "ValidationError",
@@ -198,6 +331,21 @@ __all__ = [
     "MathematicalPropositions",
     "MathematicalTask",
     "TaskType",
+    # Proof Verification
+    "ProofVerifier",
+    "ProofReviser",
+    "VerificationPipeline",
+    "VerificationResult",
+    "VerificationStatus",
+    # Agent Architecture
+    "AgentOrchestrator",
+    "AgentResult",
+    "BaseAgent",
+    "ExtractAgent",
+    "ValidateAgent",
+    "CompareAgent",
+    "PropositionAgent",
+    "VerifyAgent",
     # Legacy API
     "load_harness",
     "list_engines",
@@ -223,4 +371,99 @@ __all__ = [
     "ResourceRequirements",
     "tiered_analyze",
     "analyze_file_properties",
+    # Differential Geometry
+    "DifferentialGeometryLayer",
+    "Manifold",
+    "ManifoldType",
+    "MetricTensor",
+    "CurvatureInfo",
+    "CurvatureType",
+    "SymmetryGroup",
+    "SymmetryType",
+    "FiberBundle",
+    "GeometricStructure",
+    "compute_christoffel",
+    # Math Advisor
+    "MathAdvisor",
+    "DISCIPLINE_STATUS",
+    # Analysis Tools
+    "SymmetryAnalyzer",
+    "SymmetryAnalysisResult",
+    "TDAAnalyzer",
+    "TopologyResult",
+    "SpectralAnalyzer",
+    "SpectralAnalysisResult",
+    "DynamicsAnalyzer",
+    "DynamicsAnalysisResult",
+    "InteractiveVisualizer",
+    "MLPotentialAnalyzer",
+    "MLPotentialResult",
+    "LanglandsAnalyzer",
+    "LanglandsResult",
+    "SINDyDiscoverer",
+    "SINDyResult",
+    "SandboxExecutor",
+    "SandboxResult",
+    "SandboxConfig",
+    # Provenance & References
+    "Provenance",
+    "ProvenanceChain",
+    "ProvenanceTracker",
+    "ConstraintReference",
+    "ReferenceTracker",
+    # Data Flywheel
+    "DataFlywheel",
+    "EngineDegradation",
+    "FlywheelRecord",
+    "FlywheelStats",
+    "FailurePattern",
+    "RecordType",
+    # Formal Verification
+    "FormalVerifier",
+    "FormalVerificationResult",
+    "FormalResult",
+    "FormalStatus",
+    "LayerResult",
+    "VerificationLayer",
+    "SymbolicVerifier",
+    "TypeSystemVerifier",
+    "LogicVerifier",
+    "LLMSemanticVerifier",
+    "TypedSymbol",
+    "MathType",
+    "Dimension",
+    # Lean4 Bridge
+    "Lean4Bridge",
+    "LeanVerificationResult",
+    "LeanVerificationStatus",
+    "get_lean4_bridge",
+    "schema_to_lean",
+    "verify_with_lean4",
+    # Validation Toolkit
+    "CrossValidationMatrix",
+    "DualPerspectiveAnalyzer",
+    "DualPerspectiveResult",
+    "FalsifiablePrediction",
+    "FalsifiablePredictionTable",
+    "MethodConclusionCell",
+    "PredictionStatus",
+    "ValidationStatus",
+    "create_cross_validation_from_schema",
+    "create_prediction_table_from_schema",
+    # Tool System + Agent Loop
+    "MathTool",
+    "PermissionResult",
+    "ToolContext",
+    "ToolResult",
+    "build_math_tool",
+    "ToolRegistry",
+    "build_default_registry",
+    "AgentEvent",
+    "DoneEvent",
+    "ErrorEvent",
+    "MathAgentLoop",
+    "TextDeltaEvent",
+    "ToolCallStartEvent",
+    "ToolProgressEvent",
+    "ToolResultEvent",
 ]

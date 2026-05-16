@@ -412,6 +412,11 @@ class VaspExtractor:
             incar_dict, self.structure, self.kpoints
         )
 
+        # Run symmetry analysis if structure is available
+        self.symmetry_result = None
+        if self.structure is not None:
+            self.symmetry_result = self._analyze_symmetry()
+
         # Build Math Schema
         schema = MathSchema(
             schema_version="1.0.0",
@@ -800,7 +805,51 @@ class VaspExtractor:
             "kpoints": self.kpoints.to_dict() if self.kpoints else {},
             "validation": self.validation_results or {},
         }
+        if self.symmetry_result:
+            symbols["symmetry_analysis"] = self.symmetry_result
         return symbols
+
+    def _analyze_symmetry(self) -> Optional[Dict[str, Any]]:
+        """Run symmetry analysis on the crystal structure."""
+        try:
+            from math_anything.tools.symmetry import SymmetryAnalyzer
+
+            lattice = None
+            positions = None
+            numbers = None
+
+            if hasattr(self.structure, "lattice") and hasattr(self.structure.lattice, "vectors"):
+                lattice = self.structure.lattice.vectors.tolist()
+            elif hasattr(self.structure, "lattice_vectors"):
+                lattice = self.structure.lattice_vectors.tolist()
+
+            if hasattr(self.structure, "atoms"):
+                positions = [a.position.tolist() if hasattr(a.position, "tolist") else list(a.position) for a in self.structure.atoms]
+                _SYMBOL_TO_Z = {
+                    "H": 1, "He": 2, "Li": 3, "Be": 4, "B": 5, "C": 6, "N": 7, "O": 8,
+                    "F": 9, "Ne": 10, "Na": 11, "Mg": 12, "Al": 13, "Si": 14, "P": 15,
+                    "S": 16, "Cl": 17, "Ar": 18, "K": 19, "Ca": 20, "Sc": 21, "Ti": 22,
+                    "V": 23, "Cr": 24, "Mn": 25, "Fe": 26, "Co": 27, "Ni": 28, "Cu": 29,
+                    "Zn": 30, "Ga": 31, "Ge": 32, "As": 33, "Se": 34, "Br": 35, "Kr": 36,
+                    "Rb": 37, "Sr": 38, "Y": 39, "Zr": 40, "Nb": 41, "Mo": 42, "Ru": 44,
+                    "Rh": 45, "Pd": 46, "Ag": 47, "Cd": 48, "In": 49, "Sn": 50, "Sb": 51,
+                    "Te": 52, "I": 53, "Xe": 54, "Cs": 55, "Ba": 56, "La": 57, "Ce": 58,
+                    "Pr": 59, "Nd": 60, "Sm": 62, "Eu": 63, "Gd": 64, "Tb": 65, "Dy": 66,
+                    "Ho": 67, "Er": 68, "Tm": 69, "Yb": 70, "Lu": 71, "Hf": 72, "Ta": 73,
+                    "W": 74, "Re": 75, "Os": 76, "Ir": 77, "Pt": 78, "Au": 79, "Hg": 80,
+                    "Tl": 81, "Pb": 82, "Bi": 83,
+                }
+                numbers = [_SYMBOL_TO_Z.get(a.symbol, 0) for a in self.structure.atoms]
+            elif hasattr(self.structure, "positions"):
+                positions = self.structure.positions.tolist() if hasattr(self.structure.positions, "tolist") else list(self.structure.positions)
+
+            if lattice is not None and positions is not None and numbers is not None:
+                analyzer = SymmetryAnalyzer()
+                result = analyzer.analyze_structure(lattice, positions, numbers)
+                return result.to_dict()
+        except Exception:
+            pass
+        return None
 
     def _extract_symbolic_constraints(self) -> List[SymbolicConstraint]:
         """Extract all symbolic constraints with validation status."""

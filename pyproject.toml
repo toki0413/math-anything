@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "math-anything"
-version = "1.0.0"
+version = "2.1.0"
 description = "Mathematical structure extraction for computational materials science engines"
 readme = "README.md"
 license = {text = "MIT"}
@@ -46,6 +46,48 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+server = [
+    "fastapi>=0.100.0",
+    "uvicorn>=0.23.0",
+    "python-multipart>=0.0.6",
+]
+verify = [
+    "sympy>=1.12",
+]
+llm = [
+    "openai>=1.0.0",
+    "anthropic>=0.18.0",
+]
+lean4 = [
+    "lean-dojo>=0.1.0",
+]
+symmetry = [
+    "spglib>=2.0.0",
+]
+tda = [
+    "ripser>=0.6.0",
+    "gudhi>=3.7.0",
+    "persim>=0.3.0",
+]
+topology = [
+    "pythtb>=1.8.0",
+]
+dynamics = [
+    "nolds>=0.5.0",
+    "pydmd>=1.0.0",
+]
+sindy = [
+    "pysindy>=1.7.0",
+]
+langlands = [
+    "cypari2>=2.1.0",
+]
+sandbox = [
+    "e2b>=1.0.0",
+]
+viz = [
+    "plotly>=5.15.0",
+]
 dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
@@ -56,6 +98,12 @@ dev = [
 ]
 mcp = [
     "mcp>=1.0.0",
+]
+computation = [
+    "math-anything[symmetry,tda,topology,dynamics,sindy,langlands,viz]",
+]
+all = [
+    "math-anything[server,verify,llm,lean4,computation,sandbox,dev,mcp]",
 ]
 
 [project.scripts]
