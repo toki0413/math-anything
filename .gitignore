@@ -70,6 +70,7 @@ Thumbs.db
 
 # Tauri / Rust build
 math-anything-app/src-tauri/target/
+math-anything-app/src-tauri/binaries/*.exe
 
 # Node.js
 node_modules/
