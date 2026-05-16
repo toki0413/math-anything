@@ -7,7 +7,11 @@ from .schemas import VerifyInput, VerifyOutput
 
 
 async def _verify_call(inp: VerifyInput, ctx: ToolContext) -> ToolResult[VerifyOutput]:
-    from math_anything import DifferentialGeometryLayer, FormalVerifier, MathematicalTask
+    from math_anything import (
+        DifferentialGeometryLayer,
+        FormalVerifier,
+        MathematicalTask,
+    )
     from math_anything import TaskType as TT
 
     task_type = TT.PROOF

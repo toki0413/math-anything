@@ -205,7 +205,7 @@ class LocalKnowledgeCache:
     def _get_cache_file(self, key: str) -> Path:
         """Get cache file path for key."""
         # Hash the key for filesystem safety
-        key_hash = hashlib.md5(key.encode()).hexdigest()
+        key_hash = hashlib.md5(key.encode(), usedforsecurity=False).hexdigest()
         return self.cache_dir / f"{key_hash}.cache"
 
     def _is_expired(self, key: str) -> bool:

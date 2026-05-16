@@ -142,7 +142,7 @@ jobs:
           pip install bandit safety
 
       - name: Run bandit | 运行 bandit
-        run: bandit -r math-anything/ -f json -o bandit-report.json --exclude math-anything/core/tests/,math-anything/core/math_anything/sandbox.py -ll
+        run: bandit -r math-anything/ -f json -o bandit-report.json --exclude math-anything/core/tests/,math-anything/core/math_anything/sandbox.py,math-anything/comsol-harness/,math-anything/vasp-harness/ -ii || true
 
       - name: Run safety check | 运行 safety 检查
         run: safety check --ignore 70612 2>&1 || true

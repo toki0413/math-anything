@@ -741,7 +741,7 @@ class StreamingParser:
 
     def _compute_file_hash(self, filepath: str) -> str:
         """Compute hash of file for checkpoint validation."""
-        hasher = hashlib.md5()
+        hasher = hashlib.md5(usedforsecurity=False)
         stat = Path(filepath).stat()
         # Use size and mtime as lightweight hash
         hasher.update(f"{stat.st_size}:{stat.st_mtime}".encode())
