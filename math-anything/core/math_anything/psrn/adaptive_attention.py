@@ -7,10 +7,11 @@
 4. 多臂老虎机探索 - 平衡探索与利用
 """
 
-from typing import Dict, List, Optional, Tuple, Callable
-import numpy as np
-from collections import defaultdict
 import warnings
+from collections import defaultdict
+from typing import Callable, Dict, List, Optional, Tuple
+
+import numpy as np
 
 from .token_generator import TokenGenerator
 
@@ -100,10 +101,10 @@ class AdaptiveAttentionGenerator(TokenGenerator):
 
         # 利用：高分数候选
         scored_candidates.sort(key=lambda x: x[2], reverse=True)
-        exploit_candidates = scored_candidates[:n_exploit * 3]  # 候选池
+        exploit_candidates = scored_candidates[: n_exploit * 3]  # 候选池
 
         # 探索：随机采样（但有一定偏向性）
-        remaining = scored_candidates[n_exploit * 3:]
+        remaining = scored_candidates[n_exploit * 3 :]
         if remaining and n_explore > 0:
             probs = np.array([max(0.01, c[2]) for c in remaining])
             probs = probs / probs.sum()
@@ -178,11 +179,7 @@ class AdaptiveAttentionGenerator(TokenGenerator):
 
         # 1. 原始变量
         for i, name in enumerate(variable_names):
-            candidates.append((
-                name,
-                X[:, i],
-                {"type": "variable", "complexity": 1}
-            ))
+            candidates.append((name, X[:, i], {"type": "variable", "complexity": 1}))
 
         # 2. 基于问题特征的函数选择
         pattern = problem_features["likely_pattern"]
@@ -191,36 +188,56 @@ class AdaptiveAttentionGenerator(TokenGenerator):
         if pattern in ["polynomial", "complex", "linear"]:
             for i, name in enumerate(variable_names):
                 x_vals = X[:, i]
-                candidates.extend([
-                    (f"({name}*{name})", x_vals**2, {"type": "square", "complexity": 2}),
-                    (f"({name}*{name}*{name})", x_vals**3, {"type": "cubic", "complexity": 3}),
-                ])
+                candidates.extend(
+                    [
+                        (
+                            f"({name}*{name})",
+                            x_vals**2,
+                            {"type": "square", "complexity": 2},
+                        ),
+                        (
+                            f"({name}*{name}*{name})",
+                            x_vals**3,
+                            {"type": "cubic", "complexity": 3},
+                        ),
+                    ]
+                )
 
         # 三角函数（适合周期性）
         if pattern in ["complex", "polynomial"]:
             for i, name in enumerate(variable_names):
                 x_vals = X[:, i]
-                candidates.extend([
-                    (f"sin({name})", np.sin(x_vals), {"type": "sin", "complexity": 2}),
-                    (f"cos({name})", np.cos(x_vals), {"type": "cos", "complexity": 2}),
-                ])
+                candidates.extend(
+                    [
+                        (
+                            f"sin({name})",
+                            np.sin(x_vals),
+                            {"type": "sin", "complexity": 2},
+                        ),
+                        (
+                            f"cos({name})",
+                            np.cos(x_vals),
+                            {"type": "cos", "complexity": 2},
+                        ),
+                    ]
+                )
 
         # 指数/对数（适合快速增长/衰减）
         for i, name in enumerate(variable_names):
             x_vals = X[:, i]
             if np.all(x_vals < 5):  # 避免exp爆炸
                 exp_vals = np.exp(np.clip(x_vals, -50, 50))
-                candidates.append((
-                    f"exp({name})",
-                    exp_vals,
-                    {"type": "exp", "complexity": 2}
-                ))
+                candidates.append(
+                    (f"exp({name})", exp_vals, {"type": "exp", "complexity": 2})
+                )
             if np.all(x_vals > 0):
-                candidates.append((
-                    f"log({name})",
-                    np.log(x_vals + 1e-10),
-                    {"type": "log", "complexity": 2}
-                ))
+                candidates.append(
+                    (
+                        f"log({name})",
+                        np.log(x_vals + 1e-10),
+                        {"type": "log", "complexity": 2},
+                    )
+                )
 
         # 3. EML核心结构：exp(x) - log(y)
         if self.use_eml_priority and n_vars >= 2:
@@ -232,30 +249,39 @@ class AdaptiveAttentionGenerator(TokenGenerator):
                         eml_vals = np.exp(np.clip(X[:, i], -50, 50)) - np.log(
                             np.abs(X[:, j]) + 1e-10
                         )
-                        candidates.append((
-                            f"eml({name_i},{name_j})",
-                            eml_vals,
-                            {"type": "eml", "complexity": 4, "eml_core": True}
-                        ))
+                        candidates.append(
+                            (
+                                f"eml({name_i},{name_j})",
+                                eml_vals,
+                                {"type": "eml", "complexity": 4, "eml_core": True},
+                            )
+                        )
 
                         # EML变体
-                        candidates.extend([
-                            (f"(exp({name_i})-log({name_j}))", eml_vals,
-                             {"type": "eml_expanded", "complexity": 5}),
-                        ])
+                        candidates.extend(
+                            [
+                                (
+                                    f"(exp({name_i})-log({name_j}))",
+                                    eml_vals,
+                                    {"type": "eml_expanded", "complexity": 5},
+                                ),
+                            ]
+                        )
 
         # 4. 组合特征
         if n_vars >= 2:
             # 乘积项
             for i in range(min(3, n_vars)):
-                for j in range(i+1, min(3, n_vars)):
+                for j in range(i + 1, min(3, n_vars)):
                     name_i, name_j = variable_names[i], variable_names[j]
                     prod_vals = X[:, i] * X[:, j]
-                    candidates.append((
-                        f"({name_i}*{name_j})",
-                        prod_vals,
-                        {"type": "product", "complexity": 2}
-                    ))
+                    candidates.append(
+                        (
+                            f"({name_i}*{name_j})",
+                            prod_vals,
+                            {"type": "product", "complexity": 2},
+                        )
+                    )
 
         # 过滤无效候选
         valid_candidates = []
@@ -312,7 +338,7 @@ class AdaptiveAttentionGenerator(TokenGenerator):
             A = np.vstack([values, np.ones(len(values))]).T
             coeffs, residuals, _, _ = np.linalg.lstsq(A, y, rcond=None)
             if len(residuals) > 0:
-                ss_tot = np.sum((y - np.mean(y))**2)
+                ss_tot = np.sum((y - np.mean(y)) ** 2)
                 r_squared = 1 - residuals[0] / ss_tot if ss_tot > 0 else 0
                 scores["linearity"] = max(0, min(1, r_squared))
             else:
@@ -346,9 +372,7 @@ class AdaptiveAttentionGenerator(TokenGenerator):
         total = sum(self.weights.get(k, 0) * scores.get(k, 0) for k in scores)
         return total
 
-    def _diversity_filter(
-        self, candidates: List[Tuple], n_select: int
-    ) -> List[Tuple]:
+    def _diversity_filter(self, candidates: List[Tuple], n_select: int) -> List[Tuple]:
         """多样性筛选，避免选择过于相似的候选."""
         if not candidates:
             return []
@@ -384,7 +408,7 @@ class AdaptiveAttentionGenerator(TokenGenerator):
         # 如果不够，补充高分数候选
         if len(selected) < n_select:
             remaining = [c for c in candidates if c not in selected]
-            selected.extend(remaining[:n_select - len(selected)])
+            selected.extend(remaining[: n_select - len(selected)])
 
         return selected[:n_select]
 
@@ -396,15 +420,16 @@ class AdaptiveAttentionGenerator(TokenGenerator):
 
         # 相同变量集合
         import re
-        vars1 = set(re.findall(r'[xyzt]\d?', e1))
-        vars2 = set(re.findall(r'[xyzt]\d?', e2))
+
+        vars1 = set(re.findall(r"[xyzt]\d?", e1))
+        vars2 = set(re.findall(r"[xyzt]\d?", e2))
 
         if vars1 != vars2:
             return False
 
         # 函数调用相似性
-        funcs1 = set(re.findall(r'(sin|cos|exp|log|eml)', e1))
-        funcs2 = set(re.findall(r'(sin|cos|exp|log|eml)', e2))
+        funcs1 = set(re.findall(r"(sin|cos|exp|log|eml)", e1))
+        funcs2 = set(re.findall(r"(sin|cos|exp|log|eml)", e2))
 
         return funcs1 == funcs2
 
@@ -415,8 +440,7 @@ class AdaptiveAttentionGenerator(TokenGenerator):
 
         # 分析成功的token特征
         successful_tokens = [
-            (token, reward) for token, reward in reward_history.items()
-            if reward > 0.7
+            (token, reward) for token, reward in reward_history.items() if reward > 0.7
         ]
 
         if not successful_tokens:
@@ -433,7 +457,9 @@ class AdaptiveAttentionGenerator(TokenGenerator):
         if total > 0:
             # 如果EML成功率高，提高eml_potential权重
             if eml_success / total > 0.3:
-                self.weights["eml_potential"] = min(0.3, self.weights["eml_potential"] + 0.05)
+                self.weights["eml_potential"] = min(
+                    0.3, self.weights["eml_potential"] + 0.05
+                )
 
             # 根据复杂度调整structure权重
             if simple_success > complex_success:
@@ -452,7 +478,7 @@ class HybridAttentionGenerator(AdaptiveAttentionGenerator):
         self,
         n_tokens: int = 20,
         strategy_weights: Optional[Dict[str, float]] = None,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(n_tokens=n_tokens, **kwargs)
 
@@ -499,7 +525,7 @@ class HybridAttentionGenerator(AdaptiveAttentionGenerator):
         if n_by_strategy["evolutionary"] > 0 and reward_history:
             top_tokens = sorted(
                 reward_history.items(), key=lambda x: x[1], reverse=True
-            )[:n_by_strategy["evolutionary"]]
+            )[: n_by_strategy["evolutionary"]]
 
             for token, _ in top_tokens:
                 if token not in all_tokens:
@@ -521,7 +547,7 @@ class HybridAttentionGenerator(AdaptiveAttentionGenerator):
                 unique_tokens.append((i, token))
 
         # 重新获取值
-        final_tokens = [t for _, t in unique_tokens[:self.n_tokens]]
+        final_tokens = [t for _, t in unique_tokens[: self.n_tokens]]
 
         # 计算值
         evaluator = self._get_evaluator()
@@ -537,11 +563,14 @@ class HybridAttentionGenerator(AdaptiveAttentionGenerator):
             return final_tokens, np.column_stack(final_values)
         else:
             # 回退
-            return super().generate(X, y, variable_names, current_tokens, reward_history)
+            return super().generate(
+                X, y, variable_names, current_tokens, reward_history
+            )
 
     def _get_evaluator(self) -> Callable:
         """获取表达式评估函数."""
         from .compiled_evaluator import CompiledEvaluator
+
         evaluator = CompiledEvaluator()
         return lambda expr, X, names: evaluator.evaluate(expr, X, names)
 

@@ -6,7 +6,9 @@ from ..tool_system import ToolContext, ToolResult, build_math_tool
 from .schemas import ExtractInput, ExtractOutput
 
 
-async def _extract_call(inp: ExtractInput, ctx: ToolContext) -> ToolResult[ExtractOutput]:
+async def _extract_call(
+    inp: ExtractInput, ctx: ToolContext
+) -> ToolResult[ExtractOutput]:
     from math_anything import MathAnything
 
     ma = MathAnything()
@@ -22,7 +24,9 @@ async def _extract_call(inp: ExtractInput, ctx: ToolContext) -> ToolResult[Extra
     output = ExtractOutput(
         math_schema=schema,
         constraints=schema.get("constraints", []) if isinstance(schema, dict) else [],
-        approximations=schema.get("approximations", []) if isinstance(schema, dict) else [],
+        approximations=(
+            schema.get("approximations", []) if isinstance(schema, dict) else []
+        ),
     )
     return ToolResult(
         success=result.success if hasattr(result, "success") else True,

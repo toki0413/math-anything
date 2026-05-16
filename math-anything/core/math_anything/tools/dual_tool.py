@@ -6,7 +6,9 @@ from ..tool_system import ToolContext, ToolResult, build_math_tool
 from .schemas import DualPerspectiveInput, DualPerspectiveOutput
 
 
-async def _dual_call(inp: DualPerspectiveInput, ctx: ToolContext) -> ToolResult[DualPerspectiveOutput]:
+async def _dual_call(
+    inp: DualPerspectiveInput, ctx: ToolContext
+) -> ToolResult[DualPerspectiveOutput]:
     try:
         from math_anything.validation_toolkit import DualPerspectiveAnalyzer
     except ImportError:

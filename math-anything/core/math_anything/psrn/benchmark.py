@@ -8,6 +8,7 @@
 """
 
 import time
+
 import numpy as np
 
 from ..eml_v2 import ImprovedSymbolicRegression
@@ -23,7 +24,7 @@ def run_all():
     print("=" * 60)
 
     x = np.linspace(-2, 2, 50)
-    y = x**2 + 2*x + 1
+    y = x**2 + 2 * x + 1
     X = x.reshape(-1, 1)
 
     # GP
@@ -38,14 +39,22 @@ def run_all():
     psrn_tree = psrn.fit(X, y, variable_names=["x"])
     psrn_time = time.time() - t0
 
-    print(f"GP:  {gp_time:.3f}s  MSE={gp.best_fitness_:.6e}  expr={gp_tree.to_standard_form()}")
-    print(f"PSRN: {psrn_time:.3f}s  MSE={psrn.best_fitness_:.6e}  expr={psrn._best_expr}")
-    print(f"Speedup: {gp_time/max(psrn_time,1e-6):.1f}x  |  "
-          f"MSE ratio: {psrn.best_fitness_/max(gp.best_fitness_,1e-12):.4f}")
+    print(
+        f"GP:  {gp_time:.3f}s  MSE={gp.best_fitness_:.6e}  expr={gp_tree.to_standard_form()}"
+    )
+    print(
+        f"PSRN: {psrn_time:.3f}s  MSE={psrn.best_fitness_:.6e}  expr={psrn._best_expr}"
+    )
+    print(
+        f"Speedup: {gp_time/max(psrn_time,1e-6):.1f}x  |  "
+        f"MSE ratio: {psrn.best_fitness_/max(gp.best_fitness_,1e-12):.4f}"
+    )
 
     results["polynomial"] = {
-        "gp_time": gp_time, "gp_mse": gp.best_fitness_,
-        "psrn_time": psrn_time, "psrn_mse": psrn.best_fitness_,
+        "gp_time": gp_time,
+        "gp_mse": gp.best_fitness_,
+        "psrn_time": psrn_time,
+        "psrn_mse": psrn.best_fitness_,
     }
 
     # ----- Benchmark 2: 三角函数 -----
@@ -53,8 +62,8 @@ def run_all():
     print("Benchmark 2: Trigonometric  y = sin(x) + cos(2x)")
     print("=" * 60)
 
-    x = np.linspace(0, 2*np.pi, 60)
-    y = np.sin(x) + np.cos(2*x)
+    x = np.linspace(0, 2 * np.pi, 60)
+    y = np.sin(x) + np.cos(2 * x)
     X = x.reshape(-1, 1)
 
     t0 = time.time()
@@ -72,8 +81,10 @@ def run_all():
     print(f"Speedup: {gp2_time/max(psrn2_time,1e-6):.1f}x")
 
     results["trigonometric"] = {
-        "gp_time": gp2_time, "gp_mse": gp2.best_fitness_,
-        "psrn_time": psrn2_time, "psrn_mse": psrn2.best_fitness_,
+        "gp_time": gp2_time,
+        "gp_mse": gp2.best_fitness_,
+        "psrn_time": psrn2_time,
+        "psrn_mse": psrn2.best_fitness_,
     }
 
     # ----- Benchmark 3: 指数衰减 -----
@@ -100,8 +111,10 @@ def run_all():
     print(f"Speedup: {gp3_time/max(psrn3_time,1e-6):.1f}x")
 
     results["exponential"] = {
-        "gp_time": gp3_time, "gp_mse": gp3.best_fitness_,
-        "psrn_time": psrn3_time, "psrn_mse": psrn3.best_fitness_,
+        "gp_time": gp3_time,
+        "gp_mse": gp3.best_fitness_,
+        "psrn_time": psrn3_time,
+        "psrn_mse": psrn3.best_fitness_,
     }
 
     # ----- Benchmark 4: 搜索空间覆盖 -----
@@ -138,11 +151,13 @@ def run_all():
 
     for n in [20, 50, 100, 200]:
         x = np.linspace(-2, 2, n)
-        y = x**2 + 2*x + 1
+        y = x**2 + 2 * x + 1
         X = x.reshape(-1, 1)
 
         t0 = time.time()
-        gp_s = ImprovedSymbolicRegression(population_size=200, generations=30, max_depth=4)
+        gp_s = ImprovedSymbolicRegression(
+            population_size=200, generations=30, max_depth=4
+        )
         gp_s.fit(X, y, variable_names=["x"])
         gp_s_t = time.time() - t0
 
@@ -184,11 +199,15 @@ def run_all():
     print("\n" + "=" * 60)
     print("SUMMARY")
     print("=" * 60)
-    print(f"{'Task':>18} | {'GP time':>9} | {'PSRN time':>9} | {'Speedup':>8} | {'GP MSE':>12} | {'PSRN MSE':>12}")
+    print(
+        f"{'Task':>18} | {'GP time':>9} | {'PSRN time':>9} | {'Speedup':>8} | {'GP MSE':>12} | {'PSRN MSE':>12}"
+    )
     print("-" * 80)
     for label, r in results.items():
         sp = r["gp_time"] / max(r["psrn_time"], 1e-6)
-        print(f"{label:>18} | {r['gp_time']:>8.3f}s | {r['psrn_time']:>8.3f}s | {sp:>7.1f}x | {r['gp_mse']:>11.2e} | {r['psrn_mse']:>11.2e}")
+        print(
+            f"{label:>18} | {r['gp_time']:>8.3f}s | {r['psrn_time']:>8.3f}s | {sp:>7.1f}x | {r['gp_mse']:>11.2e} | {r['psrn_mse']:>11.2e}"
+        )
 
     return results
 

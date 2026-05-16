@@ -157,7 +157,9 @@ class LanglandsAnalyzer:
             galois_info = pari.polgalois(poly)
 
             group_str = str(galois_info)
-            is_abelian = "abelian" in group_str.lower() if isinstance(group_str, str) else False
+            is_abelian = (
+                "abelian" in group_str.lower() if isinstance(group_str, str) else False
+            )
 
             disc = pari.poldisc(poly)
 
@@ -203,10 +205,15 @@ class LanglandsAnalyzer:
             import cmath
 
             if abs(s.real - 1.0) < 1e-10 and abs(s.imag) < 1e-10:
-                return LFunctionResult(name="Riemann zeta", s_value=s, l_value=complex("inf"), description="ζ(1) = ∞ (pole)")
+                return LFunctionResult(
+                    name="Riemann zeta",
+                    s_value=s,
+                    l_value=complex("inf"),
+                    description="ζ(1) = ∞ (pole)",
+                )
 
             n_terms = 1000
-            val = sum(1.0 / (n ** s) for n in range(1, n_terms + 1))
+            val = sum(1.0 / (n**s) for n in range(1, n_terms + 1))
             return LFunctionResult(
                 name="Riemann zeta (approximate)",
                 s_value=s,
@@ -274,9 +281,7 @@ class LanglandsAnalyzer:
             description=f"Trivial representation of {group}",
         )
 
-    def symmetry_breaking_analysis(
-        self, galois_result: GaloisResult
-    ) -> str:
+    def symmetry_breaking_analysis(self, galois_result: GaloisResult) -> str:
         """Map Galois group to materials science symmetry breaking.
 
         The Galois group of the characteristic polynomial of a Hamiltonian
@@ -294,7 +299,9 @@ class LanglandsAnalyzer:
         if galois_result.degree <= 2:
             return "Binary symmetry breaking (Z2): Ising-type transition"
 
-        return f"Galois group {group}: symmetry breaking pattern requires further analysis"
+        return (
+            f"Galois group {group}: symmetry breaking pattern requires further analysis"
+        )
 
     def analyze(self, coefficients: List[int]) -> LanglandsResult:
         """Full Langlands analysis pipeline.

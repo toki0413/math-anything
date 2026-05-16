@@ -8,9 +8,16 @@ from pydantic import BaseModel, Field
 
 
 class ExtractInput(BaseModel):
-    engine: str = Field(description="Engine name: vasp, lammps, abaqus, quantum_espresso, gromacs, multiwfn, ansys")
-    params: dict[str, Any] = Field(default_factory=dict, description="Engine parameters (e.g. {'ENCUT': 520, 'SIGMA': 0.05})")
-    filepath: str = Field(default="", description="Path to input file (alternative to params)")
+    engine: str = Field(
+        description="Engine name: vasp, lammps, abaqus, quantum_espresso, gromacs, multiwfn, ansys"
+    )
+    params: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Engine parameters (e.g. {'ENCUT': 520, 'SIGMA': 0.05})",
+    )
+    filepath: str = Field(
+        default="", description="Path to input file (alternative to params)"
+    )
 
 
 class ExtractOutput(BaseModel):
@@ -22,7 +29,9 @@ class ExtractOutput(BaseModel):
 
 
 class ValidateInput(BaseModel):
-    math_schema: dict[str, Any] = Field(description="Extracted mathematical schema to validate", alias="schema")
+    math_schema: dict[str, Any] = Field(
+        description="Extracted mathematical schema to validate", alias="schema"
+    )
 
     model_config = {"populate_by_name": True}
 
@@ -51,9 +60,15 @@ class CompareOutput(BaseModel):
 
 class VerifyInput(BaseModel):
     statement: str = Field(description="Mathematical statement to verify")
-    proof_text: str = Field(default="", description="Proof text to verify against the statement")
-    task_type: str = Field(default="proof", description="Task type: proof, validation, consistency")
-    assumptions: list[str] = Field(default_factory=list, description="List of assumptions")
+    proof_text: str = Field(
+        default="", description="Proof text to verify against the statement"
+    )
+    task_type: str = Field(
+        default="proof", description="Task type: proof, validation, consistency"
+    )
+    assumptions: list[str] = Field(
+        default_factory=list, description="List of assumptions"
+    )
     goals: list[str] = Field(default_factory=list, description="List of goals")
     engine: str = Field(default="", description="Engine for geometric context")
     with_geometry: bool = Field(default=False, description="Include geometric context")
@@ -67,7 +82,9 @@ class VerifyOutput(BaseModel):
 
 
 class PropositionInput(BaseModel):
-    math_schema: dict[str, Any] = Field(description="Extracted mathematical schema", alias="schema")
+    math_schema: dict[str, Any] = Field(
+        description="Extracted mathematical schema", alias="schema"
+    )
     engine: str = Field(default="", description="Engine name for context")
 
     model_config = {"populate_by_name": True}
@@ -93,8 +110,12 @@ class CrossValidateOutput(BaseModel):
 
 class DualPerspectiveInput(BaseModel):
     conclusion: str = Field(description="Conclusion to analyze from dual perspectives")
-    geometric_checks: list[str] = Field(default_factory=list, description="Geometric perspective checklist")
-    analytic_checks: list[str] = Field(default_factory=list, description="Analytic perspective checklist")
+    geometric_checks: list[str] = Field(
+        default_factory=list, description="Geometric perspective checklist"
+    )
+    analytic_checks: list[str] = Field(
+        default_factory=list, description="Analytic perspective checklist"
+    )
 
 
 class DualPerspectiveOutput(BaseModel):
@@ -104,7 +125,9 @@ class DualPerspectiveOutput(BaseModel):
 
 class EmergenceInput(BaseModel):
     engine: str = Field(description="Engine name")
-    params: dict[str, Any] = Field(default_factory=dict, description="Engine parameters")
+    params: dict[str, Any] = Field(
+        default_factory=dict, description="Engine parameters"
+    )
     filepath: str = Field(default="", description="Path to input file")
 
 
@@ -118,9 +141,15 @@ class EmergenceOutput(BaseModel):
 
 class GeometryInput(BaseModel):
     engine: str = Field(description="Engine name")
-    params: dict[str, Any] = Field(default_factory=dict, description="Engine parameters")
-    lattice_vectors: dict[str, list[float]] | None = Field(default=None, description="Lattice vectors for crystal structures")
-    space_group: str | None = Field(default=None, description="Space group for crystal structures")
+    params: dict[str, Any] = Field(
+        default_factory=dict, description="Engine parameters"
+    )
+    lattice_vectors: dict[str, list[float]] | None = Field(
+        default=None, description="Lattice vectors for crystal structures"
+    )
+    space_group: str | None = Field(
+        default=None, description="Space group for crystal structures"
+    )
 
 
 class GeometryOutput(BaseModel):

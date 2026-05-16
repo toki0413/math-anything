@@ -29,14 +29,27 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+_RESTRICTED_MODULES = frozenset(
+    {
+        "os",
+        "subprocess",
+        "socket",
+        "http",
+        "urllib",
+        "requests",
+        "shutil",
+        "signal",
+        "ctypes",
+        "multiprocessing",
+        "threading",
+        "asyncio",
+        "importlib",
+        "pkg_resources",
+        "sysconfig",
+    }
+)
 
-_RESTRICTED_MODULES = frozenset({
-    "os", "subprocess", "socket", "http", "urllib", "requests",
-    "shutil", "signal", "ctypes", "multiprocessing", "threading",
-    "asyncio", "importlib", "pkg_resources", "sysconfig",
-})
-
-_SANDBOX_WRAPPER = '''
+_SANDBOX_WRAPPER = """
 import sys
 import json
 import importlib.abc
@@ -96,7 +109,7 @@ else:
 
 with open({output_path_repr}, 'w') as f:
     json.dump(result, f)
-'''
+"""
 
 
 @dataclass
@@ -212,6 +225,7 @@ if not passed:
     def _detect_backend(self) -> str:
         try:
             import e2b
+
             return "e2b"
         except ImportError:
             return "local"
@@ -300,18 +314,22 @@ if not passed:
                 )
                 elapsed = (time.time() - start) * 1000
 
-                stdout = proc.stdout[:self.config.max_output_bytes]
-                stderr = proc.stderr[:self.config.max_output_bytes]
+                stdout = proc.stdout[: self.config.max_output_bytes]
+                stderr = proc.stderr[: self.config.max_output_bytes]
 
                 result_data = {}
                 if output_path.exists():
                     try:
-                        result_data = json.loads(output_path.read_text(encoding="utf-8"))
+                        result_data = json.loads(
+                            output_path.read_text(encoding="utf-8")
+                        )
                     except (json.JSONDecodeError, Exception):
                         pass
 
                 success = result_data.get("success", proc.returncode == 0)
-                error = result_data.get("error") or (stderr.strip() if proc.returncode != 0 else None)
+                error = result_data.get("error") or (
+                    stderr.strip() if proc.returncode != 0 else None
+                )
                 tb = result_data.get("traceback")
 
                 return SandboxResult(
@@ -348,6 +366,7 @@ if not passed:
     @staticmethod
     def _build_env(env_vars: Optional[Dict[str, str]]) -> Dict[str, str]:
         import os
+
         env = dict(os.environ)
         env.pop("E2B_API_KEY", None)
         if env_vars:

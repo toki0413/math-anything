@@ -158,8 +158,11 @@ class MetricTensor:
             + g[0][2] * (g[1][0] * g[2][1] - g[1][1] * g[2][0])
         )
         return cls(
-            components=g, basis="covariant", dimension=dim,
-            signature="+" * dim, determinant=det,
+            components=g,
+            basis="covariant",
+            dimension=dim,
+            signature="+" * dim,
+            determinant=det,
         )
 
     @classmethod
@@ -264,9 +267,16 @@ class CurvatureInfo:
             "type": self.type.value,
             "description": self.description,
         }
-        for attr in ["gaussian", "mean", "ricci_scalar", "ricci_tensor_diag",
-                      "sectional", "riemann_norm", "euler_characteristic",
-                      "bonnet_myers_bound"]:
+        for attr in [
+            "gaussian",
+            "mean",
+            "ricci_scalar",
+            "ricci_tensor_diag",
+            "sectional",
+            "riemann_norm",
+            "euler_characteristic",
+            "bonnet_myers_bound",
+        ]:
             val = getattr(self, attr, None)
             if val is not None:
                 d[attr] = val
@@ -347,7 +357,9 @@ class Connection:
         if self.berry_curvature_scale is not None:
             d["berry_curvature_scale"] = self.berry_curvature_scale
         if self.invariant_differential_operators:
-            d["invariant_differential_operators"] = self.invariant_differential_operators
+            d["invariant_differential_operators"] = (
+                self.invariant_differential_operators
+            )
         return d
 
 
@@ -390,24 +402,65 @@ def compute_christoffel(
                     coord_L = g.coord_names[L]
 
                     eps_i = {coord_i: epsilon}
-                    g_plus_i = g.at({c: coords.get(c, 0.0) + eps_i.get(c, 0.0) for c in g.coord_names})
-                    g_minus_i = g.at({c: coords.get(c, 0.0) - eps_i.get(c, 0.0) for c in g.coord_names})
-                    d_i_g_jL = (g_plus_i.components[j][L] - g_minus_i.components[j][L]) / (2.0 * epsilon)
+                    g_plus_i = g.at(
+                        {
+                            c: coords.get(c, 0.0) + eps_i.get(c, 0.0)
+                            for c in g.coord_names
+                        }
+                    )
+                    g_minus_i = g.at(
+                        {
+                            c: coords.get(c, 0.0) - eps_i.get(c, 0.0)
+                            for c in g.coord_names
+                        }
+                    )
+                    d_i_g_jL = (
+                        g_plus_i.components[j][L] - g_minus_i.components[j][L]
+                    ) / (2.0 * epsilon)
 
                     eps_j = {coord_j: epsilon}
-                    g_plus_j = g.at({c: coords.get(c, 0.0) + eps_j.get(c, 0.0) for c in g.coord_names})
-                    g_minus_j = g.at({c: coords.get(c, 0.0) - eps_j.get(c, 0.0) for c in g.coord_names})
-                    d_j_g_iL = (g_plus_j.components[i][L] - g_minus_j.components[i][L]) / (2.0 * epsilon)
+                    g_plus_j = g.at(
+                        {
+                            c: coords.get(c, 0.0) + eps_j.get(c, 0.0)
+                            for c in g.coord_names
+                        }
+                    )
+                    g_minus_j = g.at(
+                        {
+                            c: coords.get(c, 0.0) - eps_j.get(c, 0.0)
+                            for c in g.coord_names
+                        }
+                    )
+                    d_j_g_iL = (
+                        g_plus_j.components[i][L] - g_minus_j.components[i][L]
+                    ) / (2.0 * epsilon)
 
                     eps_L = {coord_L: epsilon}
-                    g_plus_L = g.at({c: coords.get(c, 0.0) + eps_L.get(c, 0.0) for c in g.coord_names})
-                    g_minus_L = g.at({c: coords.get(c, 0.0) - eps_L.get(c, 0.0) for c in g.coord_names})
-                    d_L_g_ij = (g_plus_L.components[i][j] - g_minus_L.components[i][j]) / (2.0 * epsilon)
+                    g_plus_L = g.at(
+                        {
+                            c: coords.get(c, 0.0) + eps_L.get(c, 0.0)
+                            for c in g.coord_names
+                        }
+                    )
+                    g_minus_L = g.at(
+                        {
+                            c: coords.get(c, 0.0) - eps_L.get(c, 0.0)
+                            for c in g.coord_names
+                        }
+                    )
+                    d_L_g_ij = (
+                        g_plus_L.components[i][j] - g_minus_L.components[i][j]
+                    ) / (2.0 * epsilon)
 
                     total += 0.5 * g_inv[k][L] * (d_i_g_jL + d_j_g_iL - d_L_g_ij)
                 gamma[k][i][j] = total
 
-    if all(abs(gamma[k][i][j]) < 1e-15 for k in range(3) for i in range(3) for j in range(3)):
+    if all(
+        abs(gamma[k][i][j]) < 1e-15
+        for k in range(3)
+        for i in range(3)
+        for j in range(3)
+    ):
         return None
 
     return gamma
@@ -484,7 +537,7 @@ def compute_laplace_beltrami_torus(
         coordinate_expression=coord_expr,
         eigenvalues_lowest=first_five,
         spectral_gap=round(spectral_gap, 6),
-        komolgorov_width_estimate=round(spectral_gap * L_min ** 2, 4),
+        komolgorov_width_estimate=round(spectral_gap * L_min**2, 4),
         description=(
             f"Inverse-square scaling: diffusion timescale τ ~ 1/λ_1 = {1/spectral_gap:.2e}. "
             f"PDE convergence on T³ requires resolving wavelengths up to L_max."
@@ -493,7 +546,8 @@ def compute_laplace_beltrami_torus(
 
 
 def compute_berry_curvature_estimate(
-    kpoint_grid: str, dimension: int = 3,
+    kpoint_grid: str,
+    dimension: int = 3,
 ) -> Optional[Connection]:
     """Estimate Berry curvature scale from k-point grid density.
 
@@ -519,7 +573,7 @@ def compute_berry_curvature_estimate(
 
     total_kpoints = nk1 * nk2 * nk3
     k_spacing = 2.0 * math.pi / max(nk1, nk2, nk3, 1)
-    berry_scale = k_spacing ** 2
+    berry_scale = k_spacing**2
 
     return Connection(
         type=ConnectionType.BERRY,
@@ -586,7 +640,9 @@ class DifferentialGeometryLayer:
     """
 
     def extract(
-        self, engine: str, params: Dict[str, Any],
+        self,
+        engine: str,
+        params: Dict[str, Any],
         lattice_vectors: Optional[Dict[str, List[float]]] = None,
         space_group: Optional[str] = None,
     ) -> GeometricStructure:
@@ -602,7 +658,9 @@ class DifferentialGeometryLayer:
         return extractor(params, lattice_vectors, space_group)
 
     def _extract_vasp(
-        self, params: Dict, lattice_vectors: Optional[Dict],
+        self,
+        params: Dict,
+        lattice_vectors: Optional[Dict],
         space_group: Optional[str],
     ) -> GeometricStructure:
         manifold = Manifold(
@@ -638,19 +696,23 @@ class DifferentialGeometryLayer:
 
         symmetries = []
         if space_group:
-            symmetries.append(SymmetryGroup(
-                type=SymmetryType.SPACE_GROUP,
-                name=space_group,
-                description=f"Crystal space group {space_group}",
-            ))
+            symmetries.append(
+                SymmetryGroup(
+                    type=SymmetryType.SPACE_GROUP,
+                    name=space_group,
+                    description=f"Crystal space group {space_group}",
+                )
+            )
 
         kpt = params.get("KPOINTS", params.get("kpts", ""))
         if kpt:
-            symmetries.append(SymmetryGroup(
-                type=SymmetryType.DISCRETE,
-                name="k-point mesh",
-                description=f"Discrete sampling of BZ: {kpt}",
-            ))
+            symmetries.append(
+                SymmetryGroup(
+                    type=SymmetryType.DISCRETE,
+                    name="k-point mesh",
+                    description=f"Discrete sampling of BZ: {kpt}",
+                )
+            )
 
         fiber_bundles = [
             FiberBundle(
@@ -673,9 +735,9 @@ class DifferentialGeometryLayer:
         box_lens = None
         if lattice_vectors:
             box_lens = [
-                math.sqrt(sum(x ** 2 for x in a)),
-                math.sqrt(sum(x ** 2 for x in b)),
-                math.sqrt(sum(x ** 2 for x in c)),
+                math.sqrt(sum(x**2 for x in a)),
+                math.sqrt(sum(x**2 for x in b)),
+                math.sqrt(sum(x**2 for x in c)),
             ]
         laplace = compute_laplace_beltrami_torus(metric, box_lens)
 
@@ -691,7 +753,9 @@ class DifferentialGeometryLayer:
         )
 
     def _extract_lammps(
-        self, params: Dict, lattice_vectors: Optional[Dict],
+        self,
+        params: Dict,
+        lattice_vectors: Optional[Dict],
         space_group: Optional[str],
     ) -> GeometricStructure:
         boundary_map = {
@@ -724,9 +788,9 @@ class DifferentialGeometryLayer:
             metric = MetricTensor.from_lattice_vectors(a, b, c)
             metric.basis = "simulation_box"
             box_lens = [
-                math.sqrt(sum(x ** 2 for x in a)),
-                math.sqrt(sum(x ** 2 for x in b)),
-                math.sqrt(sum(x ** 2 for x in c)),
+                math.sqrt(sum(x**2 for x in a)),
+                math.sqrt(sum(x**2 for x in b)),
+                math.sqrt(sum(x**2 for x in c)),
             ]
         else:
             lx = params.get("lx", params.get("xlo", 0.0)) or 1.0
@@ -753,12 +817,14 @@ class DifferentialGeometryLayer:
 
         symmetries = []
         if boundary == "p p p":
-            symmetries.append(SymmetryGroup(
-                type=SymmetryType.LATTICE,
-                name="translational",
-                generators=["T_x", "T_y", "T_z"],
-                description="Full translational symmetry in all directions",
-            ))
+            symmetries.append(
+                SymmetryGroup(
+                    type=SymmetryType.LATTICE,
+                    name="translational",
+                    generators=["T_x", "T_y", "T_z"],
+                    description="Full translational symmetry in all directions",
+                )
+            )
 
         connection = Connection(
             type=ConnectionType.LEVI_CIVITA,
@@ -777,7 +843,9 @@ class DifferentialGeometryLayer:
         )
 
     def _extract_abaqus(
-        self, params: Dict, lattice_vectors: Optional[Dict],
+        self,
+        params: Dict,
+        lattice_vectors: Optional[Dict],
         space_group: Optional[str],
     ) -> GeometricStructure:
         manifold = Manifold(
@@ -840,7 +908,9 @@ class DifferentialGeometryLayer:
         )
 
     def _extract_generic(
-        self, params: Dict, lattice_vectors: Optional[Dict],
+        self,
+        params: Dict,
+        lattice_vectors: Optional[Dict],
         space_group: Optional[str],
     ) -> GeometricStructure:
         return GeometricStructure(

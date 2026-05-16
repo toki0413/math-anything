@@ -9,14 +9,16 @@
 
 import os
 import warnings
-from typing import Callable, Dict, List, Optional, Tuple, Set
 from collections import defaultdict
+from typing import Callable, Dict, List, Optional, Set, Tuple
+
 import numpy as np
 
 # 尝试导入 Numba，如果不可用则回退到纯 NumPy
 try:
     from numba import njit, prange
     from numba.typed import Dict as NumbaDict
+
     HAS_NUMBA = True
 except ImportError:
     HAS_NUMBA = False
@@ -65,10 +67,9 @@ class MemoryPool:
 
 
 if HAS_NUMBA:
+
     @njit(cache=True, fastmath=True, parallel=True)
-    def _compute_mse_batch_numba(
-        values: np.ndarray, y: np.ndarray, out: np.ndarray
-    ):
+    def _compute_mse_batch_numba(values: np.ndarray, y: np.ndarray, out: np.ndarray):
         """Numba 加速的批量 MSE 计算.
 
         Args:
@@ -86,9 +87,7 @@ if HAS_NUMBA:
             out[j] = mse / n_samples
 
     @njit(cache=True, fastmath=True)
-    def _compute_correlation_numba(
-        values: np.ndarray, y: np.ndarray, out: np.ndarray
-    ):
+    def _compute_correlation_numba(values: np.ndarray, y: np.ndarray, out: np.ndarray):
         """Numba 加速的批量相关性计算."""
         n_samples, n_candidates = values.shape
         y_mean = 0.0
@@ -183,8 +182,14 @@ class OptimizedEvaluator:
 
     # 算子编码映射
     OP_CODES = {
-        "add": 0, "sub": 1, "mul": 2, "div": 3,
-        "sin": 4, "cos": 5, "exp": 6, "log": 7,
+        "add": 0,
+        "sub": 1,
+        "mul": 2,
+        "div": 3,
+        "sin": 4,
+        "cos": 5,
+        "exp": 6,
+        "log": 7,
     }
 
     def __init__(
@@ -221,6 +226,7 @@ class OptimizedEvaluator:
             stats: 评估统计信息
         """
         import time
+
         t_start = time.time()
 
         # 1. 语义去重
@@ -325,7 +331,7 @@ class OptimizedEvaluator:
                 _compute_mse_batch_numba(values, y, mses)
             else:
                 # NumPy 回退
-                mses[:] = np.mean((values - y.reshape(-1, 1))**2, axis=0)
+                mses[:] = np.mean((values - y.reshape(-1, 1)) ** 2, axis=0)
 
             return mses.tolist()
 
@@ -348,9 +354,7 @@ class OptimizedEvaluator:
         self._compile_cache[expr] = func
         return func(X, variable_names)
 
-    def _compile_expr(
-        self, expr: str, variable_names: List[str]
-    ) -> Callable:
+    def _compile_expr(self, expr: str, variable_names: List[str]) -> Callable:
         """编译表达式为函数."""
         # 简化实现：使用 eval（生产环境应该用 AST）
         # 构建局部变量映射
@@ -373,7 +377,8 @@ class OptimizedEvaluator:
             "log": lambda x: np.log(np.abs(x) + 1e-10),
             "sqrt": lambda x: np.sqrt(np.abs(x)),
             "abs": np.abs,
-            "eml": lambda x, y: np.exp(np.clip(x, -700, 700)) - np.log(np.abs(y) + 1e-10),
+            "eml": lambda x, y: np.exp(np.clip(x, -700, 700))
+            - np.log(np.abs(y) + 1e-10),
         }
 
         return eval(func_code, {"__builtins__": {}}, safe_dict)
@@ -480,7 +485,7 @@ class IncrementalEvaluator:
         import re
 
         # 检查加法
-        match = re.match(r'\((.+?)\+(.+?)\)', expr)
+        match = re.match(r"\((.+?)\+(.+?)\)", expr)
         if match:
             left, right = match.groups()
             if left in self.expr_to_layer and right in self.expr_to_layer:
@@ -489,7 +494,7 @@ class IncrementalEvaluator:
                 return left_val + right_val
 
         # 检查减法
-        match = re.match(r'\((.+?)-(.+?)\)', expr)
+        match = re.match(r"\((.+?)-(.+?)\)", expr)
         if match:
             left, right = match.groups()
             if left in self.expr_to_layer and right in self.expr_to_layer:
@@ -498,7 +503,7 @@ class IncrementalEvaluator:
                 return left_val - right_val
 
         # 检查乘法
-        match = re.match(r'\((.+?)\*(.+?)\)', expr)
+        match = re.match(r"\((.+?)\*(.+?)\)", expr)
         if match:
             left, right = match.groups()
             if left in self.expr_to_layer and right in self.expr_to_layer:

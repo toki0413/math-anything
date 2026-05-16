@@ -389,6 +389,7 @@ def cmd_lean4(args):
     """Lean4/Mathlib formal verification."""
     if args.check:
         from .lean4_bridge import Lean4Bridge
+
         bridge = Lean4Bridge()
         if bridge.is_available():
             print("✓ Lean4 is available")

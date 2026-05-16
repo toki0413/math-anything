@@ -188,7 +188,9 @@ class MLPotentialAnalyzer:
     and compares with classical potentials.
     """
 
-    def analyze_deepmd(self, model_info: Optional[Dict[str, Any]] = None) -> MLPotentialResult:
+    def analyze_deepmd(
+        self, model_info: Optional[Dict[str, Any]] = None
+    ) -> MLPotentialResult:
         """Analyze DeepMD potential mathematical structure.
 
         The DeepMD descriptor pipeline:
@@ -228,7 +230,9 @@ class MLPotentialAnalyzer:
             description="DeepMD: descriptor-based ML potential with approximate rotation equivariance",
         )
 
-    def analyze_mace(self, model_info: Optional[Dict[str, Any]] = None) -> MLPotentialResult:
+    def analyze_mace(
+        self, model_info: Optional[Dict[str, Any]] = None
+    ) -> MLPotentialResult:
         """Analyze MACE potential mathematical structure.
 
         MACE uses equivariant message passing with spherical harmonics.
@@ -268,7 +272,9 @@ class MLPotentialAnalyzer:
             description="MACE: strictly equivariant ML potential with O(3) irreducible representations",
         )
 
-    def analyze_nequip(self, model_info: Optional[Dict[str, Any]] = None) -> MLPotentialResult:
+    def analyze_nequip(
+        self, model_info: Optional[Dict[str, Any]] = None
+    ) -> MLPotentialResult:
         """Analyze NequIP potential mathematical structure."""
         desc = DescriptorMath(
             descriptor_type="equivariant_convolution",
@@ -296,7 +302,9 @@ class MLPotentialAnalyzer:
             description="NequIP: equivariant interatomic potential with angular convolution",
         )
 
-    def analyze(self, potential_type: str, model_info: Optional[Dict[str, Any]] = None) -> MLPotentialResult:
+    def analyze(
+        self, potential_type: str, model_info: Optional[Dict[str, Any]] = None
+    ) -> MLPotentialResult:
         """Analyze an ML potential by type name.
 
         Args:
@@ -319,7 +327,9 @@ class MLPotentialAnalyzer:
             description=f"Unknown potential type: {potential_type}. Supported: deepmd, mace, nequip, allegro",
         )
 
-    def _compare_with_classical(self, ml_name: str, classical_name: str) -> ComparisonResult:
+    def _compare_with_classical(
+        self, ml_name: str, classical_name: str
+    ) -> ComparisonResult:
         """Compare ML potential with a classical potential."""
         classical = _CLASSICAL_POTENTIALS.get(classical_name, {})
 

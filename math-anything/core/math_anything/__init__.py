@@ -21,6 +21,31 @@ Quick Start:
 
 __version__ = "1.0.0"
 
+# Math Advisor
+from .advisor import DISCIPLINE_STATUS, MathAdvisor
+from .agent_loop import (
+    AgentEvent,
+    DoneEvent,
+    ErrorEvent,
+    MathAgentLoop,
+    TextDeltaEvent,
+    ToolCallStartEvent,
+    ToolProgressEvent,
+    ToolResultEvent,
+)
+
+# Agent Architecture
+from .agents import (
+    AgentOrchestrator,
+    AgentResult,
+    BaseAgent,
+    CompareAgent,
+    ExtractAgent,
+    PropositionAgent,
+    ValidateAgent,
+    VerifyAgent,
+)
+
 # New simplified API
 from .api import (
     ExtractionResult,
@@ -61,16 +86,59 @@ from .exceptions import (
     ValidationError,
 )
 
+# Data Flywheel
+from .flywheel import (
+    DataFlywheel,
+    EngineDegradation,
+    FailurePattern,
+    FlywheelRecord,
+    FlywheelStats,
+    RecordType,
+)
+
+# Formal Verification (Multi-layer)
+from .formal_verifier import (
+    Dimension,
+    FormalStatus,
+    FormalVerificationResult,
+    FormalVerifier,
+    LayerResult,
+    LLMSemanticVerifier,
+    LogicVerifier,
+    MathType,
+    SymbolicVerifier,
+    TypedSymbol,
+    TypeSystemVerifier,
+    VerificationLayer,
+)
+
+# Differential Geometry Layer
+from .geometry import (
+    CurvatureInfo,
+    CurvatureType,
+    DifferentialGeometryLayer,
+    FiberBundle,
+    GeometricStructure,
+    Manifold,
+    ManifoldType,
+    MetricTensor,
+    SymmetryGroup,
+    SymmetryType,
+    compute_christoffel,
+)
+
+# Lean4 + Mathlib Bridge (Optional Layer 5)
+from .lean4_bridge import (
+    Lean4Bridge,
+    LeanVerificationResult,
+    LeanVerificationStatus,
+    get_lean4_bridge,
+    schema_to_lean,
+    verify_with_lean4,
+)
+
 # Multi-variable Discovery
 from .multivar import MultiVariableDiscovery, analyze_interactions, discover_multivar
-
-# Math Proposition Generation
-from .proposition import (
-    MathematicalPropositions,
-    MathematicalTask,
-    PropositionGenerator,
-    TaskType,
-)
 
 # Proof Verification (Closed Loop)
 from .proof_verifier import (
@@ -81,17 +149,18 @@ from .proof_verifier import (
     VerificationStatus,
 )
 
-# Agent Architecture
-from .agents import (
-    AgentOrchestrator,
-    AgentResult,
-    BaseAgent,
-    CompareAgent,
-    ExtractAgent,
-    PropositionAgent,
-    ValidateAgent,
-    VerifyAgent,
+# Math Proposition Generation
+from .proposition import (
+    MathematicalPropositions,
+    MathematicalTask,
+    PropositionGenerator,
+    TaskType,
 )
+
+# Provenance & References
+from .provenance import Provenance, ProvenanceChain, ProvenanceTracker
+from .references import ConstraintReference, ReferenceTracker
+from .sandbox import SandboxConfig, SandboxExecutor, SandboxResult
 from .schemas import (
     BoundaryCondition,
     ComputationalGraph,
@@ -128,78 +197,29 @@ from .tiered import (
 )
 from .tiered.tier_recommender import analyze_file_properties
 from .tiered.tiered_analyzer import analyze as tiered_analyze
-
-# Visualization
-from .visualization import Visualizer, save_html, to_graphviz, to_mermaid
-
-# Differential Geometry Layer
-from .geometry import (
-    CurvatureInfo,
-    CurvatureType,
-    DifferentialGeometryLayer,
-    FiberBundle,
-    GeometricStructure,
-    Manifold,
-    ManifoldType,
-    MetricTensor,
-    SymmetryGroup,
-    SymmetryType,
-    compute_christoffel,
+from .tool_registry import (
+    ToolRegistry,
+    build_default_registry,
 )
 
-# Math Advisor
-from .advisor import MathAdvisor, DISCIPLINE_STATUS
+# Tool System + Agent Loop
+from .tool_system import (
+    MathTool,
+    PermissionResult,
+    ToolContext,
+    ToolResult,
+    build_math_tool,
+)
+from .tools.dynamics import DynamicsAnalysisResult, DynamicsAnalyzer
+from .tools.langlands import LanglandsAnalyzer, LanglandsResult
+from .tools.ml_potential import MLPotentialAnalyzer, MLPotentialResult
+from .tools.sindy import SINDyDiscoverer, SINDyResult
+from .tools.spectral import SpectralAnalysisResult, SpectralAnalyzer
 
 # Analysis Tools
-from .tools.symmetry import SymmetryAnalyzer, SymmetryAnalysisResult
+from .tools.symmetry import SymmetryAnalysisResult, SymmetryAnalyzer
 from .tools.tda import TDAAnalyzer, TopologyResult
-from .tools.spectral import SpectralAnalyzer, SpectralAnalysisResult
-from .tools.dynamics import DynamicsAnalyzer, DynamicsAnalysisResult
 from .tools.viz import InteractiveVisualizer
-from .tools.ml_potential import MLPotentialAnalyzer, MLPotentialResult
-from .tools.langlands import LanglandsAnalyzer, LanglandsResult
-from .tools.sindy import SINDyDiscoverer, SINDyResult
-from .sandbox import SandboxExecutor, SandboxResult, SandboxConfig
-
-# Provenance & References
-from .provenance import Provenance, ProvenanceChain, ProvenanceTracker
-from .references import ConstraintReference, ReferenceTracker
-
-# Data Flywheel
-from .flywheel import (
-    DataFlywheel,
-    EngineDegradation,
-    FailurePattern,
-    FlywheelRecord,
-    FlywheelStats,
-    RecordType,
-)
-
-# Formal Verification (Multi-layer)
-from .formal_verifier import (
-    Dimension,
-    FormalStatus,
-    FormalVerificationResult,
-    FormalVerifier,
-    LayerResult,
-    LogicVerifier,
-    LLMSemanticVerifier,
-    MathType,
-    SymbolicVerifier,
-    TypeSystemVerifier,
-    TypedSymbol,
-    VerificationLayer,
-)
-
-# Lean4 + Mathlib Bridge (Optional Layer 5)
-from .lean4_bridge import (
-    Lean4Bridge,
-    LeanVerificationResult,
-    LeanVerificationStatus,
-    get_lean4_bridge,
-    schema_to_lean,
-    verify_with_lean4,
-)
 
 # Validation Toolkit (Cross-validation, Falsifiable Predictions, Dual Perspective)
 from .validation_toolkit import (
@@ -215,28 +235,8 @@ from .validation_toolkit import (
     create_prediction_table_from_schema,
 )
 
-# Tool System + Agent Loop
-from .tool_system import (
-    MathTool,
-    PermissionResult,
-    ToolContext,
-    ToolResult,
-    build_math_tool,
-)
-from .tool_registry import (
-    ToolRegistry,
-    build_default_registry,
-)
-from .agent_loop import (
-    AgentEvent,
-    DoneEvent,
-    ErrorEvent,
-    MathAgentLoop,
-    TextDeltaEvent,
-    ToolCallStartEvent,
-    ToolProgressEvent,
-    ToolResultEvent,
-)
+# Visualization
+from .visualization import Visualizer, save_html, to_graphviz, to_mermaid
 
 FormalResult = FormalVerificationResult
 
@@ -276,6 +276,7 @@ def list_engines() -> list:
     """
     try:
         from .api import ENGINE_EXTRACTORS
+
         return list(ENGINE_EXTRACTORS.keys())
     except Exception:
         return HarnessRegistry.list_engines()

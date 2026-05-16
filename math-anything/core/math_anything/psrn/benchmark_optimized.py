@@ -4,6 +4,7 @@
 """
 
 import time
+
 import numpy as np
 
 from .bridge import PSRNSymbolicRegression
@@ -17,13 +18,15 @@ def benchmark_with_and_without_optimization():
 
     # 测试配置
     test_cases = [
-        ("Simple Poly", lambda x: x**2 + 2*x + 1, 50),
-        ("Trigonometric", lambda x: np.sin(x) + np.cos(2*x), 60),
+        ("Simple Poly", lambda x: x**2 + 2 * x + 1, 50),
+        ("Trigonometric", lambda x: np.sin(x) + np.cos(2 * x), 60),
         ("Exponential", lambda x: np.exp(-x) * np.sin(x), 50),
-        ("Rational", lambda x: (x + 1)**3 / (x**2 - x + 1), 50),
+        ("Rational", lambda x: (x + 1) ** 3 / (x**2 - x + 1), 50),
     ]
 
-    print(f"\n{'Task':<18} {'Before (s)':>10} {'After (s)':>10} {'Speedup':>8} {'MSE Before':>12} {'MSE After':>12}")
+    print(
+        f"\n{'Task':<18} {'Before (s)':>10} {'After (s)':>10} {'Speedup':>8} {'MSE Before':>12} {'MSE After':>12}"
+    )
     print("-" * 70)
 
     for name, func, n_samples in test_cases:
@@ -49,7 +52,9 @@ def benchmark_with_and_without_optimization():
 
         speedup = estimated_before_time / max(opt_time, 1e-6)
 
-        print(f"{name:<18} {estimated_before_time:>10.3f} {opt_time:>10.3f} {speedup:>7.1f}x {opt_mse:>11.2e} {opt_mse:>11.2e}")
+        print(
+            f"{name:<18} {estimated_before_time:>10.3f} {opt_time:>10.3f} {speedup:>7.1f}x {opt_mse:>11.2e} {opt_mse:>11.2e}"
+        )
 
     # 多变量测试
     print("\n" + "=" * 70)
@@ -68,7 +73,9 @@ def benchmark_with_and_without_optimization():
     opt_time_m = time.time() - t0
 
     est_before_m = opt_time_m * 50
-    print(f"\nMulti-var: {est_before_m:.3f}s -> {opt_time_m:.3f}s ({est_before_m/opt_time_m:.1f}x)")
+    print(
+        f"\nMulti-var: {est_before_m:.3f}s -> {opt_time_m:.3f}s ({est_before_m/opt_time_m:.1f}x)"
+    )
     print(f"MSE: {psrn_m.best_fitness_:.6e}")
 
 
@@ -78,8 +85,8 @@ def benchmark_symbol_layer_speed():
     print("SymbolLayer Computation Speed")
     print("=" * 70)
 
-    from .symbol_layer import SymbolLayer, SymbolConfig
     from .compiled_evaluator import FastSymbolLayer
+    from .symbol_layer import SymbolConfig, SymbolLayer
 
     n_samples = 1000
     n_inputs = 5
@@ -95,7 +102,9 @@ def benchmark_symbol_layer_speed():
     base_exprs = [f"x{i}" for i in range(n_inputs)]
     _, _, offsets = layer.forward(base_exprs, input_values, layer_idx=0)
 
-    print(f"\nLayer config: {len(config.unary_ops)} unary, {len(config.binary_squared_ops)} binary_sq, {len(config.binary_triangled_ops)} binary_tri")
+    print(
+        f"\nLayer config: {len(config.unary_ops)} unary, {len(config.binary_squared_ops)} binary_sq, {len(config.binary_triangled_ops)} binary_tri"
+    )
     print(f"Inputs: {n_inputs}, Outputs: {len(offsets)}, Samples: {n_samples}")
 
     # 测试原始方法（如果还能调用的话）
@@ -111,7 +120,9 @@ def benchmark_symbol_layer_speed():
     fast_time = (time.time() - t0) / n_runs
 
     print(f"\nFastSymbolLayer: {fast_time*1000:.3f} ms/run")
-    print(f"Throughput: {n_samples * len(offsets) / fast_time / 1e6:.2f} M evaluations/sec")
+    print(
+        f"Throughput: {n_samples * len(offsets) / fast_time / 1e6:.2f} M evaluations/sec"
+    )
 
 
 def benchmark_expression_compile_cache():

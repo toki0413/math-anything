@@ -13,6 +13,12 @@ Integration with Symbolic Regression:
 - Level 5: Unified symbolic-geometric representation
 """
 
+# Symbolic Regression Integration
+from .symbolic_regression_integration import (
+    IntegratedTieredAnalyzer,
+    TieredSymbolicRegressionAnalyzer,
+    tiered_symbolic_regression_analysis,
+)
 from .tier_recommender import TierRecommendation, TierRecommender
 from .tiered_analyzer import AnalysisTier, TieredAnalyzer
 from .tiered_schema import (
@@ -20,13 +26,6 @@ from .tiered_schema import (
     FileAnalysis,
     ResourceRequirements,
     TieredAnalysisResult,
-)
-
-# Symbolic Regression Integration
-from .symbolic_regression_integration import (
-    TieredSymbolicRegressionAnalyzer,
-    IntegratedTieredAnalyzer,
-    tiered_symbolic_regression_analysis,
 )
 
 __all__ = [

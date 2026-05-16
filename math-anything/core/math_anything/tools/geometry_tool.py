@@ -6,7 +6,9 @@ from ..tool_system import ToolContext, ToolResult, build_math_tool
 from .schemas import GeometryInput, GeometryOutput
 
 
-async def _geometry_call(inp: GeometryInput, ctx: ToolContext) -> ToolResult[GeometryOutput]:
+async def _geometry_call(
+    inp: GeometryInput, ctx: ToolContext
+) -> ToolResult[GeometryOutput]:
     from math_anything import DifferentialGeometryLayer
 
     geo = DifferentialGeometryLayer()
@@ -18,10 +20,30 @@ async def _geometry_call(inp: GeometryInput, ctx: ToolContext) -> ToolResult[Geo
     )
 
     output = GeometryOutput(
-        manifold=structure.manifold.to_dict() if hasattr(structure, "manifold") and hasattr(structure.manifold, "to_dict") else {},
-        metric_tensor=structure.metric_tensor.to_dict() if hasattr(structure, "metric_tensor") and hasattr(structure.metric_tensor, "to_dict") else {},
-        curvature=structure.curvature.to_dict() if hasattr(structure, "curvature") and hasattr(structure.curvature, "to_dict") else {},
-        fiber_bundle=structure.fiber_bundle.to_dict() if hasattr(structure, "fiber_bundle") and structure.fiber_bundle and hasattr(structure.fiber_bundle, "to_dict") else None,
+        manifold=(
+            structure.manifold.to_dict()
+            if hasattr(structure, "manifold") and hasattr(structure.manifold, "to_dict")
+            else {}
+        ),
+        metric_tensor=(
+            structure.metric_tensor.to_dict()
+            if hasattr(structure, "metric_tensor")
+            and hasattr(structure.metric_tensor, "to_dict")
+            else {}
+        ),
+        curvature=(
+            structure.curvature.to_dict()
+            if hasattr(structure, "curvature")
+            and hasattr(structure.curvature, "to_dict")
+            else {}
+        ),
+        fiber_bundle=(
+            structure.fiber_bundle.to_dict()
+            if hasattr(structure, "fiber_bundle")
+            and structure.fiber_bundle
+            and hasattr(structure.fiber_bundle, "to_dict")
+            else None
+        ),
     )
     return ToolResult(
         success=True,

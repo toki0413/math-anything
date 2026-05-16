@@ -6,7 +6,9 @@ from ..tool_system import ToolContext, ToolResult, build_math_tool
 from .schemas import CompareInput, CompareOutput
 
 
-async def _compare_call(inp: CompareInput, ctx: ToolContext) -> ToolResult[CompareOutput]:
+async def _compare_call(
+    inp: CompareInput, ctx: ToolContext
+) -> ToolResult[CompareOutput]:
     from math_anything.agents.compare_agent import CompareAgent
 
     agent = CompareAgent()

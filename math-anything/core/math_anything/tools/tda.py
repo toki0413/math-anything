@@ -99,11 +99,17 @@ class TDAAnalyzer:
             dgms = result["dgms"]
 
             dim_0 = [(b, d) for b, d in dgms[0] if np.isfinite(d)]
-            dim_1 = [(b, d) for b, d in dgms[1] if np.isfinite(d)] if len(dgms) > 1 else []
-            dim_2 = [(b, d) for b, d in dgms[2] if np.isfinite(d)] if len(dgms) > 2 else []
+            dim_1 = (
+                [(b, d) for b, d in dgms[1] if np.isfinite(d)] if len(dgms) > 1 else []
+            )
+            dim_2 = (
+                [(b, d) for b, d in dgms[2] if np.isfinite(d)] if len(dgms) > 2 else []
+            )
 
             return PersistenceDiagram(
-                dim_0=dim_0, dim_1=dim_1, dim_2=dim_2,
+                dim_0=dim_0,
+                dim_1=dim_1,
+                dim_2=dim_2,
                 max_dimension=max_dim,
                 description=f"Persistent homology via ripser ({len(point_cloud)} points, max_dim={max_dim})",
             )
@@ -133,7 +139,9 @@ class TDAAnalyzer:
                     dgms[dim].append((b, d))
 
             return PersistenceDiagram(
-                dim_0=dgms[0], dim_1=dgms[1], dim_2=dgms[2],
+                dim_0=dgms[0],
+                dim_1=dgms[1],
+                dim_2=dgms[2],
                 max_dimension=max_dim,
                 description=f"Cubical complex homology via gudhi (shape={volume_data.shape})",
             )
@@ -154,15 +162,23 @@ class TDAAnalyzer:
         max_val = max(d for _, d in all_pairs) if all_pairs else 1.0
         threshold = max_val * 0.9
 
-        beta_0 = sum(1 for b, d in persistence.dim_0 if d > threshold or d == float("inf"))
-        beta_1 = sum(1 for b, d in persistence.dim_1 if d > threshold or d == float("inf"))
-        beta_2 = sum(1 for b, d in persistence.dim_2 if d > threshold or d == float("inf"))
+        beta_0 = sum(
+            1 for b, d in persistence.dim_0 if d > threshold or d == float("inf")
+        )
+        beta_1 = sum(
+            1 for b, d in persistence.dim_1 if d > threshold or d == float("inf")
+        )
+        beta_2 = sum(
+            1 for b, d in persistence.dim_2 if d > threshold or d == float("inf")
+        )
 
         if beta_0 == 0 and persistence.dim_0:
             beta_0 = 1
 
         return BettiNumbers(
-            beta_0=beta_0, beta_1=beta_1, beta_2=beta_2,
+            beta_0=beta_0,
+            beta_1=beta_1,
+            beta_2=beta_2,
             description=f"β₀={beta_0} (connected), β₁={beta_1} (loops), β₂={beta_2} (voids)",
         )
 
@@ -265,13 +281,15 @@ class TDAAnalyzer:
         threshold = sorted_dists[len(sorted_dists) // 4]
 
         dim_0 = [(0.0, float("inf"))]
-        for d in sorted_dists[:min(10, len(sorted_dists))]:
+        for d in sorted_dists[: min(10, len(sorted_dists))]:
             if d > threshold:
                 break
             dim_0.append((0.0, float(d)))
 
         return PersistenceDiagram(
-            dim_0=dim_0, dim_1=[], dim_2=[],
+            dim_0=dim_0,
+            dim_1=[],
+            dim_2=[],
             max_dimension=0,
             description=f"Basic H0 analysis (install ripser for full persistent homology)",
         )
@@ -305,10 +323,7 @@ class TDAAnalyzer:
 
         max_dist = 0.0
         for b1, d1 in diag1:
-            min_d = min(
-                max(abs(b1 - b2), abs(d1 - d2))
-                for b2, d2 in diag2
-            )
+            min_d = min(max(abs(b1 - b2), abs(d1 - d2)) for b2, d2 in diag2)
             max_dist = max(max_dist, min_d)
 
         return float(max_dist)

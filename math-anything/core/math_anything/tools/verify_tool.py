@@ -7,8 +7,8 @@ from .schemas import VerifyInput, VerifyOutput
 
 
 async def _verify_call(inp: VerifyInput, ctx: ToolContext) -> ToolResult[VerifyOutput]:
-    from math_anything import FormalVerifier, MathematicalTask, TaskType as TT
-    from math_anything import DifferentialGeometryLayer
+    from math_anything import DifferentialGeometryLayer, FormalVerifier, MathematicalTask
+    from math_anything import TaskType as TT
 
     task_type = TT.PROOF
     for t in TT:
@@ -42,7 +42,10 @@ async def _verify_call(inp: VerifyInput, ctx: ToolContext) -> ToolResult[VerifyO
     output = VerifyOutput(
         formal_status=result.formal_status.value,
         overall_confidence=result.overall_confidence,
-        layer_results=[lr.to_dict() if hasattr(lr, "to_dict") else lr for lr in result.layer_results],
+        layer_results=[
+            lr.to_dict() if hasattr(lr, "to_dict") else lr
+            for lr in result.layer_results
+        ],
         errors=result.errors if hasattr(result, "errors") else [],
     )
     return ToolResult(

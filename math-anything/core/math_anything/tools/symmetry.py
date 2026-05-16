@@ -114,7 +114,9 @@ class SymmetryAnalysisResult:
         if self.space_group:
             d["space_group"] = self.space_group.to_dict()
         if self.irreps:
-            d["irreducible_representations"] = [irrep.to_dict() for irrep in self.irreps]
+            d["irreducible_representations"] = [
+                irrep.to_dict() for irrep in self.irreps
+            ]
         if self.character_table:
             d["character_table"] = self.character_table.to_dict()
         if self.selection_rules:
@@ -125,46 +127,236 @@ class SymmetryAnalysisResult:
 
 
 _CRYSTAL_SYSTEMS = {
-    1: "triclinic", 2: "triclinic",
-    3: "monoclinic", 4: "monoclinic", 5: "monoclinic", 6: "monoclinic", 7: "monoclinic", 8: "monoclinic", 9: "monoclinic",
-    10: "orthorhombic", 11: "orthorhombic", 12: "orthorhombic", 13: "orthorhombic", 14: "orthorhombic", 15: "orthorhombic",
-    16: "tetragonal", 17: "tetragonal", 18: "tetragonal", 19: "tetragonal", 20: "tetragonal", 21: "tetragonal",
-    22: "tetragonal", 23: "tetragonal", 24: "tetragonal", 25: "tetragonal", 26: "tetragonal", 27: "tetragonal",
-    28: "tetragonal", 29: "tetragonal", 30: "tetragonal", 31: "tetragonal", 32: "tetragonal", 33: "tetragonal",
-    34: "tetragonal", 35: "tetragonal", 36: "tetragonal", 37: "tetragonal", 38: "tetragonal", 39: "tetragonal",
-    40: "tetragonal", 41: "tetragonal", 42: "tetragonal", 43: "tetragonal", 44: "tetragonal", 45: "tetragonal",
-    46: "tetragonal", 47: "tetragonal", 48: "tetragonal", 49: "tetragonal", 50: "tetragonal", 51: "tetragonal",
-    52: "tetragonal", 53: "tetragonal", 54: "tetragonal", 55: "tetragonal", 56: "tetragonal", 57: "tetragonal",
-    58: "tetragonal", 59: "tetragonal", 60: "tetragonal", 61: "tetragonal", 62: "tetragonal", 63: "tetragonal",
-    64: "tetragonal", 65: "tetragonal", 66: "tetragonal", 67: "tetragonal", 68: "tetragonal", 69: "tetragonal",
-    70: "tetragonal", 71: "tetragonal", 72: "tetragonal", 73: "tetragonal", 74: "tetragonal",
-    75: "trigonal", 76: "trigonal", 77: "trigonal", 78: "trigonal", 79: "trigonal", 80: "trigonal",
-    81: "trigonal", 82: "trigonal", 83: "trigonal", 84: "trigonal", 85: "trigonal", 86: "trigonal",
-    87: "trigonal", 88: "trigonal", 89: "trigonal", 90: "trigonal", 91: "trigonal", 92: "trigonal",
-    93: "trigonal", 94: "trigonal", 95: "trigonal", 96: "trigonal", 97: "trigonal", 98: "trigonal",
-    99: "trigonal", 100: "trigonal", 101: "trigonal", 102: "trigonal", 103: "trigonal", 104: "trigonal",
-    105: "trigonal", 106: "trigonal", 107: "trigonal", 108: "trigonal", 109: "trigonal", 110: "trigonal",
-    111: "trigonal", 112: "trigonal", 113: "trigonal", 114: "trigonal", 115: "trigonal", 116: "trigonal",
-    117: "trigonal", 118: "trigonal", 119: "trigonal", 120: "trigonal", 121: "trigonal", 122: "trigonal",
-    123: "trigonal", 124: "trigonal", 125: "trigonal", 126: "trigonal", 127: "trigonal", 128: "trigonal",
-    129: "trigonal", 130: "trigonal", 131: "trigonal", 132: "trigonal", 133: "trigonal", 134: "trigonal",
-    135: "trigonal", 136: "trigonal", 137: "trigonal", 138: "trigonal", 139: "trigonal", 140: "trigonal",
-    141: "trigonal", 142: "trigonal", 143: "trigonal", 144: "trigonal", 145: "trigonal", 146: "trigonal",
-    147: "trigonal", 148: "trigonal", 149: "trigonal", 150: "trigonal", 151: "trigonal", 152: "trigonal",
-    153: "trigonal", 154: "trigonal", 155: "trigonal", 156: "trigonal", 157: "trigonal", 158: "trigonal",
-    159: "trigonal", 160: "trigonal", 161: "trigonal", 162: "trigonal", 163: "trigonal", 164: "trigonal",
-    165: "trigonal", 166: "trigonal", 167: "trigonal",
-    168: "hexagonal", 169: "hexagonal", 170: "hexagonal", 171: "hexagonal", 172: "hexagonal", 173: "hexagonal",
-    174: "hexagonal", 175: "hexagonal", 176: "hexagonal", 177: "hexagonal", 178: "hexagonal", 179: "hexagonal",
-    180: "hexagonal", 181: "hexagonal", 182: "hexagonal", 183: "hexagonal", 184: "hexagonal", 185: "hexagonal",
-    186: "hexagonal", 187: "hexagonal", 188: "hexagonal", 189: "hexagonal", 190: "hexagonal", 191: "hexagonal",
-    192: "hexagonal", 193: "hexagonal", 194: "hexagonal",
-    195: "cubic", 196: "cubic", 197: "cubic", 198: "cubic", 199: "cubic", 200: "cubic",
-    201: "cubic", 202: "cubic", 203: "cubic", 204: "cubic", 205: "cubic", 206: "cubic",
-    207: "cubic", 208: "cubic", 209: "cubic", 210: "cubic", 211: "cubic", 212: "cubic",
-    213: "cubic", 214: "cubic", 215: "cubic", 216: "cubic", 217: "cubic", 218: "cubic",
-    219: "cubic", 220: "cubic", 221: "cubic", 222: "cubic", 223: "cubic", 224: "cubic",
-    225: "cubic", 226: "cubic", 227: "cubic", 228: "cubic", 229: "cubic", 230: "cubic",
+    1: "triclinic",
+    2: "triclinic",
+    3: "monoclinic",
+    4: "monoclinic",
+    5: "monoclinic",
+    6: "monoclinic",
+    7: "monoclinic",
+    8: "monoclinic",
+    9: "monoclinic",
+    10: "orthorhombic",
+    11: "orthorhombic",
+    12: "orthorhombic",
+    13: "orthorhombic",
+    14: "orthorhombic",
+    15: "orthorhombic",
+    16: "tetragonal",
+    17: "tetragonal",
+    18: "tetragonal",
+    19: "tetragonal",
+    20: "tetragonal",
+    21: "tetragonal",
+    22: "tetragonal",
+    23: "tetragonal",
+    24: "tetragonal",
+    25: "tetragonal",
+    26: "tetragonal",
+    27: "tetragonal",
+    28: "tetragonal",
+    29: "tetragonal",
+    30: "tetragonal",
+    31: "tetragonal",
+    32: "tetragonal",
+    33: "tetragonal",
+    34: "tetragonal",
+    35: "tetragonal",
+    36: "tetragonal",
+    37: "tetragonal",
+    38: "tetragonal",
+    39: "tetragonal",
+    40: "tetragonal",
+    41: "tetragonal",
+    42: "tetragonal",
+    43: "tetragonal",
+    44: "tetragonal",
+    45: "tetragonal",
+    46: "tetragonal",
+    47: "tetragonal",
+    48: "tetragonal",
+    49: "tetragonal",
+    50: "tetragonal",
+    51: "tetragonal",
+    52: "tetragonal",
+    53: "tetragonal",
+    54: "tetragonal",
+    55: "tetragonal",
+    56: "tetragonal",
+    57: "tetragonal",
+    58: "tetragonal",
+    59: "tetragonal",
+    60: "tetragonal",
+    61: "tetragonal",
+    62: "tetragonal",
+    63: "tetragonal",
+    64: "tetragonal",
+    65: "tetragonal",
+    66: "tetragonal",
+    67: "tetragonal",
+    68: "tetragonal",
+    69: "tetragonal",
+    70: "tetragonal",
+    71: "tetragonal",
+    72: "tetragonal",
+    73: "tetragonal",
+    74: "tetragonal",
+    75: "trigonal",
+    76: "trigonal",
+    77: "trigonal",
+    78: "trigonal",
+    79: "trigonal",
+    80: "trigonal",
+    81: "trigonal",
+    82: "trigonal",
+    83: "trigonal",
+    84: "trigonal",
+    85: "trigonal",
+    86: "trigonal",
+    87: "trigonal",
+    88: "trigonal",
+    89: "trigonal",
+    90: "trigonal",
+    91: "trigonal",
+    92: "trigonal",
+    93: "trigonal",
+    94: "trigonal",
+    95: "trigonal",
+    96: "trigonal",
+    97: "trigonal",
+    98: "trigonal",
+    99: "trigonal",
+    100: "trigonal",
+    101: "trigonal",
+    102: "trigonal",
+    103: "trigonal",
+    104: "trigonal",
+    105: "trigonal",
+    106: "trigonal",
+    107: "trigonal",
+    108: "trigonal",
+    109: "trigonal",
+    110: "trigonal",
+    111: "trigonal",
+    112: "trigonal",
+    113: "trigonal",
+    114: "trigonal",
+    115: "trigonal",
+    116: "trigonal",
+    117: "trigonal",
+    118: "trigonal",
+    119: "trigonal",
+    120: "trigonal",
+    121: "trigonal",
+    122: "trigonal",
+    123: "trigonal",
+    124: "trigonal",
+    125: "trigonal",
+    126: "trigonal",
+    127: "trigonal",
+    128: "trigonal",
+    129: "trigonal",
+    130: "trigonal",
+    131: "trigonal",
+    132: "trigonal",
+    133: "trigonal",
+    134: "trigonal",
+    135: "trigonal",
+    136: "trigonal",
+    137: "trigonal",
+    138: "trigonal",
+    139: "trigonal",
+    140: "trigonal",
+    141: "trigonal",
+    142: "trigonal",
+    143: "trigonal",
+    144: "trigonal",
+    145: "trigonal",
+    146: "trigonal",
+    147: "trigonal",
+    148: "trigonal",
+    149: "trigonal",
+    150: "trigonal",
+    151: "trigonal",
+    152: "trigonal",
+    153: "trigonal",
+    154: "trigonal",
+    155: "trigonal",
+    156: "trigonal",
+    157: "trigonal",
+    158: "trigonal",
+    159: "trigonal",
+    160: "trigonal",
+    161: "trigonal",
+    162: "trigonal",
+    163: "trigonal",
+    164: "trigonal",
+    165: "trigonal",
+    166: "trigonal",
+    167: "trigonal",
+    168: "hexagonal",
+    169: "hexagonal",
+    170: "hexagonal",
+    171: "hexagonal",
+    172: "hexagonal",
+    173: "hexagonal",
+    174: "hexagonal",
+    175: "hexagonal",
+    176: "hexagonal",
+    177: "hexagonal",
+    178: "hexagonal",
+    179: "hexagonal",
+    180: "hexagonal",
+    181: "hexagonal",
+    182: "hexagonal",
+    183: "hexagonal",
+    184: "hexagonal",
+    185: "hexagonal",
+    186: "hexagonal",
+    187: "hexagonal",
+    188: "hexagonal",
+    189: "hexagonal",
+    190: "hexagonal",
+    191: "hexagonal",
+    192: "hexagonal",
+    193: "hexagonal",
+    194: "hexagonal",
+    195: "cubic",
+    196: "cubic",
+    197: "cubic",
+    198: "cubic",
+    199: "cubic",
+    200: "cubic",
+    201: "cubic",
+    202: "cubic",
+    203: "cubic",
+    204: "cubic",
+    205: "cubic",
+    206: "cubic",
+    207: "cubic",
+    208: "cubic",
+    209: "cubic",
+    210: "cubic",
+    211: "cubic",
+    212: "cubic",
+    213: "cubic",
+    214: "cubic",
+    215: "cubic",
+    216: "cubic",
+    217: "cubic",
+    218: "cubic",
+    219: "cubic",
+    220: "cubic",
+    221: "cubic",
+    222: "cubic",
+    223: "cubic",
+    224: "cubic",
+    225: "cubic",
+    226: "cubic",
+    227: "cubic",
+    228: "cubic",
+    229: "cubic",
+    230: "cubic",
 }
 
 
@@ -190,7 +382,9 @@ class SymmetryAnalyzer:
             numbers: Atomic numbers
             space_group_hint: Known space group symbol (fallback)
         """
-        sg_result = self._detect_space_group(lattice, positions, numbers, space_group_hint)
+        sg_result = self._detect_space_group(
+            lattice, positions, numbers, space_group_hint
+        )
         irreps = self._compute_irreps(sg_result)
         char_table = self._compute_character_table(sg_result)
         selection_rules = self._compute_selection_rules(irreps)
@@ -238,7 +432,9 @@ class SymmetryAnalyzer:
         if hint:
             return self._parse_space_group_hint(hint)
 
-        return SpaceGroupResult(description="Space group detection requires spglib or structure data")
+        return SpaceGroupResult(
+            description="Space group detection requires spglib or structure data"
+        )
 
     def _parse_space_group_hint(self, hint: str) -> SpaceGroupResult:
         """Parse a space group symbol or number from a hint string."""
@@ -264,7 +460,11 @@ class SymmetryAnalyzer:
             return []
 
         try:
-            from sympy.combinatorics.named_groups import SymmetricGroup, CyclicGroup, AbelianGroup
+            from sympy.combinatorics.named_groups import (
+                AbelianGroup,
+                CyclicGroup,
+                SymmetricGroup,
+            )
 
             return self._sympy_irreps(sg)
         except ImportError:
@@ -276,18 +476,54 @@ class SymmetryAnalyzer:
         irreps = []
 
         pg_irrep_data = {
-            "1": [IrreducibleRepresentation(label="A", dimension=1, characters={"E": 1.0})],
-            "-1": [IrreducibleRepresentation(label="Ag", dimension=1, characters={"E": 1.0, "i": 1.0}),
-                   IrreducibleRepresentation(label="Au", dimension=1, characters={"E": 1.0, "i": -1.0})],
-            "m": [IrreducibleRepresentation(label="A'", dimension=1, characters={"E": 1.0, "σ": 1.0}),
-                  IrreducibleRepresentation(label="A\"", dimension=1, characters={"E": 1.0, "σ": -1.0})],
-            "2": [IrreducibleRepresentation(label="A", dimension=1, characters={"E": 1.0, "C2": 1.0}),
-                  IrreducibleRepresentation(label="B", dimension=1, characters={"E": 1.0, "C2": -1.0})],
+            "1": [
+                IrreducibleRepresentation(label="A", dimension=1, characters={"E": 1.0})
+            ],
+            "-1": [
+                IrreducibleRepresentation(
+                    label="Ag", dimension=1, characters={"E": 1.0, "i": 1.0}
+                ),
+                IrreducibleRepresentation(
+                    label="Au", dimension=1, characters={"E": 1.0, "i": -1.0}
+                ),
+            ],
+            "m": [
+                IrreducibleRepresentation(
+                    label="A'", dimension=1, characters={"E": 1.0, "σ": 1.0}
+                ),
+                IrreducibleRepresentation(
+                    label='A"', dimension=1, characters={"E": 1.0, "σ": -1.0}
+                ),
+            ],
+            "2": [
+                IrreducibleRepresentation(
+                    label="A", dimension=1, characters={"E": 1.0, "C2": 1.0}
+                ),
+                IrreducibleRepresentation(
+                    label="B", dimension=1, characters={"E": 1.0, "C2": -1.0}
+                ),
+            ],
             "2/m": [
-                IrreducibleRepresentation(label="Ag", dimension=1, characters={"E": 1.0, "C2": 1.0, "i": 1.0, "σ": 1.0}),
-                IrreducibleRepresentation(label="Bg", dimension=1, characters={"E": 1.0, "C2": -1.0, "i": 1.0, "σ": -1.0}),
-                IrreducibleRepresentation(label="Au", dimension=1, characters={"E": 1.0, "C2": 1.0, "i": -1.0, "σ": -1.0}),
-                IrreducibleRepresentation(label="Bu", dimension=1, characters={"E": 1.0, "C2": -1.0, "i": -1.0, "σ": 1.0}),
+                IrreducibleRepresentation(
+                    label="Ag",
+                    dimension=1,
+                    characters={"E": 1.0, "C2": 1.0, "i": 1.0, "σ": 1.0},
+                ),
+                IrreducibleRepresentation(
+                    label="Bg",
+                    dimension=1,
+                    characters={"E": 1.0, "C2": -1.0, "i": 1.0, "σ": -1.0},
+                ),
+                IrreducibleRepresentation(
+                    label="Au",
+                    dimension=1,
+                    characters={"E": 1.0, "C2": 1.0, "i": -1.0, "σ": -1.0},
+                ),
+                IrreducibleRepresentation(
+                    label="Bu",
+                    dimension=1,
+                    characters={"E": 1.0, "C2": -1.0, "i": -1.0, "σ": 1.0},
+                ),
             ],
             "m-3m": [
                 IrreducibleRepresentation(label="A1g", dimension=1),
@@ -306,19 +542,27 @@ class SymmetryAnalyzer:
         if pg in pg_irrep_data:
             irreps = pg_irrep_data[pg]
         else:
-            irreps = [IrreducibleRepresentation(label="Γ₁", dimension=1, description=f"Trivial rep of {pg}")]
+            irreps = [
+                IrreducibleRepresentation(
+                    label="Γ₁", dimension=1, description=f"Trivial rep of {pg}"
+                )
+            ]
 
         return irreps
 
     def _fallback_irreps(self, sg: SpaceGroupResult) -> List[IrreducibleRepresentation]:
         """Fallback: return trivial representation only."""
-        return [IrreducibleRepresentation(
-            label="Γ₁",
-            dimension=1,
-            description=f"Trivial representation (install sympy for full character tables)",
-        )]
+        return [
+            IrreducibleRepresentation(
+                label="Γ₁",
+                dimension=1,
+                description=f"Trivial representation (install sympy for full character tables)",
+            )
+        ]
 
-    def _compute_character_table(self, sg: SpaceGroupResult) -> Optional[CharacterTable]:
+    def _compute_character_table(
+        self, sg: SpaceGroupResult
+    ) -> Optional[CharacterTable]:
         """Compute character table of the point group."""
         if not sg.point_group:
             return None
@@ -352,20 +596,24 @@ class SymmetryAnalyzer:
                     if irrep_op.dimension > 3:
                         continue
 
-                    allowed = self._check_selection_rule(irrep_i, irrep_f, irrep_op, trivial_labels)
+                    allowed = self._check_selection_rule(
+                        irrep_i, irrep_f, irrep_op, trivial_labels
+                    )
                     if allowed:
-                        rules.append(SelectionRuleResult(
-                            allowed=True,
-                            initial_irrep=irrep_i.label,
-                            final_irrep=irrep_f.label,
-                            operator_irrep=irrep_op.label,
-                            integral_nonzero=True,
-                            description=(
-                                f"Transition {irrep_i.label} → {irrep_f.label} "
-                                f"via {irrep_op.label} is ALLOWED "
-                                f"(Γ_i ⊗ Γ_op ⊗ Γ_f contains A₁)"
-                            ),
-                        ))
+                        rules.append(
+                            SelectionRuleResult(
+                                allowed=True,
+                                initial_irrep=irrep_i.label,
+                                final_irrep=irrep_f.label,
+                                operator_irrep=irrep_op.label,
+                                integral_nonzero=True,
+                                description=(
+                                    f"Transition {irrep_i.label} → {irrep_f.label} "
+                                    f"via {irrep_op.label} is ALLOWED "
+                                    f"(Γ_i ⊗ Γ_op ⊗ Γ_f contains A₁)"
+                                ),
+                            )
+                        )
 
         return rules[:20]
 

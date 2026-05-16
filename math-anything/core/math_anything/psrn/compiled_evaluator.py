@@ -68,7 +68,9 @@ class CompiledEvaluator:
         self._compiled_cache: Dict[str, Callable] = {}
         self._vectorized_ops = _VECTORIZED_OPS
 
-    def compile(self, expr: str, variable_names: Optional[List[str]] = None) -> Callable:
+    def compile(
+        self, expr: str, variable_names: Optional[List[str]] = None
+    ) -> Callable:
         """将表达式字符串编译为可执行的向量化函数.
 
         这是核心优化：将字符串解析一次，生成可直接调用的函数对象，
@@ -128,7 +130,9 @@ class CompiledEvaluator:
             elif isinstance(node.op, ast.Mult):
                 return lambda **kwargs: left_func(**kwargs) * right_func(**kwargs)
             elif isinstance(node.op, ast.Div):
-                return lambda **kwargs: left_func(**kwargs) / (right_func(**kwargs) + 1e-10)
+                return lambda **kwargs: left_func(**kwargs) / (
+                    right_func(**kwargs) + 1e-10
+                )
             elif isinstance(node.op, ast.Pow):
                 return lambda **kwargs: np.power(
                     np.abs(left_func(**kwargs)), right_func(**kwargs)
@@ -154,11 +158,15 @@ class CompiledEvaluator:
                         raise ValueError("eml requires exactly 2 arguments")
                     left_func = self._ast_to_func(node.args[0], variable_names)
                     right_func = self._ast_to_func(node.args[1], variable_names)
-                    return lambda **kwargs: _eml(left_func(**kwargs), right_func(**kwargs))
+                    return lambda **kwargs: _eml(
+                        left_func(**kwargs), right_func(**kwargs)
+                    )
 
                 # 其他一元函数
                 if len(node.args) != 1:
-                    raise ValueError(f"Only single-argument functions supported: {func_name}")
+                    raise ValueError(
+                        f"Only single-argument functions supported: {func_name}"
+                    )
 
                 arg_func = self._ast_to_func(node.args[0], variable_names)
 
@@ -167,7 +175,9 @@ class CompiledEvaluator:
                 elif func_name == "cos":
                     return lambda **kwargs: np.cos(arg_func(**kwargs))
                 elif func_name == "exp":
-                    return lambda **kwargs: np.exp(np.clip(arg_func(**kwargs), -700, 700))
+                    return lambda **kwargs: np.exp(
+                        np.clip(arg_func(**kwargs), -700, 700)
+                    )
                 elif func_name == "log":
                     return lambda **kwargs: np.log(np.abs(arg_func(**kwargs)) + 1e-10)
                 elif func_name == "sqrt":
@@ -177,7 +187,9 @@ class CompiledEvaluator:
 
         raise ValueError(f"Unsupported AST node type: {type(node).__name__}")
 
-    def evaluate(self, expr: str, X: np.ndarray, variable_names: List[str]) -> np.ndarray:
+    def evaluate(
+        self, expr: str, X: np.ndarray, variable_names: List[str]
+    ) -> np.ndarray:
         """评估单个表达式（编译后执行）."""
         func = self.compile(expr, variable_names)
 
@@ -305,6 +317,7 @@ class NumbaEvaluator:
     def _check_numba(self) -> bool:
         try:
             import numba
+
             return True
         except ImportError:
             return False
@@ -360,12 +373,15 @@ def benchmark_evaluators():
     for i, expr in enumerate(expressions):
         for j in range(n_samples):
             var_dict = {name: float(X[j, k]) for k, name in enumerate(variable_names)}
-            var_dict.update({
-                "sin": np.sin, "cos": np.cos,
-                "exp": lambda x: np.exp(np.clip(x, -700, 700)),
-                "log": lambda x: np.log(np.abs(x) + 1e-10),
-                "abs": np.abs,
-            })
+            var_dict.update(
+                {
+                    "sin": np.sin,
+                    "cos": np.cos,
+                    "exp": lambda x: np.exp(np.clip(x, -700, 700)),
+                    "log": lambda x: np.log(np.abs(x) + 1e-10),
+                    "abs": np.abs,
+                }
+            )
             try:
                 baseline_results[j, i] = eval(expr, {"__builtins__": {}}, var_dict)
             except Exception:
@@ -429,9 +445,15 @@ def benchmark_evaluators():
     print(f"{'Method':<30} {'Time (ms)':>10} {'Speedup':>10}")
     print("-" * 52)
     print(f"{'Python eval (baseline)':<30} {baseline_time*1000:>10.1f} {'1.0x':>10}")
-    print(f"{'CompiledEvaluator (1st)':<30} {compiled_time*1000:>10.1f} {baseline_time/compiled_time:>9.1f}x")
-    print(f"{'CompiledEvaluator (cached)':<30} {cached_time*1000:>10.1f} {baseline_time/cached_time:>9.1f}x")
-    print(f"{'FastSymbolLayer':<30} {fast_time*1000:>10.1f} {baseline_time/fast_time:>9.1f}x")
+    print(
+        f"{'CompiledEvaluator (1st)':<30} {compiled_time*1000:>10.1f} {baseline_time/compiled_time:>9.1f}x"
+    )
+    print(
+        f"{'CompiledEvaluator (cached)':<30} {cached_time*1000:>10.1f} {baseline_time/cached_time:>9.1f}x"
+    )
+    print(
+        f"{'FastSymbolLayer':<30} {fast_time*1000:>10.1f} {baseline_time/fast_time:>9.1f}x"
+    )
 
 
 if __name__ == "__main__":

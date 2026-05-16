@@ -102,18 +102,18 @@ class AttentionTokenGenerator(TokenGenerator):
         # 2. 单变量变换（常用函数）
         for i, name in enumerate(variable_names):
             x_vals = X[:, i]
-            candidates.extend([
-                (f"sin({name})", np.sin(x_vals)),
-                (f"cos({name})", np.cos(x_vals)),
-                (f"{name}*{name}", x_vals ** 2),
-                (f"sqrt(abs({name}))", np.sqrt(np.abs(x_vals))),
-            ])
+            candidates.extend(
+                [
+                    (f"sin({name})", np.sin(x_vals)),
+                    (f"cos({name})", np.cos(x_vals)),
+                    (f"{name}*{name}", x_vals**2),
+                    (f"sqrt(abs({name}))", np.sqrt(np.abs(x_vals))),
+                ]
+            )
 
             # 根据数据范围添加 exp/log
             if np.all(np.abs(x_vals) < 5):
-                candidates.append(
-                    (f"exp({name})", np.exp(np.clip(x_vals, -700, 700)))
-                )
+                candidates.append((f"exp({name})", np.exp(np.clip(x_vals, -700, 700))))
             if np.all(x_vals > 0):
                 candidates.append((f"log({name})", np.log(x_vals + 1e-10)))
 
@@ -131,11 +131,13 @@ class AttentionTokenGenerator(TokenGenerator):
         for i, j, corr in correlations[: min(3, len(correlations))]:
             if corr < 0.8:  # 避免高度冗余的组合
                 name_i, name_j = variable_names[i], variable_names[j]
-                candidates.extend([
-                    (f"({name_i}+{name_j})", X[:, i] + X[:, j]),
-                    (f"({name_i}*{name_j})", X[:, i] * X[:, j]),
-                    (f"({name_i}-{name_j})", X[:, i] - X[:, j]),
-                ])
+                candidates.extend(
+                    [
+                        (f"({name_i}+{name_j})", X[:, i] + X[:, j]),
+                        (f"({name_i}*{name_j})", X[:, i] * X[:, j]),
+                        (f"({name_i}-{name_j})", X[:, i] - X[:, j]),
+                    ]
+                )
 
         # 4. 添加 EML 组合（如果适用）
         for i in range(min(2, n_vars)):

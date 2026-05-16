@@ -327,9 +327,13 @@ class MathAnything:
             if "incar" in files:
                 try:
                     from .vasp.core.incar_parser import parse_incar
+
                     incar_result = parse_incar(files["incar"])
                     params.update(
-                        {name: param.value for name, param in incar_result.parameters.items()}
+                        {
+                            name: param.value
+                            for name, param in incar_result.parameters.items()
+                        }
                     )
                 except Exception as e:
                     self._warnings.append(f"Failed to parse INCAR: {e}")
@@ -368,13 +372,16 @@ class MathAnything:
 
         try:
             from math_anything.lammps.core.parser import LammpsInputParser
+
             parser = LammpsInputParser()
             commands = parser.parse_file(input_path)
             settings = parser.extract_settings(commands)
 
             if settings.pair_style:
                 params["pair_style"] = settings.pair_style.style
-                cutoff = self._extract_pair_cutoff(settings.pair_style.style, settings.pair_style.args)
+                cutoff = self._extract_pair_cutoff(
+                    settings.pair_style.style, settings.pair_style.args
+                )
                 if cutoff is not None:
                     params["pair_cutoff"] = cutoff
 
@@ -406,12 +413,16 @@ class MathAnything:
 
             params["_lammps_settings"] = settings
 
-            self._warnings.append(f"Parsed LAMMPS input: {settings.units} units, "
-                                  f"ensemble={params.get('ensemble','NVE')}, "
-                                  f"pair={params.get('pair_style','none')}")
+            self._warnings.append(
+                f"Parsed LAMMPS input: {settings.units} units, "
+                f"ensemble={params.get('ensemble','NVE')}, "
+                f"pair={params.get('pair_style','none')}"
+            )
 
         except ImportError:
-            self._warnings.append("LAMMPS harness not installed, extracting generic structure")
+            self._warnings.append(
+                "LAMMPS harness not installed, extracting generic structure"
+            )
         except Exception as e:
             self._warnings.append(f"LAMMPS parsing skipped: {e}")
 
@@ -438,10 +449,23 @@ class MathAnything:
                     if "=" in line:
                         key, _, val = line.partition("=")
                         key, val = key.strip(), val.strip().split(";")[0].strip()
-                        if key in ("integrator", "tcoupl", "pcoupl", "cutoff-scheme",
-                                    "constraints", "constraint-algorithm"):
+                        if key in (
+                            "integrator",
+                            "tcoupl",
+                            "pcoupl",
+                            "cutoff-scheme",
+                            "constraints",
+                            "constraint-algorithm",
+                        ):
                             params[key] = val
-                        elif key in ("dt", "nsteps", "rvdw", "rcoulomb", "ref-t", "ref-p"):
+                        elif key in (
+                            "dt",
+                            "nsteps",
+                            "rvdw",
+                            "rcoulomb",
+                            "ref-t",
+                            "ref-p",
+                        ):
                             try:
                                 params[key] = float(val)
                             except ValueError:
@@ -449,8 +473,11 @@ class MathAnything:
             integrator = params.get("integrator", "md")
             params["pair_style"] = params.get("cutoff-scheme", "Verlet")
             params["ensemble"] = {
-                "md": "NVE", "md-vv": "NVE", "sd": "NVT",
-                "bd": "NVT", "steep": "minimization",
+                "md": "NVE",
+                "md-vv": "NVE",
+                "sd": "NVT",
+                "bd": "NVT",
+                "steep": "minimization",
             }.get(integrator, "NVE")
             if integrator == "sd":
                 params["ensemble"] = "NVT"
@@ -496,8 +523,10 @@ class MathAnything:
                     params["has_boundary"] = True
                 if "ex," in line or "ex =" in line:
                     import re
-                    m = re.search(r'ex[,=]\s*([\d.]+)', line)
-                    if m: params["elastic_modulus"] = float(m.group(1))
+
+                    m = re.search(r"ex[,=]\s*([\d.]+)", line)
+                    if m:
+                        params["elastic_modulus"] = float(m.group(1))
             params["element_type"] = params.get("element_type", "C3D8R")
             self._warnings.append("Parsed keyword-structured input file")
         except Exception as e:
@@ -509,8 +538,14 @@ class MathAnything:
         """Extract cutoff radius from pair_style arguments intelligently."""
         if not args:
             return None
-        cutoff_styles = {"lj/cut", "lj/cut/coul/long", "lj/cut/coul/cut",
-                         "lj/cut/coul/msm", "lj/cut/coul/wolf", "lj/cut/tip4p/long"}
+        cutoff_styles = {
+            "lj/cut",
+            "lj/cut/coul/long",
+            "lj/cut/coul/cut",
+            "lj/cut/coul/msm",
+            "lj/cut/coul/wolf",
+            "lj/cut/tip4p/long",
+        }
         if style not in cutoff_styles:
             return None
         for arg in reversed(args):
@@ -618,7 +653,7 @@ class MathAnything:
 
         # Get mode options
         use_psrn = kwargs.pop("use_psrn", False)  # Default: use GP
-        use_eml = kwargs.pop("use_eml", True)     # Default: use EML operator
+        use_eml = kwargs.pop("use_eml", True)  # Default: use EML operator
 
         if use_psrn:
             # PSRN mode (faster but less accurate for EML)

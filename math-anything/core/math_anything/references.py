@@ -198,7 +198,8 @@ class ReferenceTracker:
         if keyword:
             kw = keyword.lower()
             refs = [
-                r for r in refs
+                r
+                for r in refs
                 if kw in r.constraint.lower()
                 or kw in r.physical_basis.lower()
                 or kw in r.vasp_manual_section.lower()

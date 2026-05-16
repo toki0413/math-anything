@@ -4,7 +4,6 @@
 """
 
 import numpy as np
-
 from math_anything import MathAnything
 
 
@@ -54,10 +53,9 @@ def demo_compare_methods():
 
     # 传统 GP
     print("\n--- Traditional GP ---")
-    gp = ImprovedSymbolicRegression(
-        population_size=100, generations=30, max_depth=4
-    )
+    gp = ImprovedSymbolicRegression(population_size=100, generations=30, max_depth=4)
     import time
+
     t0 = time.time()
     gp_tree = gp.fit(x.reshape(-1, 1), y, variable_names=["x"])
     gp_time = time.time() - t0

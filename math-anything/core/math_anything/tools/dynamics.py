@@ -71,8 +71,7 @@ class DMDResult:
         d: Dict[str, Any] = {"n_modes": self.n_modes}
         if self.eigenvalues is not None:
             d["eigenvalues"] = [
-                {"real": float(e.real), "imag": float(e.imag)}
-                for e in self.eigenvalues
+                {"real": float(e.real), "imag": float(e.imag)} for e in self.eigenvalues
             ]
         if self.frequencies is not None:
             d["frequencies"] = self.frequencies.tolist()
@@ -234,9 +233,7 @@ class DynamicsAnalyzer:
         except ImportError:
             return self._fallback_hurst(ts)
 
-    def dmd_analysis(
-        self, time_series_data: np.ndarray, n_modes: int = 5
-    ) -> DMDResult:
+    def dmd_analysis(self, time_series_data: np.ndarray, n_modes: int = 5) -> DMDResult:
         """Dynamic Mode Decomposition — extract coherent spatiotemporal modes.
 
         Args:
@@ -350,8 +347,7 @@ class DynamicsAnalyzer:
             dmd=dmd,
             chaos=chaos,
             description=(
-                f"Dynamics: {chaos.classification}, "
-                f"λ_max={lyap.max_lyapunov}"
+                f"Dynamics: {chaos.classification}, " f"λ_max={lyap.max_lyapunov}"
             ),
         )
 
@@ -364,7 +360,9 @@ class DynamicsAnalyzer:
         diffs = np.diff(ts)
         variance = np.var(diffs)
         if variance < 1e-15:
-            return LyapunovResult(max_lyapunov=0.0, is_chaotic=False, description="Constant signal: λ=0")
+            return LyapunovResult(
+                max_lyapunov=0.0, is_chaotic=False, description="Constant signal: λ=0"
+            )
 
         mean_abs_diff = np.mean(np.abs(diffs))
         lyap_est = np.log(mean_abs_diff + 1e-15) / n
@@ -386,7 +384,9 @@ class DynamicsAnalyzer:
         std_diff = np.std(diffs)
 
         if mean_diff < 1e-15:
-            return FractalResult(correlation_dimension=0.0, description="Constant signal")
+            return FractalResult(
+                correlation_dimension=0.0, description="Constant signal"
+            )
 
         d2_est = 1.0 + std_diff / (mean_diff + 1e-15)
         d2_est = min(d2_est, 3.0)

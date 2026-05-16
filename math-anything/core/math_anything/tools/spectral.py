@@ -144,12 +144,20 @@ class SpectralAnalyzer:
 
         dos = np.zeros(n_points)
         for eig, w in zip(eigs, weights):
-            dos += w * np.exp(-0.5 * ((energy_grid - eig) / sigma) ** 2) / (sigma * np.sqrt(2 * np.pi))
+            dos += (
+                w
+                * np.exp(-0.5 * ((energy_grid - eig) / sigma) ** 2)
+                / (sigma * np.sqrt(2 * np.pi))
+            )
 
         if fermi_energy is None:
             sorted_eigs = np.sort(eigs)
             n_occ = len(sorted_eigs) // 2
-            fermi_energy = float(sorted_eigs[n_occ]) if n_occ < len(sorted_eigs) else float(sorted_eigs[-1])
+            fermi_energy = (
+                float(sorted_eigs[n_occ])
+                if n_occ < len(sorted_eigs)
+                else float(sorted_eigs[-1])
+            )
 
         dos_at_fermi = float(np.interp(fermi_energy, energy_grid, dos))
 
@@ -286,7 +294,9 @@ class SpectralAnalyzer:
         if k_grid is not None:
             berry = self.berry_curvature_estimate(k_grid, eigenvalues, occupied_bands)
 
-        topology = self.z2_invariant_estimate(eigenvalues, time_reversal, occupied_bands)
+        topology = self.z2_invariant_estimate(
+            eigenvalues, time_reversal, occupied_bands
+        )
 
         return SpectralAnalysisResult(
             dos=dos,

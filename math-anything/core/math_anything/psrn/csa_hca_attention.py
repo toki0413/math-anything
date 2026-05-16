@@ -10,10 +10,11 @@
 - HCA: 深度结构分析，精选高质量组合
 """
 
-from typing import Dict, List, Optional, Tuple, Set
-import numpy as np
-from collections import defaultdict
 import warnings
+from collections import defaultdict
+from typing import Dict, List, Optional, Set, Tuple
+
+import numpy as np
 
 from .token_generator import TokenGenerator
 
@@ -127,9 +128,7 @@ class CSALayer:
 
         return selected
 
-    def _fast_evaluate(
-        self, expr: str, values: np.ndarray, y: np.ndarray
-    ) -> float:
+    def _fast_evaluate(self, expr: str, values: np.ndarray, y: np.ndarray) -> float:
         """快速评估（低计算成本）."""
         scores = []
 
@@ -216,7 +215,7 @@ class HCALayer:
                 A = np.vstack([values, np.ones(len(values))]).T
                 coeffs, residuals, _, _ = np.linalg.lstsq(A, y, rcond=None)
                 if len(residuals) > 0:
-                    ss_tot = np.sum((y - np.mean(y))**2)
+                    ss_tot = np.sum((y - np.mean(y)) ** 2)
                     r_squared = 1 - residuals[0] / ss_tot if ss_tot > 0 else 0
                     scores["linear_fit"] = max(0, r_squared)
                 else:
@@ -228,10 +227,12 @@ class HCALayer:
         if "nonlinear_potential" in self.depth_metrics:
             try:
                 # 检查与y^2, sqrt(y)等的相关性
-                y_squared = y ** 2
+                y_squared = y**2
                 if np.std(y_squared) > 1e-10:
                     corr_sq = np.corrcoef(values, y_squared)[0, 1]
-                    scores["nonlinear_potential"] = abs(corr_sq) if not np.isnan(corr_sq) else 0
+                    scores["nonlinear_potential"] = (
+                        abs(corr_sq) if not np.isnan(corr_sq) else 0
+                    )
                 else:
                     scores["nonlinear_potential"] = 0
             except:
@@ -245,7 +246,9 @@ class HCALayer:
                     y_exp = np.exp(np.clip(y, -50, 50))
                     if np.std(y_exp) > 1e-10:
                         corr_exp = np.corrcoef(values, y_exp)[0, 1]
-                        scores["eml_compatibility"] = abs(corr_exp) if not np.isnan(corr_exp) else 0.3
+                        scores["eml_compatibility"] = (
+                            abs(corr_exp) if not np.isnan(corr_exp) else 0.3
+                        )
                     else:
                         scores["eml_compatibility"] = 0.3
                 except:
@@ -320,7 +323,7 @@ class HCALayer:
         # 如果不够，补充高分数候选
         if len(selected) < target_count:
             remaining = [c for c in candidates if c not in selected]
-            selected.extend(remaining[:target_count - len(selected)])
+            selected.extend(remaining[: target_count - len(selected)])
 
         return selected[:target_count]
 
@@ -411,13 +414,14 @@ class CSAHCAAttentionGenerator(TokenGenerator):
         if reward_history and len(hca_output) < self.n_tokens:
             top_historical = sorted(
                 reward_history.items(), key=lambda x: x[1], reverse=True
-            )[:self.n_tokens - len(hca_output)]
+            )[: self.n_tokens - len(hca_output)]
 
             for token, _ in top_historical:
                 if token not in [h[0] for h in hca_output]:
                     # 需要重新计算值
                     try:
                         from .compiled_evaluator import CompiledEvaluator
+
                         evaluator = CompiledEvaluator()
                         values = evaluator.evaluate(token, X, variable_names)
                         hca_output.append((token, values, 0.8))  # 历史高分奖励
@@ -425,7 +429,7 @@ class CSAHCAAttentionGenerator(TokenGenerator):
                         pass
 
         # 6. 提取结果 - 确保所有values维度一致
-        selected = hca_output[:self.n_tokens]
+        selected = hca_output[: self.n_tokens]
         token_exprs = [h[0] for h in selected]
 
         # 确保所有values都是一维且长度正确
@@ -454,10 +458,10 @@ class CSAHCAAttentionGenerator(TokenGenerator):
         for i, name in enumerate(variable_names):
             candidates.append((name, X[:, i]))
             candidates.append((f"sin({name})", np.sin(X[:, i])))
-            candidates.append((f"({name}*{name})", X[:, i]**2))
+            candidates.append((f"({name}*{name})", X[:, i] ** 2))
 
-        exprs = [c[0] for c in candidates[:self.n_tokens]]
-        values = np.column_stack([c[1] for c in candidates[:self.n_tokens]])
+        exprs = [c[0] for c in candidates[: self.n_tokens]]
+        values = np.column_stack([c[1] for c in candidates[: self.n_tokens]])
         return exprs, values
 
     def _adaptive_schedule(self, iteration: int) -> Tuple[float, float]:
@@ -486,23 +490,19 @@ class CSAHCAAttentionGenerator(TokenGenerator):
         # 单变量变换
         for i, name in enumerate(variable_names):
             x_vals = X[:, i]
-            candidates.extend([
-                (f"sin({name})", np.sin(x_vals)),
-                (f"cos({name})", np.cos(x_vals)),
-                (f"({name}*{name})", x_vals**2),
-                (f"({name}*{name}*{name})", x_vals**3),
-            ])
+            candidates.extend(
+                [
+                    (f"sin({name})", np.sin(x_vals)),
+                    (f"cos({name})", np.cos(x_vals)),
+                    (f"({name}*{name})", x_vals**2),
+                    (f"({name}*{name}*{name})", x_vals**3),
+                ]
+            )
 
             if np.all(np.abs(x_vals) < 5):
-                candidates.append((
-                    f"exp({name})",
-                    np.exp(np.clip(x_vals, -50, 50))
-                ))
+                candidates.append((f"exp({name})", np.exp(np.clip(x_vals, -50, 50))))
             if np.all(x_vals > 0):
-                candidates.append((
-                    f"log({name})",
-                    np.log(x_vals + 1e-10)
-                ))
+                candidates.append((f"log({name})", np.log(x_vals + 1e-10)))
 
         # EML 核心结构
         for i in range(min(3, n_vars)):
@@ -517,13 +517,15 @@ class CSAHCAAttentionGenerator(TokenGenerator):
         # 两变量组合
         if n_vars >= 2:
             for i in range(min(3, n_vars)):
-                for j in range(i+1, min(3, n_vars)):
+                for j in range(i + 1, min(3, n_vars)):
                     name_i, name_j = variable_names[i], variable_names[j]
-                    candidates.extend([
-                        (f"({name_i}*{name_j})", X[:, i] * X[:, j]),
-                        (f"({name_i}+{name_j})", X[:, i] + X[:, j]),
-                        (f"({name_i}-{name_j})", X[:, i] - X[:, j]),
-                    ])
+                    candidates.extend(
+                        [
+                            (f"({name_i}*{name_j})", X[:, i] * X[:, j]),
+                            (f"({name_i}+{name_j})", X[:, i] + X[:, j]),
+                            (f"({name_i}-{name_j})", X[:, i] - X[:, j]),
+                        ]
+                    )
 
         # 过滤无效
         valid = []

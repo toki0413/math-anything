@@ -6,7 +6,9 @@ from ..tool_system import ToolContext, ToolResult, build_math_tool
 from .schemas import ValidateInput, ValidateOutput
 
 
-async def _validate_call(inp: ValidateInput, ctx: ToolContext) -> ToolResult[ValidateOutput]:
+async def _validate_call(
+    inp: ValidateInput, ctx: ToolContext
+) -> ToolResult[ValidateOutput]:
     from math_anything.agents.validate_agent import ValidateAgent
 
     agent = ValidateAgent()

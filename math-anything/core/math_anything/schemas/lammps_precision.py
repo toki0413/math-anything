@@ -70,8 +70,12 @@ class LammpsMathematicalPrecisionExtractor(BasePrecisionExtractor):
                 else:
                     canonical_form = "m_i d²r_i/dt² = F_i(r_1, ..., r_N)"
 
-        is_pairwise = any(k in (pair_style or "") for k in ["lj/cut", "buck", "morse", "dpd"])
-        is_manybody = any(k in (pair_style or "") for k in ["eam", "meam", "tersoff", "sw"])
+        is_pairwise = any(
+            k in (pair_style or "") for k in ["lj/cut", "buck", "morse", "dpd"]
+        )
+        is_manybody = any(
+            k in (pair_style or "") for k in ["eam", "meam", "tersoff", "sw"]
+        )
         is_reactive = "reax" in (pair_style or "")
 
         return MathematicalStructure(

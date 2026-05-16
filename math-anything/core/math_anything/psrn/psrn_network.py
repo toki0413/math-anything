@@ -17,12 +17,12 @@ from .symbol_layer import SymbolConfig, SymbolLayer
 class PSRNConfig:
     """PSRN 网络配置."""
 
-    n_layers: int = 3                    # 符号层数量
-    n_input_slots: int = 5               # 输入槽位数量（变量 + 常量）
+    n_layers: int = 3  # 符号层数量
+    n_input_slots: int = 5  # 输入槽位数量（变量 + 常量）
     symbol_config: SymbolConfig = field(default_factory=SymbolConfig)
-    use_gpu: Optional[bool] = None       # 是否使用 GPU
-    use_dr_mask: bool = True             # 是否使用重复去除掩码
-    max_constants: int = 3               # 最大常量数
+    use_gpu: Optional[bool] = None  # 是否使用 GPU
+    use_dr_mask: bool = True  # 是否使用重复去除掩码
+    max_constants: int = 3  # 最大常量数
     constant_range: Tuple[float, float] = (-3.0, 3.0)  # 常量采样范围
 
 
@@ -48,8 +48,7 @@ class PSRN:
     def __init__(self, config: Optional[PSRNConfig] = None):
         self.config = config or PSRNConfig()
         self.layers: List[SymbolLayer] = [
-            SymbolLayer(self.config.symbol_config)
-            for _ in range(self.config.n_layers)
+            SymbolLayer(self.config.symbol_config) for _ in range(self.config.n_layers)
         ]
         self.evaluator = GPUEvaluator(use_gpu=self.config.use_gpu)
 
@@ -112,9 +111,7 @@ class PSRN:
                 # 注意：offsets 也需要相应调整，简化实现中省略
 
         # 在最后一层选择最优表达式
-        best_idx, best_mse, all_mses = self._find_best_expression(
-            current_values, y
-        )
+        best_idx, best_mse, all_mses = self._find_best_expression(current_values, y)
 
         # 反向推导最优表达式
         best_expr = self.layers[-1].deduce_expression(
@@ -158,7 +155,9 @@ class PSRN:
             base_values_list.append(X[:, i])
 
         # 添加常量
-        n_constants = min(self.config.max_constants, self.config.n_input_slots - n_features)
+        n_constants = min(
+            self.config.max_constants, self.config.n_input_slots - n_features
+        )
         constants = np.linspace(
             self.config.constant_range[0],
             self.config.constant_range[1],
@@ -216,9 +215,7 @@ class PSRN:
                 self.config.n_input_slots, self.config.n_layers
             )
 
-        return {
-            i: len(exprs) for i, exprs in enumerate(self._layer_outputs)
-        }
+        return {i: len(exprs) for i, exprs in enumerate(self._layer_outputs)}
 
     def summary(self) -> str:
         """返回 PSRN 运行摘要."""

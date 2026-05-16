@@ -10,30 +10,33 @@
 4. 渐进收紧：随着层数增加逐渐收紧阈值
 """
 
-from typing import Callable, Dict, List, Optional, Tuple, Set
 from dataclasses import dataclass
 from enum import Enum
+from typing import Callable, Dict, List, Optional, Set, Tuple
+
 import numpy as np
 
 
 class PruningStrategy(Enum):
     """剪枝策略类型."""
-    TOP_K = "top_k"                    # 简单 Top-K
-    ADAPTIVE_THRESHOLD = "adaptive"     # 自适应阈值
-    DIVERSITY_AWARE = "diversity"       # 多样性感知
-    POTENTIAL_BASED = "potential"       # 潜力预估
-    PROGRESSIVE = "progressive"         # 渐进收紧
+
+    TOP_K = "top_k"  # 简单 Top-K
+    ADAPTIVE_THRESHOLD = "adaptive"  # 自适应阈值
+    DIVERSITY_AWARE = "diversity"  # 多样性感知
+    POTENTIAL_BASED = "potential"  # 潜力预估
+    PROGRESSIVE = "progressive"  # 渐进收紧
 
 
 @dataclass
 class PruningConfig:
     """剪枝配置."""
+
     strategy: PruningStrategy = PruningStrategy.ADAPTIVE_THRESHOLD
-    initial_keep_ratio: float = 0.3     # 第一层保留比例
-    min_keep_ratio: float = 0.05        # 最小保留比例
-    diversity_threshold: float = 0.95   # 相似度阈值
-    potential_estimation: bool = True   # 是否预估潜力
-    early_stop_layers: int = 2          # 多少层无改进后早停
+    initial_keep_ratio: float = 0.3  # 第一层保留比例
+    min_keep_ratio: float = 0.05  # 最小保留比例
+    diversity_threshold: float = 0.95  # 相似度阈值
+    potential_estimation: bool = True  # 是否预估潜力
+    early_stop_layers: int = 2  # 多少层无改进后早停
 
 
 class LayerPruner:
@@ -43,12 +46,12 @@ class LayerPruner:
 
     Example:
         >>> pruner = LayerPruner(PruningConfig(strategy=PruningStrategy.TOP_K))
-        >>> 
+        >>>
         >>> # 第 1 层后：1000 候选 → 300 候选
         >>> exprs_l1, values_l1 = pruner.prune(
         ...     layer_idx=0, expressions=exprs, values=values, y=y
         ... )
-        >>> 
+        >>>
         >>> # 第 2 层后：300 候选 → 60 候选（更严格）
         >>> exprs_l2, values_l2 = pruner.prune(
         ...     layer_idx=1, expressions=exprs_l1, values=values_l1, y=y
@@ -114,9 +117,7 @@ class LayerPruner:
 
         return kept_exprs, kept_values, stats
 
-    def _compute_scores(
-        self, values: np.ndarray, y: np.ndarray
-    ) -> np.ndarray:
+    def _compute_scores(self, values: np.ndarray, y: np.ndarray) -> np.ndarray:
         """计算每个候选的分数（综合指标）."""
         n_samples, n_candidates = values.shape
         scores = np.zeros(n_candidates)
@@ -151,7 +152,7 @@ class LayerPruner:
         """简单 Top-K 剪枝."""
         keep_ratio = max(
             self.config.min_keep_ratio,
-            self.config.initial_keep_ratio * (0.7 ** layer_idx)
+            self.config.initial_keep_ratio * (0.7**layer_idx),
         )
         k = max(10, int(len(scores) * keep_ratio))
 
@@ -282,9 +283,7 @@ class LayerPruner:
         k = max(10, int(n * self.config.initial_keep_ratio))
         return np.argsort(potentials)[-k:][::-1].tolist()
 
-    def _progressive_prune(
-        self, scores: np.ndarray, layer_idx: int
-    ) -> List[int]:
+    def _progressive_prune(self, scores: np.ndarray, layer_idx: int) -> List[int]:
         """渐进收紧剪枝.
 
         随着层数增加，保留比例指数下降。
@@ -292,7 +291,7 @@ class LayerPruner:
         # 指数衰减：0.5, 0.25, 0.125, ...
         keep_ratio = max(
             self.config.min_keep_ratio,
-            self.config.initial_keep_ratio * (0.5 ** layer_idx)
+            self.config.initial_keep_ratio * (0.5**layer_idx),
         )
 
         k = max(10, int(len(scores) * keep_ratio))
@@ -342,10 +341,12 @@ class EarlyStopController:
             return False, "insufficient_history"
 
         # 滑动窗口平均
-        recent_avg = np.mean(self.best_scores[-self.window_size:])
-        previous_avg = np.mean(
-            self.best_scores[-self.window_size*2:-self.window_size]
-        ) if len(self.best_scores) >= self.window_size * 2 else 0
+        recent_avg = np.mean(self.best_scores[-self.window_size :])
+        previous_avg = (
+            np.mean(self.best_scores[-self.window_size * 2 : -self.window_size])
+            if len(self.best_scores) >= self.window_size * 2
+            else 0
+        )
 
         # 改进幅度
         improvement = recent_avg - previous_avg
@@ -371,9 +372,7 @@ class MultiObjectivePruner:
         self.complexity_weight = complexity_weight
         self.pareto_front: List[Tuple[str, float, int]] = []  # (expr, mse, complexity)
 
-    def update(
-        self, expressions: List[str], mses: np.ndarray, complexities: List[int]
-    ):
+    def update(self, expressions: List[str], mses: np.ndarray, complexities: List[int]):
         """更新 Pareto 前沿."""
         for expr, mse, comp in zip(expressions, mses, complexities):
             # 检查是否被现有解支配

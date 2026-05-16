@@ -86,7 +86,10 @@ class ProvenanceChain:
     def add(self, provenance: Provenance) -> Provenance:
         if self.nodes:
             provenance.parent_id = self.nodes[-1].node_id
-        if not provenance.node_id or provenance.node_id == hashlib.sha256(b"").hexdigest()[:12]:
+        if (
+            not provenance.node_id
+            or provenance.node_id == hashlib.sha256(b"").hexdigest()[:12]
+        ):
             provenance.__post_init__()
         self.nodes.append(provenance)
         return provenance

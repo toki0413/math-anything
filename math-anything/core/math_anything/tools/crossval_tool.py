@@ -6,7 +6,9 @@ from ..tool_system import ToolContext, ToolResult, build_math_tool
 from .schemas import CrossValidateInput, CrossValidateOutput
 
 
-async def _crossval_call(inp: CrossValidateInput, ctx: ToolContext) -> ToolResult[CrossValidateOutput]:
+async def _crossval_call(
+    inp: CrossValidateInput, ctx: ToolContext
+) -> ToolResult[CrossValidateOutput]:
     try:
         from math_anything.validation_toolkit import CrossValidationMatrix
     except ImportError:

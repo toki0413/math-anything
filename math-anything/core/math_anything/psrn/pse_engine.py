@@ -9,6 +9,15 @@ from typing import Callable, Dict, List, Optional, Tuple
 
 import numpy as np
 
+from .adaptive_attention import (
+    AdaptiveAttentionGenerator,
+    HybridAttentionGenerator,
+)
+from .attention_token_generator import (
+    AttentionTokenGenerator,
+    DiversityAwareAttentionGenerator,
+)
+from .csa_hca_attention import CSAHCAAttentionGenerator
 from .psrn_network import PSRN, PSRNConfig
 from .token_generator import (
     FastTokenGenerator,
@@ -17,15 +26,6 @@ from .token_generator import (
     RandomTokenGenerator,
     TokenGenerator,
 )
-from .attention_token_generator import (
-    AttentionTokenGenerator,
-    DiversityAwareAttentionGenerator,
-)
-from .adaptive_attention import (
-    AdaptiveAttentionGenerator,
-    HybridAttentionGenerator,
-)
-from .csa_hca_attention import CSAHCAAttentionGenerator
 
 
 @dataclass
@@ -44,11 +44,11 @@ class PSEConfig:
     # - "hybrid": 混合策略
     # - "csa_hca": CSA+HCA分层注意力（推荐，借鉴DeepSeek-V4）
     token_generator_type: str = "fast"
-    max_iterations: int = 10             # 最大迭代次数
-    n_top_expressions: int = 5           # 保留的 top-k 表达式数
-    reward_discount: float = 0.99        # 复杂度惩罚折扣因子
-    early_stop_mse: float = 1e-12        # 早停 MSE 阈值
-    no_improvement_limit: int = 3        # 无改进早停次数
+    max_iterations: int = 10  # 最大迭代次数
+    n_top_expressions: int = 5  # 保留的 top-k 表达式数
+    reward_discount: float = 0.99  # 复杂度惩罚折扣因子
+    early_stop_mse: float = 1e-12  # 早停 MSE 阈值
+    no_improvement_limit: int = 3  # 无改进早停次数
 
 
 class PSEEngine:
@@ -157,7 +157,9 @@ class PSEEngine:
             # Step 1: Token Generator 生成/更新 token
             if iteration > 0:
                 new_tokens, new_values = self.token_generator.generate(
-                    X, y, variable_names,
+                    X,
+                    y,
+                    variable_names,
                     current_tokens=current_tokens,
                     reward_history=self.reward_history,
                 )
@@ -165,14 +167,17 @@ class PSEEngine:
                 if current_tokens is not None:
                     current_tokens = list(set(current_tokens + new_tokens))
                     # 重新评估合并后的 token
-                    token_values = self._evaluate_tokens(current_tokens, X, variable_names)
+                    token_values = self._evaluate_tokens(
+                        current_tokens, X, variable_names
+                    )
                 else:
                     current_tokens = new_tokens
                     token_values = new_values
 
             # Step 2: PSRN 并行评估
             best_expr_iter, best_mse_iter, top_k = self.psrn.fit(
-                X, y,
+                X,
+                y,
                 variable_names=variable_names,
                 token_exprs=current_tokens,
                 token_values=token_values,
@@ -212,7 +217,9 @@ class PSEEngine:
 
             if no_improvement_count >= self.config.no_improvement_limit:
                 if verbose:
-                    print(f"Early stop: No improvement for {no_improvement_count} iterations")
+                    print(
+                        f"Early stop: No improvement for {no_improvement_count} iterations"
+                    )
                 break
 
         # 返回 Pareto 前沿中的最优表达式
@@ -298,7 +305,7 @@ class PSEEngine:
         """
         import math
 
-        numerator = self.config.reward_discount ** complexity
+        numerator = self.config.reward_discount**complexity
         denominator = 1.0 + math.sqrt(mse)
         return numerator / denominator
 
@@ -325,8 +332,11 @@ class PSEEngine:
 
         # 移除被新解支配的解
         self.pareto_front = [
-            e for e in self.pareto_front
-            if not (mse <= e[1] and complexity <= e[2] and (mse < e[1] or complexity < e[2]))
+            e
+            for e in self.pareto_front
+            if not (
+                mse <= e[1] and complexity <= e[2] and (mse < e[1] or complexity < e[2])
+            )
         ]
 
         # 添加新解
@@ -335,7 +345,9 @@ class PSEEngine:
     def get_pareto_summary(self) -> str:
         """获取 Pareto 前沿摘要."""
         lines = ["Pareto Front:", "=" * 60]
-        lines.append(f"{'Expression':<30} {'MSE':<12} {'Complexity':<10} {'Reward':<10}")
+        lines.append(
+            f"{'Expression':<30} {'MSE':<12} {'Complexity':<10} {'Reward':<10}"
+        )
         lines.append("-" * 60)
 
         sorted_front = sorted(self.pareto_front, key=lambda x: x[3], reverse=True)

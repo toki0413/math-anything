@@ -21,14 +21,19 @@ Endpoints:
 """
 
 import json
-import tempfile
 import os
+import tempfile
 from typing import Any, Dict, List, Optional
 
-from fastapi import FastAPI, File, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi import (
+    FastAPI,
+    File,
+    HTTPException,
+    UploadFile,
+    WebSocket,
+    WebSocketDisconnect,
+)
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
-
 from math_anything import (
     DataFlywheel,
     DifferentialGeometryLayer,
@@ -37,6 +42,7 @@ from math_anything import (
 )
 from math_anything.emergence import EmergenceLayer
 from math_anything.proposition import MathematicalTask, PropositionGenerator, TaskType
+from pydantic import BaseModel, Field
 
 app = FastAPI(
     title="Math Anything API",
@@ -97,6 +103,7 @@ def health():
 @app.get("/engines")
 def list_engines():
     from math_anything import list_engines as _list
+
     return {"engines": _list()}
 
 
@@ -104,11 +111,15 @@ def list_engines():
 def extract(engine: str, req: ExtractRequest):
     try:
         result = _ma.extract(engine, req.params)
-        _fw.record("extract", {
-            "engine": engine,
-            "params": req.params,
-            "success": result.success,
-        }, success=result.success)
+        _fw.record(
+            "extract",
+            {
+                "engine": engine,
+                "params": req.params,
+                "success": result.success,
+            },
+            success=result.success,
+        )
 
         return {
             "engine": engine,
@@ -118,8 +129,7 @@ def extract(engine: str, req: ExtractRequest):
             "warnings": result.warnings,
         }
     except Exception as e:
-        _fw.record("extract", {"engine": engine, "params": req.params},
-                   success=False)
+        _fw.record("extract", {"engine": engine, "params": req.params}, success=False)
         raise HTTPException(status_code=400, detail=str(e))
 
 
@@ -131,11 +141,15 @@ async def extract_file(engine: str, file: UploadFile = File(...)):
         tmp.write(content)
         tmp.close()
         result = _ma.extract_file(engine, tmp.name)
-        _fw.record("extract", {
-            "engine": engine,
-            "file": file.filename,
-            "success": result.success,
-        }, success=result.success)
+        _fw.record(
+            "extract",
+            {
+                "engine": engine,
+                "file": file.filename,
+                "success": result.success,
+            },
+            success=result.success,
+        )
 
         return {
             "engine": engine,
@@ -146,8 +160,7 @@ async def extract_file(engine: str, file: UploadFile = File(...)):
             "warnings": result.warnings,
         }
     except Exception as e:
-        _fw.record("extract", {"engine": engine, "file": file.filename},
-                   success=False)
+        _fw.record("extract", {"engine": engine, "file": file.filename}, success=False)
         raise HTTPException(status_code=400, detail=str(e))
     finally:
         os.unlink(tmp.name)
@@ -157,7 +170,8 @@ async def extract_file(engine: str, file: UploadFile = File(...)):
 def extract_geometry(engine: str, req: ExtractRequest):
     try:
         structure = _geo.extract(
-            engine, req.params,
+            engine,
+            req.params,
             lattice_vectors=req.lattice_vectors,
             space_group=req.space_group,
         )
@@ -170,7 +184,11 @@ def extract_geometry(engine: str, req: ExtractRequest):
 def verify(req: VerifyRequest):
     task = MathematicalTask(
         id=req.task_id or "api-verify",
-        type=TaskType(req.task_type) if req.task_type in [t.value for t in TaskType] else TaskType.PROOF,
+        type=(
+            TaskType(req.task_type)
+            if req.task_type in [t.value for t in TaskType]
+            else TaskType.PROOF
+        ),
         name=req.task_name,
         statement=req.statement,
         assumptions=req.assumptions,
@@ -186,12 +204,16 @@ def verify(req: VerifyRequest):
 
     result = _fv.verify(task, req.proof_text, geometric_context=geo_ctx)
 
-    _fw.record("verify", {
-        "task_id": task.id,
-        "engine": req.engine,
-        "formal_status": result.formal_status.value,
-        "confidence": result.overall_confidence,
-    }, success=result.formal_status.value in ("verified", "inconclusive"))
+    _fw.record(
+        "verify",
+        {
+            "task_id": task.id,
+            "engine": req.engine,
+            "formal_status": result.formal_status.value,
+            "confidence": result.overall_confidence,
+        },
+        success=result.formal_status.value in ("verified", "inconclusive"),
+    )
 
     return result.to_dict()
 
@@ -215,7 +237,8 @@ def analyze_emergence(engine: str, req: ExtractRequest):
     try:
         result = _ma.extract(engine, req.params)
         emergence = _em.extract(
-            engine, req.params,
+            engine,
+            req.params,
             schema=result.schema if result.success else None,
         )
         return emergence.to_dict()
@@ -232,10 +255,14 @@ async def extract_with_emergence(engine: str, file: UploadFile = File(...)):
         tmp.close()
         result = _ma.extract_file(engine, tmp.name)
         if not result.success:
-            raise HTTPException(status_code=400, detail=result.errors[0] if result.errors else "extraction failed")
+            raise HTTPException(
+                status_code=400,
+                detail=result.errors[0] if result.errors else "extraction failed",
+            )
 
         emergence = _em.extract(
-            engine, result.files.get("params", {}),
+            engine,
+            result.files.get("params", {}),
             schema=result.schema,
         )
         return {
@@ -274,6 +301,7 @@ async def analyze_log(engine: str, file: UploadFile = File(...)):
         tmp.write(content)
         tmp.close()
         import re
+
         traj: Dict[str, Any] = {"steps": [], "columns": [], "n_rows": 0}
         with open(tmp.name) as f:
             lines = f.readlines()
@@ -304,7 +332,11 @@ async def analyze_log(engine: str, file: UploadFile = File(...)):
                     temps = [s[c] for s in traj["steps"]]
                     traj["temperature"] = {
                         "mean": round(sum(temps) / len(temps), 4),
-                        "drift_pct": round((temps[-1] - temps[0]) / abs(temps[0]) * 100, 2) if abs(temps[0]) > 0.01 else 0,
+                        "drift_pct": (
+                            round((temps[-1] - temps[0]) / abs(temps[0]) * 100, 2)
+                            if abs(temps[0]) > 0.01
+                            else 0
+                        ),
                     }
                     traj["equilibrated"] = abs(traj["temperature"]["drift_pct"]) < 2.0
                 if key in ("toteng", "etotal", "energy"):
@@ -313,7 +345,7 @@ async def analyze_log(engine: str, file: UploadFile = File(...)):
                     var_e = sum((e - mean_e) ** 2 for e in energies) / len(energies)
                     t_mean = traj.get("temperature", {}).get("mean", 1)
                     if abs(t_mean) > 0.01:
-                        traj["heat_capacity_estimate"] = round(var_e / t_mean ** 2, 6)
+                        traj["heat_capacity_estimate"] = round(var_e / t_mean**2, 6)
         return traj
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -341,7 +373,7 @@ def configure_api(req: ApiConfigRequest):
 
 @app.get("/config/status")
 def config_status():
-    llm_config = getattr(_fv.llm_semantic, 'api_config', {})
+    llm_config = getattr(_fv.llm_semantic, "api_config", {})
     return {
         "provider": llm_config.get("provider", ""),
         "model": llm_config.get("model", ""),
@@ -371,7 +403,10 @@ async def validate_crossval(req: CrossValRequest):
     try:
         from .validation_toolkit import CrossValidationMatrix, ValidationStatus
     except ImportError:
-        from math_anything.validation_toolkit import CrossValidationMatrix, ValidationStatus
+        from math_anything.validation_toolkit import (
+            CrossValidationMatrix,
+            ValidationStatus,
+        )
     matrix = CrossValidationMatrix(methods=req.methods, conclusions=req.conclusions)
     return {"matrix": matrix.to_dict(), "report": matrix.report()}
 
@@ -381,7 +416,10 @@ async def validate_predictions(req: PredictionRequest):
     try:
         from .validation_toolkit import FalsifiablePredictionTable, PredictionStatus
     except ImportError:
-        from math_anything.validation_toolkit import FalsifiablePredictionTable, PredictionStatus
+        from math_anything.validation_toolkit import (
+            FalsifiablePredictionTable,
+            PredictionStatus,
+        )
     table = FalsifiablePredictionTable()
     for p in req.predictions:
         table.add(
@@ -439,6 +477,7 @@ def get_advisory(engine: str):
 
 _firewall = None
 
+
 def _get_firewall():
     global _firewall
     if _firewall is None:
@@ -449,10 +488,12 @@ def _get_firewall():
         _firewall = DataFirewall()
     return _firewall
 
+
 @app.get("/firewall/status")
 def firewall_status():
     fw = _get_firewall()
     return {"enabled": fw.is_enabled}
+
 
 @app.post("/firewall/toggle")
 def firewall_toggle():
@@ -500,6 +541,7 @@ async def agent_ws(websocket: WebSocket):
 
 def _get_tool_registry():
     from .tool_registry import build_default_registry
+
     return build_default_registry()
 
 
@@ -555,6 +597,7 @@ class GeometryVizRequest(BaseModel):
 @app.post("/analyze/symmetry")
 def analyze_symmetry(req: SymmetryRequest):
     from .tools.symmetry import SymmetryAnalyzer
+
     analyzer = SymmetryAnalyzer()
     result = analyzer.analyze_structure(
         lattice=req.lattice,
@@ -567,20 +610,26 @@ def analyze_symmetry(req: SymmetryRequest):
 
 @app.post("/analyze/spectral")
 def analyze_spectral(req: SpectralRequest):
-    from .tools.spectral import SpectralAnalyzer
     import numpy as np
+
+    from .tools.spectral import SpectralAnalyzer
+
     analyzer = SpectralAnalyzer()
     eigs = np.array(req.eigenvalues)
     k_grid = np.array(req.k_grid) if req.k_grid else None
     weights = np.array(req.weights) if req.weights else None
-    result = analyzer.analyze(eigs, k_grid, weights, req.occupied_bands, req.time_reversal)
+    result = analyzer.analyze(
+        eigs, k_grid, weights, req.occupied_bands, req.time_reversal
+    )
     return result.to_dict()
 
 
 @app.post("/analyze/dynamics")
 def analyze_dynamics(req: DynamicsRequest):
-    from .tools.dynamics import DynamicsAnalyzer
     import numpy as np
+
+    from .tools.dynamics import DynamicsAnalyzer
+
     analyzer = DynamicsAnalyzer()
     ts = np.array(req.time_series)
     result = analyzer.analyze(ts)
@@ -589,8 +638,10 @@ def analyze_dynamics(req: DynamicsRequest):
 
 @app.post("/analyze/tda")
 def analyze_tda(req: TDARequest):
-    from .tools.tda import TDAAnalyzer
     import numpy as np
+
+    from .tools.tda import TDAAnalyzer
+
     analyzer = TDAAnalyzer()
     if req.point_cloud is not None:
         data = np.array(req.point_cloud)
@@ -604,9 +655,11 @@ def analyze_tda(req: TDARequest):
 
 @app.post("/viz/sindy")
 def viz_sindy(req: SINDyRequest):
+    import numpy as np
+
     from .tools.sindy import SINDyDiscoverer
     from .tools.viz import InteractiveVisualizer
-    import numpy as np
+
     discoverer = SINDyDiscoverer()
     viz = InteractiveVisualizer()
     data = np.array(req.time_series)
@@ -627,7 +680,8 @@ def viz_sindy(req: SINDyRequest):
 
 @app.post("/sandbox/execute")
 def sandbox_execute(req: SandboxRequest):
-    from .sandbox import SandboxExecutor, SandboxConfig
+    from .sandbox import SandboxConfig, SandboxExecutor
+
     config = SandboxConfig(
         timeout_seconds=req.timeout_seconds,
         backend=req.backend,
@@ -639,8 +693,10 @@ def sandbox_execute(req: SandboxRequest):
 
 @app.post("/analyze/sindy")
 def analyze_sindy(req: SINDyRequest):
-    from .tools.sindy import SINDyDiscoverer
     import numpy as np
+
+    from .tools.sindy import SINDyDiscoverer
+
     discoverer = SINDyDiscoverer()
     data = np.array(req.time_series)
     result = discoverer.discover_ode(
@@ -655,25 +711,31 @@ def analyze_sindy(req: SINDyRequest):
 
 @app.post("/viz/dos")
 def viz_dos(req: SpectralRequest):
+    import numpy as np
+
     from .tools.spectral import SpectralAnalyzer
     from .tools.viz import InteractiveVisualizer
-    import numpy as np
+
     analyzer = SpectralAnalyzer()
     viz = InteractiveVisualizer()
     eigs = np.array(req.eigenvalues)
     dos_result = analyzer.dos_analysis(eigs)
     if dos_result.energies and dos_result.total_dos:
         return viz.plot_dos(
-            dos_result.energies, dos_result.total_dos,
-            dos_result.fermi_energy, dos_result.band_gap,
+            dos_result.energies,
+            dos_result.total_dos,
+            dos_result.fermi_energy,
+            dos_result.band_gap,
         )
     return {"error": "DOS computation failed"}
 
 
 @app.post("/viz/phase")
 def viz_phase(req: DynamicsRequest):
-    from .tools.viz import InteractiveVisualizer
     import numpy as np
+
+    from .tools.viz import InteractiveVisualizer
+
     viz = InteractiveVisualizer()
     ts = np.array(req.time_series)
     return viz.plot_phase_portrait(ts)
@@ -681,9 +743,11 @@ def viz_phase(req: DynamicsRequest):
 
 @app.post("/viz/persistence")
 def viz_persistence(req: TDARequest):
+    import numpy as np
+
     from .tools.tda import TDAAnalyzer
     from .tools.viz import InteractiveVisualizer
-    import numpy as np
+
     analyzer = TDAAnalyzer()
     viz = InteractiveVisualizer()
     if req.point_cloud is not None:
@@ -697,6 +761,7 @@ def viz_persistence(req: TDARequest):
 @app.post("/viz/geometry")
 def viz_geometry(req: GeometryVizRequest):
     from .tools.viz import InteractiveVisualizer
+
     viz = InteractiveVisualizer()
     if req.viz_type == "manifold":
         return viz.plot_manifold(
@@ -713,8 +778,9 @@ def viz_geometry(req: GeometryVizRequest):
 
 def _make_agent_loop(registry):
     from .agent_loop import MathAgentLoop
+
     llm_cfg = {}
-    if hasattr(_fv, 'llm_semantic') and hasattr(_fv.llm_semantic, 'api_config'):
+    if hasattr(_fv, "llm_semantic") and hasattr(_fv.llm_semantic, "api_config"):
         llm_cfg = _fv.llm_semantic.api_config or {}
     fw = _get_firewall()
     return MathAgentLoop(registry, llm_cfg, firewall=fw)
@@ -722,6 +788,8 @@ def _make_agent_loop(registry):
 
 if __name__ == "__main__":
     import sys
+
     import uvicorn
+
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
     uvicorn.run(app, host="127.0.0.1", port=port, log_level="error")

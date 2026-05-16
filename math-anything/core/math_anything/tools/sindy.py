@@ -216,16 +216,20 @@ class SINDyDiscoverer:
 
             nonzero_mask = np.abs(coeff) > 1e-10
             active_coeff = coeff[nonzero_mask].tolist()
-            active_features = [feat_names[j] for j in range(len(feat_names)) if nonzero_mask[j]]
+            active_features = [
+                feat_names[j] for j in range(len(feat_names)) if nonzero_mask[j]
+            ]
 
             eq_str = self._format_equation(name, active_coeff, active_features)
-            equations.append(DiscoveredEquation(
-                variable_name=name,
-                coefficients=active_coeff,
-                feature_names=active_features,
-                equation_string=eq_str,
-                description=f"d{name}/dt = {eq_str}",
-            ))
+            equations.append(
+                DiscoveredEquation(
+                    variable_name=name,
+                    coefficients=active_coeff,
+                    feature_names=active_features,
+                    equation_string=eq_str,
+                    description=f"d{name}/dt = {eq_str}",
+                )
+            )
 
         score = None
         try:
@@ -244,8 +248,9 @@ class SINDyDiscoverer:
             complexity=complexity,
             description=(
                 f"SINDy: {len(equations)} equations, {complexity} active terms, "
-                f"score={score:.4f}" if score is not None else
-                f"SINDy: {len(equations)} equations, {complexity} active terms"
+                f"score={score:.4f}"
+                if score is not None
+                else f"SINDy: {len(equations)} equations, {complexity} active terms"
             ),
         )
 
@@ -271,21 +276,25 @@ class SINDyDiscoverer:
             coeff = coefficients[i]
             nonzero_mask = np.abs(coeff) > 1e-10
             active_coeff = coeff[nonzero_mask].tolist()
-            active_features = [feat_names[j] for j in range(len(feat_names)) if nonzero_mask[j]]
+            active_features = [
+                feat_names[j] for j in range(len(feat_names)) if nonzero_mask[j]
+            ]
 
             eq_str = self._format_equation(name, active_coeff, active_features)
-            equations.append(DiscoveredEquation(
-                variable_name=name,
-                coefficients=active_coeff,
-                feature_names=active_features,
-                equation_string=eq_str,
-                description=f"d{name}/dt = {eq_str}",
-            ))
+            equations.append(
+                DiscoveredEquation(
+                    variable_name=name,
+                    coefficients=active_coeff,
+                    feature_names=active_features,
+                    equation_string=eq_str,
+                    description=f"d{name}/dt = {eq_str}",
+                )
+            )
 
         complexity = int(np.sum(np.abs(coefficients) > 1e-10))
 
         residual = derivatives - features @ coefficients.T
-        ss_res = np.sum(residual ** 2)
+        ss_res = np.sum(residual**2)
         ss_tot = np.sum((derivatives - np.mean(derivatives, axis=0)) ** 2)
         score = float(1.0 - ss_res / (ss_tot + 1e-15))
 
@@ -323,16 +332,18 @@ class SINDyDiscoverer:
         u_x_flat = u_x.flatten()
         u_xx_flat = u_xx.flatten()
 
-        theta = np.column_stack([
-            np.ones_like(u_flat),
-            u_flat,
-            u_flat ** 2,
-            u_flat ** 3,
-            u_x_flat,
-            u_xx_flat,
-            u_flat * u_x_flat,
-            u_flat * u_xx_flat,
-        ])
+        theta = np.column_stack(
+            [
+                np.ones_like(u_flat),
+                u_flat,
+                u_flat**2,
+                u_flat**3,
+                u_x_flat,
+                u_xx_flat,
+                u_flat * u_x_flat,
+                u_flat * u_xx_flat,
+            ]
+        )
 
         feat_names = ["1", "u", "u²", "u³", "u_x", "u_xx", "u·u_x", "u·u_xx"]
 
@@ -340,18 +351,22 @@ class SINDyDiscoverer:
 
         nonzero_mask = np.abs(coeff) > 1e-10
         active_coeff = coeff[nonzero_mask].tolist()
-        active_features = [feat_names[j] for j in range(len(feat_names)) if nonzero_mask[j]]
+        active_features = [
+            feat_names[j] for j in range(len(feat_names)) if nonzero_mask[j]
+        ]
 
         eq_str = self._format_equation("u_t", active_coeff, active_features)
 
         return PDEDiscoveredResult(
-            equations=[DiscoveredEquation(
-                variable_name="u_t",
-                coefficients=active_coeff,
-                feature_names=active_features,
-                equation_string=eq_str,
-                description=f"∂u/∂t = {eq_str}",
-            )],
+            equations=[
+                DiscoveredEquation(
+                    variable_name="u_t",
+                    coefficients=active_coeff,
+                    feature_names=active_features,
+                    equation_string=eq_str,
+                    description=f"∂u/∂t = {eq_str}",
+                )
+            ],
             spatial_dims=1,
             library_type=f"polynomial_order_{poly_order}+derivatives",
             description=f"PDE discovery (1D spatial, fallback, install pysindy for PDELibrary)",
@@ -372,7 +387,7 @@ class SINDyDiscoverer:
         names = ["1"]
 
         for i, name in enumerate(var_names):
-            features.append(data[:, i:i + 1])
+            features.append(data[:, i : i + 1])
             names.append(name)
 
         if poly_order >= 2:

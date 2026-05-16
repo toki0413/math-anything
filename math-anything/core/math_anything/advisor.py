@@ -12,7 +12,6 @@ from __future__ import annotations
 
 from typing import Any
 
-
 _GENERIC_ADVISORY: dict[str, Any] = {
     "tools": ["extract", "validate", "verify"],
     "math_disciplines": [

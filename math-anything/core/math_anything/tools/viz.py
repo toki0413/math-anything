@@ -42,26 +42,33 @@ class InteractiveVisualizer:
             import plotly.graph_objects as go
 
             fig = go.Figure()
-            fig.add_trace(go.Scatter(
-                x=dos, y=energies,
-                fill="tozerox" if dos else None,
-                mode="lines",
-                line=dict(color="#1565c0", width=2),
-                name="DOS",
-            ))
+            fig.add_trace(
+                go.Scatter(
+                    x=dos,
+                    y=energies,
+                    fill="tozerox" if dos else None,
+                    mode="lines",
+                    line=dict(color="#1565c0", width=2),
+                    name="DOS",
+                )
+            )
 
             if fermi_energy is not None:
                 fig.add_hline(
-                    y=fermi_energy, line_dash="dash",
-                    line_color="#e53935", annotation_text=f"E_F = {fermi_energy:.3f}",
+                    y=fermi_energy,
+                    line_dash="dash",
+                    line_color="#e53935",
+                    annotation_text=f"E_F = {fermi_energy:.3f}",
                 )
 
             if band_gap is not None and band_gap > 0.01:
                 fig.add_vrect(
-                    x0=0, x1=max(dos) * 0.3 if dos else 1,
+                    x0=0,
+                    x1=max(dos) * 0.3 if dos else 1,
                     y0=fermi_energy - band_gap / 2 if fermi_energy else 0,
                     y1=fermi_energy + band_gap / 2 if fermi_energy else 0,
-                    fillcolor="#fff9c4", opacity=0.3,
+                    fillcolor="#fff9c4",
+                    opacity=0.3,
                     annotation_text=f"gap = {band_gap:.3f}",
                 )
 
@@ -107,31 +114,37 @@ class InteractiveVisualizer:
                 if not births:
                     continue
 
-                fig.add_trace(go.Scatter(
-                    x=births[:len(deaths)],
-                    y=deaths,
-                    mode="markers",
-                    marker=dict(size=6, color=colors.get(dim_key, "#666")),
-                    name=f"{dim_key} ({len(pairs)} features)",
-                ))
+                fig.add_trace(
+                    go.Scatter(
+                        x=births[: len(deaths)],
+                        y=deaths,
+                        mode="markers",
+                        marker=dict(size=6, color=colors.get(dim_key, "#666")),
+                        name=f"{dim_key} ({len(pairs)} features)",
+                    )
+                )
 
             all_vals = []
             for pairs in persistence.values():
                 if not isinstance(pairs, list):
                     continue
                 all_vals.extend([p["birth"] for p in pairs])
-                all_vals.extend([p["death"] for p in pairs if p["death"] != float("inf")])
+                all_vals.extend(
+                    [p["death"] for p in pairs if p["death"] != float("inf")]
+                )
 
             if all_vals:
                 lo, hi = min(all_vals), max(all_vals)
                 margin = (hi - lo) * 0.1 or 1.0
-                fig.add_trace(go.Scatter(
-                    x=[lo - margin, hi + margin],
-                    y=[lo - margin, hi + margin],
-                    mode="lines",
-                    line=dict(dash="dash", color="#999"),
-                    showlegend=False,
-                ))
+                fig.add_trace(
+                    go.Scatter(
+                        x=[lo - margin, hi + margin],
+                        y=[lo - margin, hi + margin],
+                        mode="lines",
+                        line=dict(dash="dash", color="#999"),
+                        showlegend=False,
+                    )
+                )
 
             fig.update_layout(
                 title=title,
@@ -173,12 +186,15 @@ class InteractiveVisualizer:
             import plotly.graph_objects as go
 
             fig = go.Figure()
-            fig.add_trace(go.Scatter(
-                x=x, y=y,
-                mode="lines+markers",
-                marker=dict(size=2, color=np.arange(len(x)), colorscale="Viridis"),
-                line=dict(width=1, color="#1565c0"),
-            ))
+            fig.add_trace(
+                go.Scatter(
+                    x=x,
+                    y=y,
+                    mode="lines+markers",
+                    marker=dict(size=2, color=np.arange(len(x)), colorscale="Viridis"),
+                    line=dict(width=1, color="#1565c0"),
+                )
+            )
 
             fig.update_layout(
                 title=title,
@@ -215,11 +231,15 @@ class InteractiveVisualizer:
             import plotly.graph_objects as go
 
             fig = go.Figure()
-            fig.add_trace(go.Heatmap(
-                x=kx, y=ky, z=berry,
-                colorscale="RdBu_r",
-                colorbar=dict(title="Ω(k)"),
-            ))
+            fig.add_trace(
+                go.Heatmap(
+                    x=kx,
+                    y=ky,
+                    z=berry,
+                    colorscale="RdBu_r",
+                    colorbar=dict(title="Ω(k)"),
+                )
+            )
 
             fig.update_layout(
                 title=title,
@@ -261,18 +281,23 @@ class InteractiveVisualizer:
             n_bands = eigenvalues.shape[1] if eigenvalues.ndim > 1 else 1
 
             for band_idx in range(n_bands):
-                band_eigs = eigenvalues[:, band_idx] if eigenvalues.ndim > 1 else eigenvalues
-                fig.add_trace(go.Scatter(
-                    x=k_path,
-                    y=band_eigs,
-                    mode="lines",
-                    line=dict(width=1.5, color="#1565c0"),
-                    showlegend=False,
-                ))
+                band_eigs = (
+                    eigenvalues[:, band_idx] if eigenvalues.ndim > 1 else eigenvalues
+                )
+                fig.add_trace(
+                    go.Scatter(
+                        x=k_path,
+                        y=band_eigs,
+                        mode="lines",
+                        line=dict(width=1.5, color="#1565c0"),
+                        showlegend=False,
+                    )
+                )
 
             if fermi_energy is not None:
                 fig.add_hline(
-                    y=fermi_energy, line_dash="dash",
+                    y=fermi_energy,
+                    line_dash="dash",
                     line_color="#e53935",
                     annotation_text=f"E_F = {fermi_energy:.3f}",
                 )
@@ -289,7 +314,10 @@ class InteractiveVisualizer:
 
         except ImportError:
             return {
-                "data": {"k_path": k_path.tolist(), "eigenvalues": eigenvalues.tolist()},
+                "data": {
+                    "k_path": k_path.tolist(),
+                    "eigenvalues": eigenvalues.tolist(),
+                },
                 "fallback": True,
                 "message": "Install plotly for interactive band structure plots",
             }
@@ -328,14 +356,18 @@ class InteractiveVisualizer:
                 if det_g <= 0:
                     Z = np.zeros_like(X)
                 else:
-                    Z = 0.5 * (g[0, 0] * X ** 2 + 2 * g[0, 1] * X * Y + g[1, 1] * Y ** 2)
+                    Z = 0.5 * (g[0, 0] * X**2 + 2 * g[0, 1] * X * Y + g[1, 1] * Y**2)
 
                 fig = go.Figure()
-                fig.add_trace(go.Surface(
-                    x=X, y=Y, z=Z,
-                    colorscale="Viridis",
-                    colorbar=dict(title="z"),
-                ))
+                fig.add_trace(
+                    go.Surface(
+                        x=X,
+                        y=Y,
+                        z=Z,
+                        colorscale="Viridis",
+                        colorbar=dict(title="z"),
+                    )
+                )
 
                 fig.update_layout(
                     title=title,
@@ -389,29 +421,39 @@ class InteractiveVisualizer:
             fig = go.Figure()
 
             for v in vertices:
-                fig.add_trace(go.Scatter3d(
-                    x=[0, v[0]],
-                    y=[0, v[1]],
-                    z=[0, v[2]],
-                    mode="lines",
-                    line=dict(width=2, color="#1565c0"),
-                    showlegend=False,
-                ))
+                fig.add_trace(
+                    go.Scatter3d(
+                        x=[0, v[0]],
+                        y=[0, v[1]],
+                        z=[0, v[2]],
+                        mode="lines",
+                        line=dict(width=2, color="#1565c0"),
+                        showlegend=False,
+                    )
+                )
 
             for v in vertices:
-                fig.add_trace(go.Scatter3d(
-                    x=[v[0]], y=[v[1]], z=[v[2]],
-                    mode="markers",
-                    marker=dict(size=4, color="#e53935"),
-                    showlegend=False,
-                ))
+                fig.add_trace(
+                    go.Scatter3d(
+                        x=[v[0]],
+                        y=[v[1]],
+                        z=[v[2]],
+                        mode="markers",
+                        marker=dict(size=4, color="#e53935"),
+                        showlegend=False,
+                    )
+                )
 
-            fig.add_trace(go.Scatter3d(
-                x=[0], y=[0], z=[0],
-                mode="markers",
-                marker=dict(size=6, color="#2e7d32"),
-                name="Γ",
-            ))
+            fig.add_trace(
+                go.Scatter3d(
+                    x=[0],
+                    y=[0],
+                    z=[0],
+                    mode="markers",
+                    marker=dict(size=6, color="#2e7d32"),
+                    name="Γ",
+                )
+            )
 
             fig.update_layout(
                 title=title,
@@ -460,13 +502,17 @@ class InteractiveVisualizer:
                     all_features.add(f)
             all_features = sorted(all_features)
 
-            var_names = [eq.get("variable_name", f"eq_{i}") for i, eq in enumerate(equations)]
+            var_names = [
+                eq.get("variable_name", f"eq_{i}") for i, eq in enumerate(equations)
+            ]
 
             z_data = []
             annotations = []
             for eq in equations:
                 row = []
-                feat_to_coeff = dict(zip(eq.get("features", []), eq.get("coefficients", [])))
+                feat_to_coeff = dict(
+                    zip(eq.get("features", []), eq.get("coefficients", []))
+                )
                 for f in all_features:
                     c = feat_to_coeff.get(f, 0.0)
                     row.append(c)
@@ -475,21 +521,24 @@ class InteractiveVisualizer:
             z_arr = np.array(z_data)
 
             fig = go.Figure()
-            fig.add_trace(go.Heatmap(
-                z=z_arr,
-                x=all_features,
-                y=var_names,
-                colorscale="RdBu_r",
-                zmid=0,
-                colorbar=dict(title="Coefficient"),
-            ))
+            fig.add_trace(
+                go.Heatmap(
+                    z=z_arr,
+                    x=all_features,
+                    y=var_names,
+                    colorscale="RdBu_r",
+                    zmid=0,
+                    colorbar=dict(title="Coefficient"),
+                )
+            )
 
             for i, eq in enumerate(equations):
                 for j, f in enumerate(all_features):
                     val = z_arr[i, j]
                     if abs(val) > 1e-10:
                         fig.add_annotation(
-                            x=f, y=var_names[i],
+                            x=f,
+                            y=var_names[i],
                             text=f"{val:.3f}",
                             showarrow=False,
                             font=dict(size=9, color="black"),

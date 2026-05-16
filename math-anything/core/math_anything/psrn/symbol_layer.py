@@ -16,7 +16,7 @@ import numpy as np
 class OperatorType(Enum):
     """算子类型分类."""
 
-    UNARY = auto()           # 一元算子: sin, cos, exp, log, etc.
+    UNARY = auto()  # 一元算子: sin, cos, exp, log, etc.
     BINARY_SQUARED = auto()  # 非交换二元算子: -, /
     BINARY_TRIANGLED = auto()  # 交换二元算子: +, *
 
@@ -25,8 +25,12 @@ class OperatorType(Enum):
 class SymbolConfig:
     """符号层配置."""
 
-    unary_ops: List[str] = field(default_factory=lambda: ["identity", "neg", "inv", "sin", "cos", "exp", "log"])
-    binary_squared_ops: List[str] = field(default_factory=lambda: ["sub", "div", "eml"])  # 添加 EML 算子
+    unary_ops: List[str] = field(
+        default_factory=lambda: ["identity", "neg", "inv", "sin", "cos", "exp", "log"]
+    )
+    binary_squared_ops: List[str] = field(
+        default_factory=lambda: ["sub", "div", "eml"]
+    )  # 添加 EML 算子
     binary_triangled_ops: List[str] = field(default_factory=lambda: ["add", "mul"])
 
     def all_ops(self) -> List[str]:
@@ -67,6 +71,7 @@ class SymbolLayer:
 
     def _build_op_funcs(self) -> Dict[str, Callable]:
         """构建算子到数值函数的映射."""
+
         def eml(x, y):
             """EML 算子: eml(x, y) = exp(x) - ln(|y|)"""
             return np.exp(np.clip(x, -700, 700)) - np.log(np.abs(y) + 1e-10)
@@ -252,7 +257,9 @@ class SymbolLayer:
 
         return dims
 
-    def build_duplicate_mask(self, expressions: List[str]) -> Tuple[List[int], List[str]]:
+    def build_duplicate_mask(
+        self, expressions: List[str]
+    ) -> Tuple[List[int], List[str]]:
         """构建重复表达式掩码，返回唯一表达式的索引和列表.
 
         这是 DR Mask (Duplicate Removal Mask) 的核心实现.

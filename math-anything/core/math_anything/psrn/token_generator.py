@@ -78,23 +78,27 @@ class RandomTokenGenerator(TokenGenerator):
 
         # 2. 单变量变换
         for name in variable_names:
-            templates.extend([
-                f"sin({name})",
-                f"cos({name})",
-                f"exp({name})",
-                f"log(abs({name})+1)",
-                f"{name}*{name}",
-                f"sqrt(abs({name}))",
-            ])
+            templates.extend(
+                [
+                    f"sin({name})",
+                    f"cos({name})",
+                    f"exp({name})",
+                    f"log(abs({name})+1)",
+                    f"{name}*{name}",
+                    f"sqrt(abs({name}))",
+                ]
+            )
 
         # 3. 两变量组合
         for i in range(n_vars):
             for j in range(i + 1, n_vars):
-                templates.extend([
-                    f"({variable_names[i]}+{variable_names[j]})",
-                    f"({variable_names[i]}*{variable_names[j]})",
-                    f"({variable_names[i]}-{variable_names[j]})",
-                ])
+                templates.extend(
+                    [
+                        f"({variable_names[i]}+{variable_names[j]})",
+                        f"({variable_names[i]}*{variable_names[j]})",
+                        f"({variable_names[i]}-{variable_names[j]})",
+                    ]
+                )
 
         # 随机选择
         selected = self.rng.sample(templates, min(self.n_tokens, len(templates)))
@@ -147,7 +151,7 @@ class FastTokenGenerator(TokenGenerator):
         correlations.sort(key=lambda x: x[2], reverse=True)
 
         # 2. 对高相关变量生成更多变换
-        for name, idx, corr in correlations[:min(3, n_vars)]:
+        for name, idx, corr in correlations[: min(3, n_vars)]:
             x_vals = X[:, idx]
 
             candidates.append((name, x_vals))
@@ -167,10 +171,10 @@ class FastTokenGenerator(TokenGenerator):
             if np.all(np.abs(x_vals) < 10):
                 candidates.append((f"exp({name})", np.exp(np.clip(x_vals, -700, 700))))
 
-            candidates.append((f"{name}^2", x_vals ** 2))
+            candidates.append((f"{name}^2", x_vals**2))
 
         # 3. 两变量组合（优先高相关变量）
-        top_vars = [c[0] for c in correlations[:min(3, n_vars)]]
+        top_vars = [c[0] for c in correlations[: min(3, n_vars)]]
         for i, name_i in enumerate(top_vars):
             for j, name_j in enumerate(top_vars):
                 if i >= j:
@@ -192,7 +196,7 @@ class FastTokenGenerator(TokenGenerator):
             scored.append((expr, values, score))
 
         scored.sort(key=lambda x: x[2], reverse=True)
-        top = scored[:self.n_tokens]
+        top = scored[: self.n_tokens]
 
         if not top:
             # 回退到原始变量
@@ -307,7 +311,9 @@ class GPTokenGenerator(TokenGenerator):
 
         for i, tree in enumerate(tokens):
             for j in range(n_samples):
-                vars_dict = {name: float(X[j, k]) for k, name in enumerate(variable_names)}
+                vars_dict = {
+                    name: float(X[j, k]) for k, name in enumerate(variable_names)
+                }
                 try:
                     values[j, i] = tree.evaluate(vars_dict)
                 except Exception:
@@ -384,7 +390,7 @@ class MCTSTokenGenerator(TokenGenerator):
             candidates.append((f"cos({name})", np.cos(x_vals)))
             candidates.append((f"exp({name})", np.exp(np.clip(x_vals, -700, 700))))
             candidates.append((f"log(abs({name}))", np.log(np.abs(x_vals) + 1e-10)))
-            candidates.append((f"{name}^2", x_vals ** 2))
+            candidates.append((f"{name}^2", x_vals**2))
             candidates.append((f"sqrt(abs({name}))", np.sqrt(np.abs(x_vals))))
 
         # 两变量组合

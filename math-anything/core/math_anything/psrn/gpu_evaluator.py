@@ -185,5 +185,6 @@ class GPUEvaluator:
         """返回缓存统计信息."""
         return {
             "cached_expressions": len(self._cache),
-            "cache_size_mb": sum(v.nbytes for v in self._cache.values()) / (1024 * 1024),
+            "cache_size_mb": sum(v.nbytes for v in self._cache.values())
+            / (1024 * 1024),
         }

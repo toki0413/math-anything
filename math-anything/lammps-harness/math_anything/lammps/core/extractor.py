@@ -826,7 +826,11 @@ class LammpsExtractor:
             import numpy as np
             from math_anything.tools.dynamics import DynamicsAnalyzer
 
-            if not log_data or not hasattr(log_data, "thermo_data") or not log_data.thermo_data:
+            if (
+                not log_data
+                or not hasattr(log_data, "thermo_data")
+                or not log_data.thermo_data
+            ):
                 return None
 
             thermo = log_data.thermo_data

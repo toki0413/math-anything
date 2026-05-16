@@ -3,9 +3,8 @@
 提供向后兼容的 API，让现有代码可以无缝切换到 PSRN 引擎。
 """
 
-from typing import List, Optional, Tuple
-
 import math
+from typing import List, Optional, Tuple
 
 import numpy as np
 
@@ -104,7 +103,9 @@ class PSRNSymbolicRegression(ImprovedSymbolicRegression):
         )
 
         self._best_expr = best_expr
-        self.best_fitness_ = min((entry[1] for entry in pareto_front), default=float("inf"))
+        self.best_fitness_ = min(
+            (entry[1] for entry in pareto_front), default=float("inf")
+        )
 
         # 将表达式字符串转换为 Node 树（简化实现）
         self.best_tree_ = self._expr_to_node(best_expr)
@@ -186,7 +187,7 @@ class PSRNSymbolicRegression(ImprovedSymbolicRegression):
             pos = PSRNSymbolicRegression._find_outermost_op(expr, op)
             if pos is not None and pos > 0:
                 left = PSRNSymbolicRegression._try_parse(expr[:pos], builder)
-                right = PSRNSymbolicRegression._try_parse(expr[pos + 1:], builder)
+                right = PSRNSymbolicRegression._try_parse(expr[pos + 1 :], builder)
                 if left is not None and right is not None:
                     if node_type == NodeType.ADD:
                         return builder.add(left, right)
@@ -197,7 +198,7 @@ class PSRNSymbolicRegression(ImprovedSymbolicRegression):
             pos = PSRNSymbolicRegression._find_outermost_op(expr, op)
             if pos is not None and pos > 0:
                 left = PSRNSymbolicRegression._try_parse(expr[:pos], builder)
-                right = PSRNSymbolicRegression._try_parse(expr[pos + 1:], builder)
+                right = PSRNSymbolicRegression._try_parse(expr[pos + 1 :], builder)
                 if left is not None and right is not None:
                     if node_type == NodeType.MUL:
                         return builder.mul(left, right)
@@ -208,16 +209,20 @@ class PSRNSymbolicRegression(ImprovedSymbolicRegression):
             pos = expr.rfind("**")
             if pos > 0:
                 base = PSRNSymbolicRegression._try_parse(expr[:pos], builder)
-                exp_part = PSRNSymbolicRegression._try_parse(expr[pos + 2:], builder)
+                exp_part = PSRNSymbolicRegression._try_parse(expr[pos + 2 :], builder)
                 if base is not None and exp_part is not None:
                     return builder.pow(base, exp_part)
 
         for func_name, is_unary in [
-            ("sin", True), ("cos", True), ("exp", True),
-            ("log", True), ("sqrt", True), ("abs", True),
+            ("sin", True),
+            ("cos", True),
+            ("exp", True),
+            ("log", True),
+            ("sqrt", True),
+            ("abs", True),
         ]:
             if expr.startswith(func_name + "(") and expr.endswith(")"):
-                inner = expr[len(func_name) + 1:-1]
+                inner = expr[len(func_name) + 1 : -1]
                 child = PSRNSymbolicRegression._try_parse(inner, builder)
                 if child is not None:
                     if func_name == "sin":
@@ -288,9 +293,9 @@ class PSRNSymbolicRegression(ImprovedSymbolicRegression):
 
 class EnhancedPSRNSymbolicRegression(PSRNSymbolicRegression):
     """使用保守增强型 PSRN 的符号回归.
-    
+
     相比原始 PSRN，具有更好的准确性和速度平衡。
-    
+
     Example:
         >>> sr = EnhancedPSRNSymbolicRegression(
         ...     n_layers=2,
@@ -298,7 +303,7 @@ class EnhancedPSRNSymbolicRegression(PSRNSymbolicRegression):
         ... )
         >>> best_tree = sr.fit(X, y, variable_names=['x'])
     """
-    
+
     def __init__(
         self,
         n_layers: int = 2,
@@ -314,7 +319,7 @@ class EnhancedPSRNSymbolicRegression(PSRNSymbolicRegression):
         super().__init__(n_layers=n_layers, **kwargs)
         self.max_layer_size = max_layer_size
         self._enhanced_engine = None
-        
+
     def fit(
         self,
         X: np.ndarray,
@@ -325,27 +330,25 @@ class EnhancedPSRNSymbolicRegression(PSRNSymbolicRegression):
         if variable_names is None:
             variable_names = [f"x{i}" for i in range(X.shape[1])]
         self.variables = variable_names
-        
+
         # 使用保守增强型 PSRN
         from .enhanced_psrn_v2 import ConservativeEnhancedPSRN, ConservativePSRNConfig
-        
+
         config = ConservativePSRNConfig(
             n_layers=self.n_layers,
             max_layer_size=self.max_layer_size,
         )
-        
+
         self._enhanced_engine = ConservativeEnhancedPSRN(config)
-        best_expr, best_mse, top_k = self._enhanced_engine.fit(
-            X, y, variable_names
-        )
-        
+        best_expr, best_mse, top_k = self._enhanced_engine.fit(X, y, variable_names)
+
         self._best_expr = best_expr
         self.best_fitness_ = best_mse
         self._top_k = top_k
-        
+
         # 转换为 Node
         self.best_tree_ = self._expr_to_node(best_expr)
-        
+
         return self.best_tree_
 
 
@@ -376,12 +379,12 @@ def upgrade_to_enhanced_psrn(
     max_layer_size: int = 300,
 ) -> EnhancedPSRNSymbolicRegression:
     """升级为增强型 PSRN（推荐）.
-    
+
     Args:
         sr: 现有的符号回归实例
         n_layers: PSRN 层数（建议 2）
         max_layer_size: 每层最大候选数
-        
+
     Returns:
         配置好的 EnhancedPSRNSymbolicRegression 实例
     """

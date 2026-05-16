@@ -6,7 +6,9 @@ from ..tool_system import ToolContext, ToolResult, build_math_tool
 from .schemas import PropositionInput, PropositionOutput
 
 
-async def _proposition_call(inp: PropositionInput, ctx: ToolContext) -> ToolResult[PropositionOutput]:
+async def _proposition_call(
+    inp: PropositionInput, ctx: ToolContext
+) -> ToolResult[PropositionOutput]:
     from math_anything import PropositionGenerator
 
     schema = inp.math_schema

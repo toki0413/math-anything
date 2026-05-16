@@ -77,7 +77,9 @@ class ToolRegistry:
     def register(self, tool: MathTool) -> None:
         self._tools[tool.name] = tool
 
-    def register_analysis_tool(self, name: str, instance: Any, description: str = "") -> None:
+    def register_analysis_tool(
+        self, name: str, instance: Any, description: str = ""
+    ) -> None:
         self._analysis_tools[name] = {
             "instance": instance,
             "description": description,
@@ -143,15 +145,14 @@ class ToolRegistry:
                 )
                 registered.append(spec["tool_name"])
             except Exception as e:
-                logger.debug(
-                    "Skipping analysis tool %s: %s", spec["tool_name"], e
-                )
+                logger.debug("Skipping analysis tool %s: %s", spec["tool_name"], e)
         return registered
 
 
 def build_default_registry() -> ToolRegistry:
     registry = ToolRegistry()
     from .tools import register_all_tools
+
     register_all_tools(registry)
     registry.auto_discover_analysis_tools()
     return registry
