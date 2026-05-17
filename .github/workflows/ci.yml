@@ -84,7 +84,16 @@ jobs:
         run: python -c "import math_anything; print('math_anything imported OK'); from math_anything.repl.core import MathAnythingREPL; print('repl.core OK'); from math_anything.repl.diff import DiffResult; print('repl.diff OK')"
 
       - name: Run tests | 运行测试
-        run: python -m pytest math-anything/core/tests/ -v --tb=long
+        run: |
+          python -m pytest math-anything/core/tests/ -v --tb=long 2>&1 | tee test-output.txt
+        shell: bash
+
+      - name: Upload test output | 上传测试输出
+        if: always() && matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-output-${{ matrix.python-version }}
+          path: test-output.txt
 
       - name: Upload coverage | 上传覆盖率
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
