@@ -56,11 +56,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ["3.10", "3.11", "3.12", "3.13"]
-        include:
-          - os: windows-latest
-            python-version: "3.12"
 
     steps:
       - name: Checkout | 检出代码
@@ -89,7 +86,17 @@ jobs:
           python -c "import numpy; print('numpy', numpy.__version__)"
 
       - name: Run tests | 运行测试
-        run: python -m pytest math-anything/core/tests/ -v --tb=long -x
+        run: python -m pytest math-anything/core/tests/ -v --tb=long -x 2>&1 | tee $GITHUB_WORKSPACE/pytest-output.txt
+        shell: bash
+
+      - name: Debug Windows failure | 调试Windows失败
+        if: failure() && runner.os == 'Windows'
+        shell: bash
+        run: |
+          echo "## Windows Test Failure Output" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          tail -150 $GITHUB_WORKSPACE/pytest-output.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
       - name: Upload coverage | 上传覆盖率
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
