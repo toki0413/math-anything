@@ -7,7 +7,6 @@ manipulating mathematical structures from computational software.
 import cmd
 import json
 import os
-import sys
 
 try:
     import readline
@@ -18,10 +17,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-# Add parent directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from schemas import MathSchema
+from math_anything.schemas import MathSchema
 
 
 @dataclass

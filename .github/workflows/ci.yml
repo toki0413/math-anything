@@ -71,7 +71,7 @@ jobs:
       - name: Cache pip packages | 缓存 pip
         uses: actions/cache@v4
         with:
-          path: ~/.cache/pip
+          path: ${{ runner.os == 'Windows' && '~/AppData/Local/pip/Cache' || '~/.cache/pip' }}
           key: ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ hashFiles('**/pyproject.toml', '**/setup.py') }}
 
       - name: Install dependencies | 安装依赖

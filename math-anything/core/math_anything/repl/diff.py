@@ -7,15 +7,12 @@ Inspired by git diff, but for mathematical structures rather than text.
 """
 
 import difflib
-import sys
 from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from schemas import BoundaryCondition, GoverningEquation, MathSchema
+from math_anything.schemas import BoundaryCondition, GoverningEquation, MathSchema
 
 
 @dataclass

@@ -4,10 +4,6 @@ Demonstrates how the enhanced Math Schema provides precise mathematical
 structure representation for LLM understanding across all supported engines.
 """
 
-import sys
-
-sys.path.insert(0, ".")
-
 from math_anything.schemas import (
     extract_abaqus_mathematical_precision,
     extract_ansys_mathematical_precision,
