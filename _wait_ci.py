@@ -26,19 +26,8 @@ for r in data.get("workflow_runs", []):
         jobs_data = json.load(urllib.request.urlopen(req2))
 
         for j in jobs_data.get("jobs", []):
-            if "windows" in j["name"]:
+            if "windows" in j["name"] and "3.12" in j["name"]:
                 print(f"\n  {j['name']}: {j['conclusion']}")
                 for step in j.get("steps", []):
                     if step["conclusion"] in ("failure", "success"):
                         print(f"    {step['conclusion'].upper()}: {step['name']}")
-
-        artifacts_url = f"https://api.github.com/repos/toki0413/math-anything/actions/runs/{run_id}/artifacts"
-        req3 = urllib.request.Request(artifacts_url)
-        req3.add_header("User-Agent", "Python")
-        req3.add_header("Accept", "application/vnd.github+json")
-        artifacts_data = json.load(urllib.request.urlopen(req3))
-        
-        print("\nArtifacts:")
-        for a in artifacts_data.get("artifacts", []):
-            if "test-output" in a["name"]:
-                print(f"  {a['name']}: {a['size_in_bytes']} bytes (id: {a['id']})")
