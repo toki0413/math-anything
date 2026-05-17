@@ -96,6 +96,10 @@ search_*.py
 try_*.py
 test_*.py
 !math-anything/core/tests/
+_wait_*.py
+_check_*.py
+_get_*.py
+_ci_test*
 
 # Temporary reports
 *.png
