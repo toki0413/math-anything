@@ -80,8 +80,11 @@ jobs:
           pip install pytest numpy pydantic
           pip install -e .
 
+      - name: Debug imports | 调试导入
+        run: python -c "import math_anything; print('math_anything imported OK'); from math_anything.repl.core import MathAnythingREPL; print('repl.core OK'); from math_anything.repl.diff import DiffResult; print('repl.diff OK')"
+
       - name: Run tests | 运行测试
-        run: python -m pytest math-anything/core/tests/ -v --tb=short
+        run: python -m pytest math-anything/core/tests/ -v --tb=long
 
       - name: Upload coverage | 上传覆盖率
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
