@@ -270,9 +270,15 @@ class TDAAnalyzer:
                 description="Single point: trivial H0",
             )
 
-        from scipy.spatial.distance import pdist
+        try:
+            from scipy.spatial.distance import pdist
 
-        distances = pdist(point_cloud)
+            distances = pdist(point_cloud)
+        except ImportError:
+            diffs = point_cloud[:, np.newaxis, :] - point_cloud[np.newaxis, :, :]
+            dist_matrix = np.sqrt(np.sum(diffs**2, axis=-1))
+            triu_idx = np.triu_indices(n, k=1)
+            distances = dist_matrix[triu_idx]
         if len(distances) == 0:
             return PersistenceDiagram(description="No distances computed")
 
