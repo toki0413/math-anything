@@ -94,12 +94,17 @@ jobs:
 
       - name: Run tests | 运行测试
         run: |
-          set +e
-          python -m pytest math-anything/core/tests/ -v --tb=long -x
-          EXIT_CODE=$?
-          set -e
-          exit $EXIT_CODE
+          python -m pytest math-anything/core/tests/ -v --tb=long -x 2>&1 | tee pytest-output.txt
         shell: bash
+
+      - name: Write test summary | 写入测试摘要
+        if: failure() && runner.os == 'Windows'
+        shell: bash
+        run: |
+          echo "## Test Output (Windows)" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          tail -100 pytest-output.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
       - name: Upload coverage | 上传覆盖率
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
