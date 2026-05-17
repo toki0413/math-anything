@@ -3,14 +3,10 @@
 import gzip
 import os
 import pickle
-import sys
 import tempfile
 import unittest
 
 import numpy as np
-
-# Add parent to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from math_anything.utils.streaming_parser import (
     AtomData,

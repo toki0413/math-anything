@@ -1,13 +1,10 @@
 """Tests for tiered analysis system."""
 
 import os
-import sys
 import tempfile
 from pathlib import Path
 
 import pytest
-
-sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from math_anything.tiered import (
     AnalysisTier,

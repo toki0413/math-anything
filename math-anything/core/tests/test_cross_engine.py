@@ -1,11 +1,8 @@
 """Tests for Cross-Engine Session functionality."""
 
 import os
-import sys
 import tempfile
 import unittest
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from math_anything.core import (
     CoupledSchema,

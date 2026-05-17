@@ -4,14 +4,9 @@ Tests the Harness Auto-Generator, SourceCodeAnalyzer, and ConstraintInference.
 """
 
 import os
-
-# Add parent to path
-import sys
 import tempfile
 import unittest
 from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from math_anything.codegen import (
     ConstraintInference,
