@@ -93,7 +93,12 @@ jobs:
         run: python -m pytest math-anything/core/tests/test_schema.py -v --tb=long
 
       - name: Run tests | 运行测试
-        run: python -m pytest math-anything/core/tests/ -v --tb=long -x --ignore=math-anything/core/tests/test_analysis_tools.py --ignore=math-anything/core/tests/test_pipeline_integration.py --ignore=math-anything/core/tests/test_streaming_parser.py
+        run: |
+          $output = python -m pytest math-anything/core/tests/ -v --tb=long -x 2>&1
+          $output | Out-File -FilePath test-output.txt -Encoding utf8
+          Write-Output $output
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        shell: pwsh
 
       - name: Upload coverage | 上传覆盖率
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
