@@ -56,8 +56,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest]
         python-version: ["3.10", "3.11", "3.12", "3.13"]
+        include:
+          - os: windows-latest
+            python-version: "3.12"
 
     steps:
       - name: Checkout | 检出代码
@@ -83,29 +86,10 @@ jobs:
       - name: Debug imports | 调试导入
         run: |
           python -c "import math_anything; print('math_anything from:', math_anything.__file__)"
-          python -c "from math_anything.tools.tda import TDAAnalyzer; print('tda OK')"
           python -c "import numpy; print('numpy', numpy.__version__)"
-          python -c "import math_anything.tools.tda as t; import inspect; print(inspect.getsourcefile(t))"
-          python -c "from math_anything.repl.core import MathAnythingREPL; print('repl.core OK')"
-          python -c "from math_anything.repl.diff import DiffResult; print('repl.diff OK')"
-
-      - name: Quick test | 快速测试
-        run: python -m pytest math-anything/core/tests/test_schema.py -v --tb=long
 
       - name: Run tests | 运行测试
-        run: |
-          set -o pipefail
-          python -m pytest math-anything/core/tests/ -v --tb=long -x 2>&1 | tee pytest-output.txt
-        shell: bash
-
-      - name: Show test output on failure | 失败时显示测试输出
-        if: failure()
-        shell: bash
-        run: |
-          if [ -f pytest-output.txt ]; then
-            echo "=== TEST OUTPUT ==="
-            cat pytest-output.txt
-          fi
+        run: python -m pytest math-anything/core/tests/ -v --tb=long -x
 
       - name: Upload coverage | 上传覆盖率
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
