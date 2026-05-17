@@ -82,8 +82,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest numpy pydantic
           pip install -e .
-          python -c "import math_anything; print('Package from:', math_anything.__file__)"
-          python -c "import setuptools; print('setuptools:', setuptools.__version__)"
 
       - name: Debug imports | 调试导入
         run: |
