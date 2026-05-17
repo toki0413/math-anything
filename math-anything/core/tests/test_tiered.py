@@ -2,6 +2,7 @@
 
 import os
 import sys
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -181,8 +182,10 @@ class TestFileAnalysis:
     """Test file property analysis."""
 
     def test_lammps_file_detection(self):
-        with open("test_tier.lmp", "w") as f:
-            f.write("""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            lmp_path = os.path.join(tmpdir, "test_tier.lmp")
+            with open(lmp_path, "w") as f:
+                f.write("""
 # LAMMPS input
 units real
 atom_style full
@@ -193,29 +196,23 @@ fix 1 all nvt temp 300 300 100
 run 100000
 """)
 
-        try:
-            analysis = analyze_file_properties("test_tier.lmp")
+            analysis = analyze_file_properties(lmp_path)
             assert analysis.engine == "lammps"
             assert analysis.file_type == "lammps"
-        finally:
-            if os.path.exists("test_tier.lmp"):
-                os.remove("test_tier.lmp")
 
     def test_abaqus_file_detection(self):
-        with open("test_tier.inp", "w") as f:
-            f.write("""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            inp_path = os.path.join(tmpdir, "test_tier.inp")
+            with open(inp_path, "w") as f:
+                f.write("""
 *Heading
 *Preprint, echo=0, model=0, history=0, contact=0
 *Part
 *End Part
 """)
 
-        try:
-            analysis = analyze_file_properties("test_tier.inp")
+            analysis = analyze_file_properties(inp_path)
             assert analysis.engine == "abaqus"
-        finally:
-            if os.path.exists("test_tier.inp"):
-                os.remove("test_tier.inp")
 
 
 class TestIntegration:
@@ -224,8 +221,10 @@ class TestIntegration:
     def test_full_workflow(self):
         analyzer = TieredAnalyzer()
 
-        with open("integration_test.lmp", "w") as f:
-            f.write("""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            lmp_path = os.path.join(tmpdir, "integration_test.lmp")
+            with open(lmp_path, "w") as f:
+                f.write("""
 units real
 atom_style full
 dimension 3
@@ -234,20 +233,15 @@ timestep 0.5
 run 50000
 """)
 
-        try:
-            recommendation = analyzer.get_recommendation("integration_test.lmp")
+            recommendation = analyzer.get_recommendation(lmp_path)
             assert isinstance(recommendation, TierRecommendation)
 
-            result = analyzer.analyze("integration_test.lmp", auto_tier=True)
+            result = analyzer.analyze(lmp_path, auto_tier=True)
             assert isinstance(result, TieredAnalysisResult)
 
             result_dict = result.to_dict()
             assert "tier" in result_dict
             assert "file_analysis" in result_dict
-
-        finally:
-            if os.path.exists("integration_test.lmp"):
-                os.remove("integration_test.lmp")
 
 
 if __name__ == "__main__":

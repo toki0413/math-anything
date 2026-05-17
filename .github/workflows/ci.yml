@@ -81,9 +81,8 @@ jobs:
           pip install -e .
 
       - name: Run tests | 运行测试
-        run: |
-          cd math-anything/core
-          python -m pytest tests/ -v --tb=short
+        run: python -m pytest tests/ -v --tb=short
+        working-directory: math-anything/core
 
       - name: Upload coverage | 上传覆盖率
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'

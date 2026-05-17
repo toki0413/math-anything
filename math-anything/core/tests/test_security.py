@@ -169,8 +169,9 @@ class TestFileSizeValidator:
     def test_file_not_found(self):
         """Test validation of non-existent file."""
         validator = FileSizeValidator()
+        nonexistent = os.path.join(tempfile.gettempdir(), "nonexistent_math_anything_test", "file.txt")
         with pytest.raises(FileNotFoundError):
-            validator.validate_file("/nonexistent/path/file.txt")
+            validator.validate_file(nonexistent)
 
     def test_total_size_validation(self):
         """Test total size validation."""
