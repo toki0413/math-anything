@@ -5,7 +5,6 @@ import tempfile
 from pathlib import Path
 
 import pytest
-
 from math_anything.tiered import (
     AnalysisTier,
     ComplexityScore,

@@ -7,7 +7,6 @@ import tempfile
 import unittest
 
 import numpy as np
-
 from math_anything.utils.streaming_parser import (
     AtomData,
     Checkpoint,
