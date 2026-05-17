@@ -87,6 +87,9 @@ jobs:
           python -c "import numpy; print('numpy', numpy.__version__)"
           python -c "import sys; print(sys.path)"
 
+      - name: Quick test | 快速测试
+        run: python -m pytest math-anything/core/tests/test_schema.py -v --tb=long
+
       - name: Run tests | 运行测试
         run: python -m pytest math-anything/core/tests/ -v --tb=long -x
 
