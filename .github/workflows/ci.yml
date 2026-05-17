@@ -94,11 +94,12 @@ jobs:
 
       - name: Run tests | 运行测试
         run: |
-          $output = python -m pytest math-anything/core/tests/ -v --tb=long -x 2>&1
-          $output | Out-File -FilePath test-output.txt -Encoding utf8
-          Write-Output $output
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-        shell: pwsh
+          set +e
+          python -m pytest math-anything/core/tests/ -v --tb=long -x
+          EXIT_CODE=$?
+          set -e
+          exit $EXIT_CODE
+        shell: bash
 
       - name: Upload coverage | 上传覆盖率
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'

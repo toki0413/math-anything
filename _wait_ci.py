@@ -1,8 +1,5 @@
 import urllib.request
 import json
-import time
-
-time.sleep(120)
 
 url = "https://api.github.com/repos/toki0413/math-anything/actions/runs?per_page=1&branch=master"
 req = urllib.request.Request(url)
@@ -26,5 +23,7 @@ for r in data.get("workflow_runs", []):
         jobs_data = json.load(urllib.request.urlopen(req2))
 
         for j in jobs_data.get("jobs", []):
-            if "windows" in j["name"]:
-                print(f"  {j['name']}: {j['conclusion']}")
+            if "3.12" in j["name"] and "windows" in j["name"]:
+                print(f"\n  {j['name']}: {j['conclusion']}")
+                for step in j.get("steps", []):
+                    print(f"    {step['conclusion'] or 'skipped':>10}: {step['name']}")
