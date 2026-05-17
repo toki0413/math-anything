@@ -81,19 +81,14 @@ jobs:
           pip install -e .
 
       - name: Debug imports | 调试导入
-        run: python -c "import math_anything; print('math_anything imported OK'); from math_anything.repl.core import MathAnythingREPL; print('repl.core OK'); from math_anything.repl.diff import DiffResult; print('repl.diff OK')"
+        run: |
+          python -c "import math_anything; print('math_anything OK')"
+          python -c "from math_anything.tools.tda import TDAAnalyzer; print('tda OK')"
+          python -c "import numpy; print('numpy', numpy.__version__)"
+          python -c "import sys; print(sys.path)"
 
       - name: Run tests | 运行测试
-        run: |
-          python -m pytest math-anything/core/tests/ -v --tb=long 2>&1 | tee test-output.txt
-        shell: bash
-
-      - name: Upload test output | 上传测试输出
-        if: always() && matrix.os == 'windows-latest'
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-output-${{ matrix.python-version }}
-          path: test-output.txt
+        run: python -m pytest math-anything/core/tests/ -v --tb=long -x
 
       - name: Upload coverage | 上传覆盖率
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
