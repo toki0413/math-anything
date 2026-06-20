@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { AppLayout } from "./components/layout/AppLayout";
 import { DashboardPage } from "./pages/DashboardPage";
 import { ExtractPage } from "./pages/ExtractPage";
@@ -12,25 +13,29 @@ import { EmergencePage } from "./pages/EmergencePage";
 import { GeometryPage } from "./pages/GeometryPage";
 import { AnalysisPage } from "./pages/AnalysisPage";
 import SandboxPage from "./pages/SandboxPage";
+import ExplorationPage from "./pages/ExplorationPage";
 
 export default function App() {
   return (
-    <Routes>
-      <Route element={<AppLayout />}>
-        <Route index element={<DashboardPage />} />
-        <Route path="extract" element={<ExtractPage />} />
-        <Route path="verify" element={<VerifyPage />} />
-        <Route path="chat" element={<ChatPage />} />
-        <Route path="validate" element={<ValidatePage />} />
-        <Route path="emergence" element={<EmergencePage />} />
-        <Route path="geometry" element={<GeometryPage />} />
-        <Route path="analysis" element={<AnalysisPage />} />
-        <Route path="sandbox" element={<SandboxPage />} />
-        <Route path="schema/:id" element={<SchemaPage />} />
-        <Route path="settings" element={<SettingsPage />} />
-        <Route path="history" element={<HistoryPage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Route>
-    </Routes>
+    <ErrorBoundary>
+      <Routes>
+        <Route element={<AppLayout />}>
+          <Route index element={<DashboardPage />} />
+          <Route path="extract" element={<ExtractPage />} />
+          <Route path="verify" element={<VerifyPage />} />
+          <Route path="chat" element={<ChatPage />} />
+          <Route path="validate" element={<ValidatePage />} />
+          <Route path="emergence" element={<EmergencePage />} />
+          <Route path="geometry" element={<GeometryPage />} />
+          <Route path="analysis" element={<AnalysisPage />} />
+          <Route path="sandbox" element={<SandboxPage />} />
+          <Route path="exploration" element={<ExplorationPage />} />
+          <Route path="schema/:id" element={<SchemaPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+          <Route path="history" element={<HistoryPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      </Routes>
+    </ErrorBoundary>
   );
 }

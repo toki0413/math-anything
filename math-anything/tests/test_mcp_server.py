@@ -1,171 +1,378 @@
-"""Tests for Math Anything MCP Server."""
+"""Bourbaki MCP Server Tests — Protocol compliance and tool validation."""
 
+import asyncio
 import json
 import sys
 import unittest
-from io import StringIO
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "core"))
+sys.path.insert(0, str(Path(__file__).parent.parent / "server"))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from mcp_server import MCPServer, extract_mathematical_structure, list_supported_engines
+
+class TestMCPToolRegistration(unittest.TestCase):
+    """Test that all MCP tools are properly registered."""
+
+    def setUp(self):
+        from math_anything.mcp_server import mcp
+        self.mcp = mcp
+
+    def test_server_name(self):
+        self.assertEqual(self.mcp.name, "bourbaki-mcp")
+
+    def test_tool_count(self):
+        """Should have 11 tools registered."""
+        tools = asyncio.run(self.mcp.list_tools())
+        self.assertEqual(len(tools), 11)
+
+    def test_required_tools_exist(self):
+        """Check all required tools are registered."""
+        tools = asyncio.run(self.mcp.list_tools())
+        tool_names = [t.name for t in tools]
+        required = [
+            # Domain Layer
+            "analyze_domain",
+            "compare_domains",
+            "list_domains",
+            # Structure Layer
+            "build_conservation_field",
+            "analyze_morphism_chain",
+            "compute_riemann_geometry",
+            "solve_numerical",
+            # Foundation Layer
+            "dimensional_analyze",
+            "discover_equations",
+            "verify_structure",
+            # Engine Adapter
+            "translate_engine_params",
+        ]
+        for name in required:
+            self.assertIn(name, tool_names, f"Tool '{name}' not registered")
 
 
-class TestMCPTools(unittest.TestCase):
-    """Test MCP tool functions."""
+class TestConservationField(unittest.TestCase):
+    """Test the build_conservation_field tool."""
+
+    def test_navier_stokes(self):
+        from math_anything.mcp_server import build_conservation_field
+        result = json.loads(build_conservation_field("navier_stokes"))
+        self.assertIsInstance(result, dict)
+        self.assertEqual(result["equation_type"], "navier_stokes")
+        self.assertIn("conservation_laws", result)
+
+    def test_unknown_equation(self):
+        from math_anything.mcp_server import build_conservation_field
+        result = json.loads(build_conservation_field("unknown_equation"))
+        self.assertIn("error", result)
+        self.assertIn("supported_types", result)
+
+    def test_supported_equation_types(self):
+        from math_anything.mcp_server import build_conservation_field
+        result = json.loads(build_conservation_field("unknown"))
+        supported = result.get("supported_types", [])
+        expected = ["navier_stokes", "euler", "schrodinger", "maxwell", "elasticity",
+                    "mhd", "heat", "dirac", "einstein_field"]
+        for eq in expected:
+            self.assertIn(eq, supported)
+
+
+class TestDimensionalAnalysis(unittest.TestCase):
+    """Test the dimensional_analyze tool."""
+
+    def test_basic_analysis(self):
+        from math_anything.mcp_server import dimensional_analyze
+        result = json.loads(dimensional_analyze(schema={"canonical_form": "F = ma"}))
+        self.assertIsInstance(result, dict)
+
+    def test_with_quantities(self):
+        from math_anything.mcp_server import dimensional_analyze
+        result = json.loads(dimensional_analyze(
+            schema={"canonical_form": "F = ma"},
+            quantities=[
+                {"name": "force", "symbol": "F", "dimension": [1, 1, -2]},
+                {"name": "mass", "symbol": "m", "dimension": [0, 1, 0]},
+                {"name": "acceleration", "symbol": "a", "dimension": [1, 0, -2]},
+            ],
+        ))
+        self.assertIsInstance(result, dict)
+
+
+class TestVerifyStructure(unittest.TestCase):
+    """Test the verify_structure tool."""
+
+    def test_verify_basic(self):
+        from math_anything.mcp_server import verify_structure
+        result = json.loads(verify_structure({"problem_type": "test"}))
+        self.assertIn("passed", result)
+
+    def test_verify_complete_schema(self):
+        from math_anything.mcp_server import verify_structure
+        schema = {
+            "governing_equations": [{"id": "eq1"}],
+            "boundary_conditions": [{"id": "bc1"}],
+            "conservation_properties": {"energy": True},
+            "numerical_method": {"discretization": "fem"},
+        }
+        result = json.loads(verify_structure(schema))
+        self.assertTrue(result["passed"])
+
+
+class TestTranslateEngineParams(unittest.TestCase):
+    """Test the translate_engine_params tool."""
+
+    def test_translate_vasp(self):
+        from math_anything.mcp_server import translate_engine_params
+        result = json.loads(translate_engine_params("vasp", {"ENCUT": 500, "EDIFF": 1e-6, "ISPIN": 2}))
+        self.assertEqual(result["engine"], "vasp")
+        self.assertEqual(result["domain"], "dft")
+        self.assertEqual(result["domain_params"]["ecutwfc"], 500)
+        self.assertEqual(result["domain_params"]["scf_tol"], 1e-6)
+        self.assertEqual(result["domain_params"]["n_spin"], 2)
+
+    def test_translate_lammps(self):
+        from math_anything.mcp_server import translate_engine_params
+        result = json.loads(translate_engine_params("lammps", {"timestep": 0.001, "temperature": 300}))
+        self.assertEqual(result["engine"], "lammps")
+        self.assertEqual(result["domain"], "md")
+        self.assertEqual(result["domain_params"]["dt"], 0.001)
+
+    def test_translate_unknown_engine(self):
+        from math_anything.mcp_server import translate_engine_params
+        result = json.loads(translate_engine_params("unknown_engine", {"param": 1}))
+        self.assertEqual(result["engine"], "unknown_engine")
+        self.assertEqual(result["domain"], "unknown")
+
+
+class TestMCPResources(unittest.TestCase):
+    """Test MCP resource handlers."""
+
+    def test_version_resource(self):
+        from math_anything.mcp_server import get_version
+        result = json.loads(get_version())
+        self.assertEqual(result["name"], "bourbaki-mcp")
+        self.assertIn("domains", result)
+        self.assertIn("conservation_fields", result)
+
+    def test_domain_details_resource(self):
+        from math_anything.mcp_server import get_domain_details
+        result = json.loads(get_domain_details("dft"))
+        self.assertIn("name", result)
+        self.assertIn("equation_type", result)
+
+    def test_conservation_laws_resource(self):
+        from math_anything.mcp_server import get_conservation_laws
+        result = json.loads(get_conservation_laws("navier_stokes"))
+        self.assertIn("equation_type", result)
+
+
+class TestMCPPrompts(unittest.TestCase):
+    """Test MCP prompt templates."""
+
+    def test_analyze_simulation_prompt(self):
+        from math_anything.mcp_server import analyze_simulation
+        prompt = analyze_simulation("dft", "DFT calculation of silicon")
+        self.assertIn("dft", prompt)
+        self.assertIn("analyze_domain", prompt)
+
+    def test_compare_approaches_prompt(self):
+        from math_anything.mcp_server import compare_approaches
+        prompt = compare_approaches("dft", "md")
+        self.assertIn("dft", prompt)
+        self.assertIn("md", prompt)
+
+    def test_discover_from_data_prompt(self):
+        from math_anything.mcp_server import discover_from_data
+        prompt = discover_from_data("x, y, z")
+        self.assertIn("discover_equations", prompt)
+
+
+class TestDiscoverEquations(unittest.TestCase):
+    """Test the discover_equations tool."""
+
+    def test_basic_discovery(self):
+        from math_anything.mcp_server import discover_equations
+        result = json.loads(discover_equations("x, y, dx/dt"))
+        self.assertIn("method", result)
+        self.assertIn("variables", result)
+
+    def test_custom_method(self):
+        from math_anything.mcp_server import discover_equations
+        result = json.loads(discover_equations("x, y", method="genetic"))
+        self.assertIn("method", result)
+
+
+class TestComputeRiemannGeometry(unittest.TestCase):
+    """Test the compute_riemann_geometry tool."""
+
+    def test_euclidean(self):
+        from math_anything.mcp_server import compute_riemann_geometry
+        # Euclidean metric in 3D: identity matrix, zero Christoffel symbols
+        dim = 3
+        metric = [[1.0 if i == j else 0.0 for j in range(dim)] for i in range(dim)]
+        christoffel = [[[0.0 for _ in range(dim)] for _ in range(dim)] for _ in range(dim)]
+        result = json.loads(compute_riemann_geometry(metric, christoffel, dim))
+        self.assertIn("scalar_curvature", result)
+        # Flat space should have zero (or near-zero) curvature
+        self.assertAlmostEqual(result["scalar_curvature"], 0.0, places=5)
+
+    def test_schwarzschild(self):
+        from math_anything.mcp_server import compute_riemann_geometry
+        # Simplified test: 2D with non-trivial metric
+        dim = 2
+        metric = [[2.0, 0.0], [0.0, 3.0]]
+        christoffel = [[[0.0 for _ in range(dim)] for _ in range(dim)] for _ in range(dim)]
+        result = json.loads(compute_riemann_geometry(metric, christoffel, dim))
+        self.assertIn("scalar_curvature", result)
+
+
+class TestAnalyzeMorphismChain(unittest.TestCase):
+    """Test the analyze_morphism_chain tool."""
+
+    def test_dft_chain(self):
+        from math_anything.mcp_server import analyze_morphism_chain
+        result = json.loads(analyze_morphism_chain("dft"))
+        self.assertIn("domain", result)
+        self.assertIn("steps", result)
+        self.assertIn("summary", result)
+
+    def test_unknown_domain(self):
+        from math_anything.mcp_server import analyze_morphism_chain
+        result = json.loads(analyze_morphism_chain("nonexistent"))
+        self.assertIn("error", result)
+
+
+class TestDomainTools(unittest.TestCase):
+    """Test the Domain Instantiation Layer tools."""
+
+    def test_list_domains(self):
+        from math_anything.mcp_server import list_domains
+        result = json.loads(list_domains())
+        self.assertIn("domains", result)
+        self.assertGreaterEqual(result["total"], 7)
+        domain_names = [d["name"] for d in result["domains"]]
+        self.assertIn("dft", domain_names)
+        self.assertIn("cfd", domain_names)
+        self.assertIn("md", domain_names)
+        self.assertIn("fem", domain_names)
+        self.assertIn("em", domain_names)
+        self.assertIn("qc", domain_names)
+        self.assertIn("phase_field", domain_names)
+
+    def test_analyze_dft_domain(self):
+        from math_anything.mcp_server import analyze_domain
+        result = json.loads(analyze_domain("dft", {"n_electrons": 10}))
+        self.assertIn("domain_name", result)
+        self.assertIn("preserved", result)
+        self.assertIn("lost", result)
+        self.assertEqual(result["domain_name"], "dft")
+
+    def test_analyze_cfd_domain(self):
+        from math_anything.mcp_server import analyze_domain
+        result = json.loads(analyze_domain("cfd", {"regime": "incompressible"}))
+        self.assertIn("domain_name", result)
+        self.assertEqual(result["domain_name"], "cfd")
+
+    def test_analyze_md_domain(self):
+        from math_anything.mcp_server import analyze_domain
+        result = json.loads(analyze_domain("md", {"n_atoms": 1000}))
+        self.assertIn("domain_name", result)
+        self.assertIn("preserved", result)
+
+    def test_analyze_fem_domain(self):
+        from math_anything.mcp_server import analyze_domain
+        result = json.loads(analyze_domain("fem", {"basis_degree": 2}))
+        self.assertIn("domain_name", result)
+
+    def test_analyze_unknown_domain(self):
+        from math_anything.mcp_server import analyze_domain
+        result = json.loads(analyze_domain("nonexistent"))
+        self.assertIn("error", result)
+
+    def test_compare_domains(self):
+        from math_anything.mcp_server import compare_domains
+        result = json.loads(compare_domains("dft", None, "md", None))
+        self.assertIn("domain_a", result)
+        self.assertIn("domain_b", result)
+        self.assertIn("common_preserved", result)
+        self.assertEqual(result["domain_a"], "dft")
+        self.assertEqual(result["domain_b"], "md")
+
+
+class TestSolveNumerical(unittest.TestCase):
+    """Test the solve_numerical tool."""
+
+    def test_eigenvalue_solver(self):
+        from math_anything.mcp_server import solve_numerical
+        result = json.loads(solve_numerical("eigenvalue", {"matrix": [[2, 1], [1, 2]]}))
+        self.assertIn("eigenvalues", result)
+        self.assertEqual(result["solver_type"], "eigenvalue")
+
+    def test_unknown_solver(self):
+        from math_anything.mcp_server import solve_numerical
+        result = json.loads(solve_numerical("nonexistent", {}))
+        self.assertIn("error", result)
+        self.assertIn("available", result)
+
+
+class TestAdaptersModule(unittest.TestCase):
+    """Test the adapters module directly."""
+
+    def test_translate_vasp(self):
+        from math_anything.adapters import translate_params
+        result = translate_params("vasp", {"ENCUT": 500, "EDIFF": 1e-6, "ISPIN": 2})
+        self.assertEqual(result["domain"], "dft")
+        self.assertEqual(result["domain_params"]["ecutwfc"], 500)
+
+    def test_translate_qe(self):
+        from math_anything.adapters import translate_params
+        result = translate_params("qe", {"ecutwfc": 60, "conv_thr": 1e-8})
+        self.assertEqual(result["domain"], "dft")
+        self.assertEqual(result["domain_params"]["ecutwfc"], 60)
+        self.assertEqual(result["domain_params"]["scf_tol"], 1e-8)
+
+    def test_translate_lammps(self):
+        from math_anything.adapters import translate_params
+        result = translate_params("lammps", {"timestep": 0.001, "run": 10000})
+        self.assertEqual(result["domain"], "md")
+        self.assertEqual(result["domain_params"]["dt"], 0.001)
+        self.assertEqual(result["domain_params"]["n_steps"], 10000)
+
+    def test_translate_gromacs(self):
+        from math_anything.adapters import translate_params
+        result = translate_params("gromacs", {"dt": 0.002, "nsteps": 50000})
+        self.assertEqual(result["domain"], "md")
+        self.assertEqual(result["domain_params"]["n_steps"], 50000)
+
+    def test_translate_abaqus(self):
+        from math_anything.adapters import translate_params
+        result = translate_params("abaqus", {"NLGEOM": 1, "ELEMENT_TYPE": "C3D8R"})
+        self.assertEqual(result["domain"], "fem")
+        self.assertTrue(result["domain_params"]["geometric_nonlinear"])
+
+    def test_translate_openfoam(self):
+        from math_anything.adapters import translate_params
+        result = translate_params("openfoam", {"deltaT": 0.001, "endTime": 10.0})
+        self.assertEqual(result["domain"], "cfd")
+        self.assertEqual(result["domain_params"]["dt"], 0.001)
+
+    def test_translate_unknown(self):
+        from math_anything.adapters import translate_params
+        result = translate_params("some_unknown_engine", {"param": 42})
+        self.assertEqual(result["domain"], "unknown")
+        self.assertEqual(result["domain_params"]["param"], 42)
 
     def test_list_supported_engines(self):
-        """Test listing supported engines."""
+        from math_anything.adapters import list_supported_engines
         engines = list_supported_engines()
         self.assertIn("vasp", engines)
         self.assertIn("lammps", engines)
         self.assertIn("abaqus", engines)
-        self.assertEqual(len(engines), 7)
+        self.assertIn("openfoam", engines)
 
-    def test_extract_vasp_structure(self):
-        """Test extracting VASP mathematical structure."""
-        params = {"encut": 520, "ediff": 1e-6, "sigma": 0.05}
-        result = extract_mathematical_structure("vasp", params)
-
-        self.assertIn("mathematical_structure", result)
-        self.assertIn("variable_dependencies", result)
-        self.assertIn("discretization_scheme", result)
-        self.assertIn("solution_strategy", result)
-        self.assertIn("approximations", result)
-        self.assertIn("mathematical_decoding", result)
-
-        ms = result["mathematical_structure"]
-        self.assertEqual(ms["problem_type"], "nonlinear_eigenvalue")
-        self.assertEqual(ms["canonical_form"], "H[n]ψ = εψ")
-
-    def test_extract_lammps_structure(self):
-        """Test extracting LAMMPS mathematical structure."""
-        params = {"timestep": 0.001, "temperature": 300}
-        result = extract_mathematical_structure("lammps", params)
-
-        ms = result["mathematical_structure"]
-        self.assertEqual(ms["problem_type"], "initial_value_ode")
-        self.assertIn("d", ms["canonical_form"])
-        self.assertIn("F", ms["canonical_form"])
-
-    def test_extract_unknown_engine(self):
-        """Test error on unknown engine."""
-        with self.assertRaises(ValueError) as ctx:
-            extract_mathematical_structure("unknown", {})
-        self.assertIn("Unknown engine", str(ctx.exception))
-
-
-class TestMCPServerProtocol(unittest.TestCase):
-    """Test MCP server protocol handling."""
-
-    def setUp(self):
-        self.server = MCPServer()
-
-    def test_initialize(self):
-        """Test initialize response."""
-        result = self.server.handle_initialize({})
-        self.assertEqual(result["protocolVersion"], "2024-11-05")
-        self.assertEqual(result["serverInfo"]["name"], "math-anything-mcp")
-
-    def test_tools_list(self):
-        """Test tools/list response."""
-        result = self.server.handle_tools_list({})
-        tools = result["tools"]
-        self.assertEqual(len(tools), 4)
-
-        names = [t["name"] for t in tools]
-        self.assertIn("extract_mathematical_structure", names)
-        self.assertIn("compare_calculations", names)
-        self.assertIn("validate_constraints", names)
-        self.assertIn("list_supported_engines", names)
-
-    def test_tools_call_extract(self):
-        """Test calling extract tool."""
-        result = self.server.handle_tools_call(
-            {
-                "name": "extract_mathematical_structure",
-                "arguments": {
-                    "engine": "vasp",
-                    "parameters": {"encut": 520},
-                },
-            }
-        )
-
-        self.assertNotIn("isError", result)
-        content = json.loads(result["content"][0]["text"])
-        self.assertIn("mathematical_structure", content)
-
-    def test_tools_call_list_engines(self):
-        """Test calling list engines tool."""
-        result = self.server.handle_tools_call(
-            {
-                "name": "list_supported_engines",
-                "arguments": {},
-            }
-        )
-
-        content = json.loads(result["content"][0]["text"])
-        self.assertIn("vasp", content)
-        self.assertIn("lammps", content)
-
-    def test_tools_call_unknown(self):
-        """Test calling unknown tool."""
-        result = self.server.handle_tools_call(
-            {
-                "name": "unknown_tool",
-                "arguments": {},
-            }
-        )
-
-        self.assertTrue(result["isError"])
-        self.assertIn("Unknown tool", result["content"][0]["text"])
-
-
-class TestMCPServerStdio(unittest.TestCase):
-    """Test MCP server stdio transport."""
-
-    def setUp(self):
-        self.server = MCPServer()
-
-    def test_stdio_initialize(self):
-        """Test stdio initialize request/response."""
-        request = {
-            "jsonrpc": "2.0",
-            "id": 1,
-            "method": "initialize",
-            "params": {},
-        }
-
-        old_stdin = sys.stdin
-        old_stdout = sys.stdout
-
-        try:
-            sys.stdin = StringIO(json.dumps(request) + "\n")
-            sys.stdout = StringIO()
-
-            # Run one iteration
-            line = sys.stdin.readline()
-            req = json.loads(line)
-            result = self.server.handle_initialize(req.get("params", {}))
-            response = {
-                "jsonrpc": "2.0",
-                "id": req["id"],
-                "result": result,
-            }
-            print(json.dumps(response), flush=True)
-
-            sys.stdout.seek(0)
-            output = sys.stdout.read().strip()
-            response = json.loads(output)
-
-            self.assertEqual(response["id"], 1)
-            self.assertEqual(
-                response["result"]["serverInfo"]["name"], "math-anything-mcp"
-            )
-
-        finally:
-            sys.stdin = old_stdin
-            sys.stdout = old_stdout
+    def test_list_all_engines(self):
+        from math_anything.adapters import list_all_engines
+        engines = list_all_engines()
+        self.assertGreater(len(engines), 6)
 
 
 if __name__ == "__main__":

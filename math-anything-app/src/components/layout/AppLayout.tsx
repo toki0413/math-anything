@@ -15,6 +15,7 @@ import {
   Circle,
   Sigma,
   Terminal,
+  Network,
 } from "lucide-react";
 import { useAppStore } from "../../stores/appStore";
 import clsx from "clsx";
@@ -28,7 +29,8 @@ const NAV_ITEMS = [
   { to: "/sandbox", icon: Terminal, label: "沙箱", group: "Extract" },
   { to: "/verify", icon: ShieldCheck, label: "形式化验证", group: "Reason" },
   { to: "/chat", icon: MessageSquare, label: "AI 对话", group: "Reason" },
-  { to: "/validate", icon: CheckSquare, label: "交叉验证", group: "Validate" },
+  { to: "/exploration", icon: Network, label: "探索模式", group: "Reason" },
+  { to: "/validate", icon: CheckSquare, label: "数学工具箱", group: "Validate" },
   { to: "/schema/current", icon: TreePine, label: "Schema 查看器", group: "Inspect" },
   { to: "/history", icon: History, label: "历史记录", group: "Observe" },
   { to: "/settings", icon: Settings, label: "设置", group: "System" },

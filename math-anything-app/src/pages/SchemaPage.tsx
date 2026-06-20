@@ -1,3 +1,4 @@
+import katex from "katex";
 import { useAppStore } from "../stores/appStore";
 import { TreePine, AlertTriangle, CheckCircle, XCircle, Info, GitBranch } from "lucide-react";
 
@@ -14,7 +15,6 @@ function KatexMath({ math }: { math: string }) {
 
 function tryRenderKatex(latex: string): string {
   try {
-    const katex = require("katex");
     return katex.renderToString(latex, {
       throwOnError: false,
       displayMode: false,
@@ -48,10 +48,10 @@ function ProvenanceTag({ prov }: { prov: Record<string, unknown> }) {
     <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
       <GitBranch size={10} />
       <span>
-        {prov.engine && `${prov.engine}:`}
-        {prov.parameter && `${prov.parameter}`}
-        {prov.line_number && `:${prov.line_number}`}
-        {prov.extraction_method && ` (${prov.extraction_method})`}
+        {prov.engine != null && `${String(prov.engine)}:`}
+        {prov.parameter != null && `${String(prov.parameter)}`}
+        {prov.line_number != null && `:${String(prov.line_number)}`}
+        {prov.extraction_method != null && ` (${String(prov.extraction_method)})`}
       </span>
       {prov.confidence != null && (
         <span className={`px-1 rounded ${

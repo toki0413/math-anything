@@ -1,4 +1,4 @@
-"""Example: Cross-Engine Session - Multi-scale Model Coupling
+﻿"""Example: Cross-Engine Session - Multi-scale Model Coupling
 
 This example demonstrates how to extract models from multiple engines
 at different scales and identify coupling interfaces between them.
@@ -7,7 +7,7 @@ at different scales and identify coupling interfaces between them.
 import os
 import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "core"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "lib"))
 
 from math_anything.core import (
     CouplingInterface,

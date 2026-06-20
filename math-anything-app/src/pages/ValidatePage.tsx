@@ -1,75 +1,83 @@
 import { useState } from "react";
-import { CheckSquare, Target, Eye, Loader2 } from "lucide-react";
+import {
+  FlaskConical,
+  Minimize2,
+  GitBranch,
+  Loader2,
+  Upload,
+  FileText,
+  ChevronDown,
+  ChevronRight,
+  Copy,
+  Check,
+} from "lucide-react";
 import clsx from "clsx";
-import { api } from "../lib/api";
+import { api, apiUpload } from "../lib/api";
 
-type Tab = "crossval" | "predictions" | "dual";
+type Tab = "extract" | "simplify" | "discover" | "schema";
 
-const CV_CYCLE = ["not_tested", "confirmed", "partially_confirmed", "unconfirmed", "contradicted"] as const;
-const CV_SYMBOLS: Record<string, string> = { not_tested: "·", confirmed: "✓", partially_confirmed: "~", unconfirmed: "?", contradicted: "✗" };
-const CV_CLASSES: Record<string, string> = { not_tested: "", confirmed: "text-accent3", partially_confirmed: "text-warn", unconfirmed: "text-accent", contradicted: "text-error" };
-
-const PRED_CYCLE = ["pending", "verified", "falsified", "inconclusive"] as const;
-const PRED_LABELS: Record<string, string> = { pending: "PENDING", verified: "VERIFIED", falsified: "FALSIFIED", inconclusive: "INCONCLUSIVE" };
-const PRED_CLASSES: Record<string, string> = { pending: "bg-bg-card text-text-3", verified: "bg-accent3-dim text-accent3", falsified: "bg-error-dim text-error", inconclusive: "bg-warn-dim text-warn" };
+const ENGINES = [
+  { id: "vasp", label: "VASP", ext: "INCAR/POSCAR/KPOINTS" },
+  { id: "lammps", label: "LAMMPS", ext: "in.lmp/data.lmp" },
+  { id: "abaqus", label: "Abaqus", ext: ".inp" },
+  { id: "ansys", label: "ANSYS", ext: ".dat/.cdb" },
+  { id: "comsol", label: "COMSOL", ext: ".m" },
+  { id: "gromacs", label: "GROMACS", ext: ".mdp/.top" },
+  { id: "multiwfn", label: "Multiwfn", ext: ".wfn/.fch" },
+];
 
 export function ValidatePage() {
-  const [tab, setTab] = useState<Tab>("crossval");
+  const [tab, setTab] = useState<Tab>("extract");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const [cvMethods, setCvMethods] = useState("");
-  const [cvConclusions, setCvConclusions] = useState("");
-  const [cvCells, setCvCells] = useState<Record<string, string>>({});
-  const [cvReport, setCvReport] = useState("");
+  const [engine, setEngine] = useState("vasp");
+  const [inputText, setInputText] = useState("");
+  const [extractResult, setExtractResult] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
 
-  const [predictions, setPredictions] = useState<Array<{id: string; statement: string; condition: string; method: string; status: string}>>([]);
-  const [predReport, setPredReport] = useState("");
+  const [exprInput, setExprInput] = useState("");
+  const [simplifyResult, setSimplifyResult] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
 
-  const [dualConclusion, setDualConclusion] = useState("");
-  const [geoChecks, setGeoChecks] = useState<string[]>([]);
-  const [anaChecks, setAnaChecks] = useState<string[]>([]);
-  const [geoMarks, setGeoMarks] = useState<Record<number, string>>({});
-  const [anaMarks, setAnaMarks] = useState<Record<number, string>>({});
-  const [dualReport, setDualReport] = useState("");
-  const [dualResult, setDualResult] = useState<Record<string, unknown> | null>(null);
+  const [dataInput, setDataInput] = useState("");
+  const [discoverResult, setDiscoverResult] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
 
-  const methods = cvMethods.split(",").map((s) => s.trim()).filter(Boolean);
-  const conclusions = cvConclusions.split(",").map((s) => s.trim()).filter(Boolean);
+  const [schemaInput, setSchemaInput] = useState("");
+  const [schemaResult, setSchemaResult] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
 
-  const toggleCvCell = (m: string, c: string) => {
-    const key = `${m}::${c}`;
-    const current = cvCells[key] || "not_tested";
-    const idx = CV_CYCLE.indexOf(current as typeof CV_CYCLE[number]);
-    const next = CV_CYCLE[(idx + 1) % CV_CYCLE.length];
-    setCvCells({ ...cvCells, [key]: next });
-  };
+  const [copied, setCopied] = useState(false);
 
-  const cycleMark = (marks: Record<number, string>, setMarks: (m: Record<number, string>) => void, idx: number) => {
-    const cycle = ["·", "✓", "✗", "?"];
-    const current = marks[idx] || "·";
-    const ci = cycle.indexOf(current);
-    setMarks({ ...marks, [idx]: cycle[(ci + 1) % cycle.length] });
-  };
-
-  const submitCrossVal = async () => {
+  const submitExtract = async () => {
     setLoading(true);
     setError("");
+    setExtractResult(null);
     try {
-      const data = await api("/validate/crossval", {
-        method: "POST",
-        body: JSON.stringify({ methods, conclusions }),
-      });
-      setCvReport((data as Record<string, string>).report || "");
-      if ((data as Record<string, Record<string, Record<string, string>>>).matrix?.cells) {
-        const cells: Record<string, string> = {};
-        for (const [m, row] of Object.entries((data as Record<string, Record<string, Record<string, string>>>).matrix.cells)) {
-          for (const [c, status] of Object.entries(row)) {
-            cells[`${m}::${c}`] = status;
-          }
+      const params: Record<string, unknown> = { engine };
+      const lines = inputText.trim().split("\n");
+      for (const line of lines) {
+        const eqIdx = line.indexOf("=");
+        if (eqIdx > 0) {
+          const key = line.slice(0, eqIdx).trim();
+          const val = line.slice(eqIdx + 1).trim();
+          params[key] = isNaN(Number(val)) ? val : Number(val);
         }
-        setCvCells(cells);
       }
+      const data = await api("/extract", {
+        method: "POST",
+        body: JSON.stringify(params),
+      });
+      setExtractResult(data as Record<string, unknown>);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -77,21 +85,16 @@ export function ValidatePage() {
     }
   };
 
-  const submitPredictions = async () => {
+  const submitSimplify = async () => {
     setLoading(true);
     setError("");
+    setSimplifyResult(null);
     try {
-      const preds = predictions.map((p) => ({
-        id: p.id,
-        statement: p.statement,
-        condition: p.condition,
-        method: p.method,
-      }));
-      const data = await api("/validate/predictions", {
+      const data = await api("/simplify", {
         method: "POST",
-        body: JSON.stringify({ predictions: preds }),
+        body: JSON.stringify({ expression: exprInput }),
       });
-      setPredReport((data as Record<string, string>).report || "");
+      setSimplifyResult(data as Record<string, unknown>);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -99,44 +102,109 @@ export function ValidatePage() {
     }
   };
 
-  const submitDual = async () => {
+  const submitDiscover = async () => {
     setLoading(true);
     setError("");
+    setDiscoverResult(null);
     try {
-      const data = await api("/validate/dual", {
+      const rows = dataInput
+        .trim()
+        .split("\n")
+        .map((l) =>
+          l
+            .split(/[\s,]+/)
+            .map(Number)
+            .filter((n) => !isNaN(n))
+        )
+        .filter((r) => r.length > 0);
+      if (rows.length < 5) {
+        setError("至少需要5行数据");
+        setLoading(false);
+        return;
+      }
+      const data = await api("/discover", {
         method: "POST",
-        body: JSON.stringify({
-          conclusion: dualConclusion,
-          geometric_checks: geoChecks,
-          analytic_checks: anaChecks,
-        }),
+        body: JSON.stringify({ data: rows }),
       });
-      setDualReport((data as Record<string, string>).report || "");
-      setDualResult((data as Record<string, Record<string, unknown>>).result || null);
+      setDiscoverResult(data as Record<string, unknown>);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setLoading(false);
     }
   };
+
+  const submitSchema = async () => {
+    setLoading(true);
+    setError("");
+    setSchemaResult(null);
+    try {
+      const schema = JSON.parse(schemaInput);
+      const data = await api("/validate_schema", {
+        method: "POST",
+        body: JSON.stringify({ schema }),
+      });
+      setSchemaResult(data as Record<string, unknown>);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  const TABS: { id: Tab; icon: typeof FlaskConical; label: string; desc: string }[] = [
+    {
+      id: "extract",
+      icon: FlaskConical,
+      label: "结构提取",
+      desc: "从计算软件参数提取数学结构",
+    },
+    {
+      id: "simplify",
+      icon: Minimize2,
+      label: "表达式简化",
+      desc: "化简数学表达式",
+    },
+    {
+      id: "discover",
+      icon: GitBranch,
+      label: "方程发现",
+      desc: "从数据中发现数学方程",
+    },
+    {
+      id: "schema",
+      icon: FileText,
+      label: "Schema 验证",
+      desc: "验证数学结构的完整性",
+    },
+  ];
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
-      <h1 className="font-display text-2xl font-semibold mb-1">交叉验证</h1>
-      <p className="text-text-2 text-sm mb-6">方法 × 结论验证网格 · 可证伪预测表 · 双视角分析</p>
+      <h1 className="font-display text-2xl font-semibold mb-1">
+        数学工具箱
+      </h1>
+      <p className="text-text-2 text-sm mb-6">
+        结构提取 · 表达式简化 · 方程发现 · Schema验证
+      </p>
 
       <div className="flex gap-2 mb-6">
-        {[
-          { id: "crossval" as Tab, icon: CheckSquare, label: "交叉验证矩阵" },
-          { id: "predictions" as Tab, icon: Target, label: "可证伪预测" },
-          { id: "dual" as Tab, icon: Eye, label: "双视角分析" },
-        ].map((t) => (
+        {TABS.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
             className={clsx(
               "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-              tab === t.id ? "bg-accent-dim text-accent border border-accent/30" : "text-text-3 hover:text-text-2"
+              tab === t.id
+                ? "bg-accent-dim text-accent border border-accent/30"
+                : "text-text-3 hover:text-text-2"
             )}
           >
             <t.icon size={16} /> {t.label}
@@ -150,173 +218,258 @@ export function ValidatePage() {
         </div>
       )}
 
-      {tab === "crossval" && (
-        <div>
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-xs text-text-3 mb-1">方法（逗号分隔）</label>
-              <input value={cvMethods} onChange={(e) => setCvMethods(e.target.value)} placeholder="输入方法，逗号分隔" className="w-full bg-bg-card border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none focus:border-accent/50" />
+      {tab === "extract" && (
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs text-text-3 mb-2">
+              选择计算引擎
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {ENGINES.map((e) => (
+                <button
+                  key={e.id}
+                  onClick={() => setEngine(e.id)}
+                  className={clsx(
+                    "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border",
+                    engine === e.id
+                      ? "bg-accent-dim text-accent border-accent/30"
+                      : "bg-bg-card text-text-3 border-border hover:text-text-2"
+                  )}
+                >
+                  {e.label}
+                </button>
+              ))}
             </div>
-            <div>
-              <label className="block text-xs text-text-3 mb-1">结论（逗号分隔）</label>
-              <input value={cvConclusions} onChange={(e) => setCvConclusions(e.target.value)} placeholder="输入结论，逗号分隔" className="w-full bg-bg-card border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none focus:border-accent/50" />
-            </div>
+          </div>
+          <div>
+            <label className="block text-xs text-text-3 mb-1">
+              输入参数（每行一个 KEY = VALUE）
+            </label>
+            <textarea
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              placeholder={"ENCUT = 520\nSIGMA = 0.05\nISMEAR = 1\nEDIFF = 1e-6"}
+              className="w-full bg-bg-card border border-border rounded-lg px-3 py-2 text-sm text-text font-mono h-40 focus:outline-none focus:border-accent/50"
+            />
           </div>
           <button
-            onClick={submitCrossVal}
-            disabled={loading || methods.length === 0 || conclusions.length === 0}
-            className="mb-4 flex items-center gap-2 px-4 py-2 bg-accent text-bg rounded-lg text-sm font-medium hover:bg-accent/90 disabled:opacity-50 transition-colors"
+            onClick={submitExtract}
+            disabled={loading || !inputText.trim()}
+            className="flex items-center gap-2 px-4 py-2 bg-accent text-bg rounded-lg text-sm font-medium hover:bg-accent/90 disabled:opacity-50 transition-colors"
           >
-            {loading ? <Loader2 size={14} className="animate-spin" /> : <CheckSquare size={14} />}
-            提交验证
+            {loading ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : (
+              <FlaskConical size={14} />
+            )}
+            提取数学结构
           </button>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr>
-                  <th className="text-left px-3 py-2 text-xs text-text-3 font-semibold">Method</th>
-                  {conclusions.map((c) => (
-                    <th key={c} className="px-3 py-2 text-xs text-text-3 font-semibold text-center">{c}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {methods.map((m) => (
-                  <tr key={m} className="border-t border-border">
-                    <td className="px-3 py-2 text-sm text-text-2 font-medium">{m}</td>
-                    {conclusions.map((c) => {
-                      const key = `${m}::${c}`;
-                      const status = cvCells[key] || "not_tested";
-                      return (
-                        <td key={c} className="px-3 py-2 text-center">
-                          <button
-                            onClick={() => toggleCvCell(m, c)}
-                            className={clsx("text-lg font-bold w-8 h-8 rounded hover:bg-bg-hover transition-colors", CV_CLASSES[status])}
-                          >
-                            {CV_SYMBOLS[status]}
-                          </button>
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {cvReport && (
-            <div className="mt-4 p-4 bg-bg-card border border-border rounded-lg">
-              <div className="text-xs text-text-3 font-semibold mb-2">验证报告</div>
-              <pre className="text-sm text-text-2 whitespace-pre-wrap">{cvReport}</pre>
-            </div>
+          {extractResult && (
+            <ResultCard
+              title="提取结果"
+              result={extractResult}
+              onCopy={() =>
+                copyToClipboard(JSON.stringify(extractResult, null, 2))
+              }
+              copied={copied}
+            />
           )}
         </div>
       )}
 
-      {tab === "predictions" && (
-        <div className="space-y-3">
+      {tab === "simplify" && (
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs text-text-3 mb-1">
+              输入数学表达式
+            </label>
+            <input
+              value={exprInput}
+              onChange={(e) => setExprInput(e.target.value)}
+              placeholder="sin(x)^2 + cos(x)^2"
+              className="w-full bg-bg-card border border-border rounded-lg px-3 py-2 text-sm text-text font-mono focus:outline-none focus:border-accent/50"
+            />
+          </div>
           <button
-            onClick={submitPredictions}
-            disabled={loading}
-            className="mb-2 flex items-center gap-2 px-4 py-2 bg-accent text-bg rounded-lg text-sm font-medium hover:bg-accent/90 disabled:opacity-50 transition-colors"
+            onClick={submitSimplify}
+            disabled={loading || !exprInput.trim()}
+            className="flex items-center gap-2 px-4 py-2 bg-accent text-bg rounded-lg text-sm font-medium hover:bg-accent/90 disabled:opacity-50 transition-colors"
           >
-            {loading ? <Loader2 size={14} className="animate-spin" /> : <Target size={14} />}
-            提交预测表
+            {loading ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : (
+              <Minimize2 size={14} />
+            )}
+            简化表达式
           </button>
-          {predictions.map((p, i) => (
-            <div key={p.id} className="bg-bg-card border border-border rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-mono text-xs text-accent font-semibold">{p.id}</span>
-                <button
-                  onClick={() => {
-                    const ci = PRED_CYCLE.indexOf(p.status as typeof PRED_CYCLE[number]);
-                    const next = PRED_CYCLE[(ci + 1) % PRED_CYCLE.length];
-                    const updated = [...predictions];
-                    updated[i] = { ...p, status: next };
-                    setPredictions(updated);
-                  }}
-                  className={clsx("px-2 py-0.5 rounded text-xs font-semibold cursor-pointer transition-colors", PRED_CLASSES[p.status])}
-                >
-                  {PRED_LABELS[p.status]}
-                </button>
-              </div>
-              <div className="text-sm font-medium mb-1">{p.statement}</div>
-              <div className="text-xs text-text-3 font-mono">条件: {p.condition}</div>
-              <div className="text-xs text-text-3 font-mono">检验: {p.method}</div>
+          {simplifyResult && (
+            <ResultCard
+              title="简化结果"
+              result={simplifyResult}
+              onCopy={() =>
+                copyToClipboard(JSON.stringify(simplifyResult, null, 2))
+              }
+              copied={copied}
+            />
+          )}
+        </div>
+      )}
+
+      {tab === "discover" && (
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs text-text-3 mb-1">
+              输入数据（每行一组数值，空格或逗号分隔）
+            </label>
+            <textarea
+              value={dataInput}
+              onChange={(e) => setDataInput(e.target.value)}
+              placeholder={"0.1 0.2\n0.3 0.5\n0.5 0.8\n0.7 1.1\n..."}
+              className="w-full bg-bg-card border border-border rounded-lg px-3 py-2 text-sm text-text font-mono h-40 focus:outline-none focus:border-accent/50"
+            />
+          </div>
+          <button
+            onClick={submitDiscover}
+            disabled={loading || !dataInput.trim()}
+            className="flex items-center gap-2 px-4 py-2 bg-accent text-bg rounded-lg text-sm font-medium hover:bg-accent/90 disabled:opacity-50 transition-colors"
+          >
+            {loading ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : (
+              <GitBranch size={14} />
+            )}
+            发现方程
+          </button>
+          {discoverResult && (
+            <ResultCard
+              title="发现结果"
+              result={discoverResult}
+              onCopy={() =>
+                copyToClipboard(JSON.stringify(discoverResult, null, 2))
+              }
+              copied={copied}
+            />
+          )}
+        </div>
+      )}
+
+      {tab === "schema" && (
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs text-text-3 mb-1">
+              输入 Schema JSON
+            </label>
+            <textarea
+              value={schemaInput}
+              onChange={(e) => setSchemaInput(e.target.value)}
+              placeholder={'{\n  "governing_equations": [...],\n  "boundary_conditions": [...]\n}'}
+              className="w-full bg-bg-card border border-border rounded-lg px-3 py-2 text-sm text-text font-mono h-40 focus:outline-none focus:border-accent/50"
+            />
+          </div>
+          <button
+            onClick={submitSchema}
+            disabled={loading || !schemaInput.trim()}
+            className="flex items-center gap-2 px-4 py-2 bg-accent text-bg rounded-lg text-sm font-medium hover:bg-accent/90 disabled:opacity-50 transition-colors"
+          >
+            {loading ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : (
+              <FileText size={14} />
+            )}
+            验证 Schema
+          </button>
+          {schemaResult && (
+            <ResultCard
+              title="验证结果"
+              result={schemaResult}
+              onCopy={() =>
+                copyToClipboard(JSON.stringify(schemaResult, null, 2))
+              }
+              copied={copied}
+            />
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ResultCard({
+  title,
+  result,
+  onCopy,
+  copied,
+}: {
+  title: string;
+  result: Record<string, unknown>;
+  onCopy: () => void;
+  copied: boolean;
+}) {
+  const [expanded, setExpanded] = useState(true);
+
+  const renderValue = (val: unknown, depth = 0): React.ReactNode => {
+    if (val === null || val === undefined) return <span className="text-text-3">—</span>;
+    if (typeof val === "boolean")
+      return (
+        <span className={val ? "text-accent3" : "text-error"}>
+          {String(val)}
+        </span>
+      );
+    if (typeof val === "number")
+      return <span className="text-accent font-mono">{String(val)}</span>;
+    if (typeof val === "string")
+      return <span className="text-text font-mono">{val}</span>;
+    if (Array.isArray(val)) {
+      if (val.length === 0) return <span className="text-text-3">[]</span>;
+      return (
+        <div className="ml-4 space-y-1">
+          {val.map((item, i) => (
+            <div key={i} className="flex items-start gap-2">
+              <span className="text-text-3 text-xs mt-0.5">[{i}]</span>
+              {renderValue(item, depth + 1)}
             </div>
           ))}
-          {predReport && (
-            <div className="mt-4 p-4 bg-bg-card border border-border rounded-lg">
-              <div className="text-xs text-text-3 font-semibold mb-2">预测报告</div>
-              <pre className="text-sm text-text-2 whitespace-pre-wrap">{predReport}</pre>
-            </div>
-          )}
         </div>
-      )}
+      );
+    }
+    if (typeof val === "object") {
+      const entries = Object.entries(val as Record<string, unknown>);
+      return (
+        <div className={clsx("space-y-1", depth > 0 && "ml-4")}>
+          {entries.map(([k, v]) => (
+            <div key={k} className="flex items-start gap-2">
+              <span className="text-accent2 text-xs font-mono min-w-[120px]">
+                {k}:
+              </span>
+              {renderValue(v, depth + 1)}
+            </div>
+          ))}
+        </div>
+      );
+    }
+    return <span className="text-text-2">{String(val)}</span>;
+  };
 
-      {tab === "dual" && (
-        <div>
-          <div className="mb-4">
-            <label className="block text-xs text-text-3 mb-1">待验证结论</label>
-            <input value={dualConclusion} onChange={(e) => setDualConclusion(e.target.value)} placeholder="输入待验证结论" className="w-full bg-bg-card border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none focus:border-accent/50" />
-          </div>
-          <button
-            onClick={submitDual}
-            disabled={loading || !dualConclusion}
-            className="mb-4 flex items-center gap-2 px-4 py-2 bg-accent text-bg rounded-lg text-sm font-medium hover:bg-accent/90 disabled:opacity-50 transition-colors"
-          >
-            {loading ? <Loader2 size={14} className="animate-spin" /> : <Eye size={14} />}
-            提交双视角分析
-          </button>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-bg-card border border-border rounded-lg p-4">
-              <div className="text-sm font-semibold text-accent mb-1">◈ 几何视角 (微分几何)</div>
-              <div className="text-xs text-text-3 italic mb-3">有什么几何结构？</div>
-              {geoChecks.map((c, i) => (
-                <div key={i} className="flex items-center gap-2 py-1.5 border-t border-border">
-                  <button onClick={() => cycleMark(geoMarks, setGeoMarks, i)} className="w-6 h-6 rounded-full border border-border bg-bg-surface text-xs font-bold flex items-center justify-center hover:border-accent transition-colors">
-                    {geoMarks[i] || "·"}
-                  </button>
-                  <span className="text-sm text-text-2">{c}</span>
-                </div>
-              ))}
-              {dualResult && (
-                <div className="mt-3 pt-2 border-t border-border">
-                  <div className="text-xs text-accent font-semibold">
-                    判定: {(dualResult as Record<string, string>).geometric_verdict || "—"}
-                  </div>
-                </div>
-              )}
-            </div>
-            <div className="bg-bg-card border border-border rounded-lg p-4">
-              <div className="text-sm font-semibold text-accent2 mb-1">◇ 分析视角 (概率 + 调和分析)</div>
-              <div className="text-xs text-text-3 italic mb-3">统计信号是真实的吗？</div>
-              {anaChecks.map((c, i) => (
-                <div key={i} className="flex items-center gap-2 py-1.5 border-t border-border">
-                  <button onClick={() => cycleMark(anaMarks, setAnaMarks, i)} className="w-6 h-6 rounded-full border border-border bg-bg-surface text-xs font-bold flex items-center justify-center hover:border-accent2 transition-colors">
-                    {anaMarks[i] || "·"}
-                  </button>
-                  <span className="text-sm text-text-2">{c}</span>
-                </div>
-              ))}
-              {dualResult && (
-                <div className="mt-3 pt-2 border-t border-border">
-                  <div className="text-xs text-accent2 font-semibold">
-                    判定: {(dualResult as Record<string, string>).analytic_verdict || "—"}
-                  </div>
-                  <div className="text-xs text-text-3 mt-1">
-                    一致性: {(dualResult as Record<string, string>).agreement || "—"}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-          {dualReport && (
-            <div className="mt-4 p-4 bg-bg-card border border-border rounded-lg">
-              <div className="text-xs text-text-3 font-semibold mb-2">双视角分析报告</div>
-              <pre className="text-sm text-text-2 whitespace-pre-wrap">{dualReport}</pre>
-            </div>
-          )}
-        </div>
+  return (
+    <div className="bg-bg-card border border-border rounded-lg">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-border">
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="flex items-center gap-2 text-xs text-text-3 font-semibold"
+        >
+          {expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+          {title}
+        </button>
+        <button
+          onClick={onCopy}
+          className="flex items-center gap-1 text-xs text-text-3 hover:text-accent transition-colors"
+        >
+          {copied ? <Check size={12} /> : <Copy size={12} />}
+          {copied ? "已复制" : "复制"}
+        </button>
+      </div>
+      {expanded && (
+        <div className="p-4 text-sm">{renderValue(result)}</div>
       )}
     </div>
   );

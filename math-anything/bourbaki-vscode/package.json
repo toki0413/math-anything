@@ -34,12 +34,12 @@
   ],
   "activationEvents": [
     "onLanguage:vasp-incar",
-      "onLanguage:vasp-poscar",
-      "onLanguage:qe-in",
-      "onLanguage:lammps-input",
-      "onLanguage:abaqus-input",
-      "onLanguage:openfoam",
-      "onLanguage:gromacs-top",
+    "onLanguage:vasp-poscar",
+    "onLanguage:qe-in",
+    "onLanguage:lammps-input",
+    "onLanguage:abaqus-input",
+    "onLanguage:openfoam",
+    "onLanguage:gromacs-top",
     "onCommand:bourbaki.analyzeFile",
     "onCommand:bourbaki.analyzeWorkspace"
   ],
@@ -114,46 +114,88 @@
     "languages": [
       {
         "id": "vasp-incar",
-        "aliases": ["VASP INCAR", "incar"],
-        "extensions": [".incar"],
-        "filenames": ["INCAR"],
+        "aliases": [
+          "VASP INCAR",
+          "incar"
+        ],
+        "extensions": [
+          ".incar"
+        ],
+        "filenames": [
+          "INCAR"
+        ],
         "configuration": "./language-configuration.json"
       },
       {
         "id": "vasp-poscar",
-        "aliases": ["VASP POSCAR", "poscar"],
-        "extensions": [".poscar"],
-        "filenames": ["POSCAR"],
+        "aliases": [
+          "VASP POSCAR",
+          "poscar"
+        ],
+        "extensions": [
+          ".poscar"
+        ],
+        "filenames": [
+          "POSCAR"
+        ],
         "configuration": "./language-configuration.json"
       },
       {
         "id": "qe-in",
-        "aliases": ["Quantum ESPRESSO input", "qe-in"],
-        "extensions": [".in"],
+        "aliases": [
+          "Quantum ESPRESSO input",
+          "qe-in"
+        ],
+        "extensions": [
+          ".in"
+        ],
         "configuration": "./language-configuration.json"
       },
       {
         "id": "lammps-input",
-        "aliases": ["LAMMPS input", "lammps"],
-        "extensions": [".lmp"],
+        "aliases": [
+          "LAMMPS input",
+          "lammps"
+        ],
+        "extensions": [
+          ".lmp"
+        ],
         "configuration": "./language-configuration.json"
       },
       {
         "id": "abaqus-input",
-        "aliases": ["Abaqus input", "abaqus"],
-        "extensions": [".inp"],
+        "aliases": [
+          "Abaqus input",
+          "abaqus"
+        ],
+        "extensions": [
+          ".inp"
+        ],
         "configuration": "./language-configuration.json"
       },
       {
         "id": "openfoam",
-        "aliases": ["OpenFOAM"],
-        "filenames": ["controlDict", "fvSchemes", "fvSolution", "transportProperties"],
+        "aliases": [
+          "OpenFOAM"
+        ],
+        "filenames": [
+          "controlDict",
+          "fvSchemes",
+          "fvSolution",
+          "transportProperties"
+        ],
         "configuration": "./language-configuration.json"
       },
       {
         "id": "gromacs-top",
-        "aliases": ["GROMACS topology", "top"],
-        "extensions": [".top", ".itp"],
+        "aliases": [
+          "GROMACS topology",
+          "top"
+        ],
+        "extensions": [
+          ".top",
+          ".itp"
+        ],
         "configuration": "./language-configuration.json"
       }
     ],
@@ -230,6 +272,7 @@
     "@types/vscode": "^1.85.0",
     "@typescript-eslint/eslint-plugin": "^6.15.0",
     "@typescript-eslint/parser": "^6.15.0",
+    "@vscode/vsce": "^3.9.2",
     "eslint": "^8.56.0",
     "typescript": "^5.3.3"
   },

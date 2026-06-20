@@ -1,4 +1,4 @@
-"""Example: Schema Extensions - Custom Mathematical Objects
+﻿"""Example: Schema Extensions - Custom Mathematical Objects
 
 This example demonstrates how to use the extension system to handle
 custom mathematical objects like ML potentials, PINN loss functions,
@@ -8,7 +8,7 @@ and Graph Neural Networks.
 import os
 import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "core"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "lib"))
 
 from math_anything.schemas import (
     ExtendedMathSchema,

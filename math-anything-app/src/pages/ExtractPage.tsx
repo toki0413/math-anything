@@ -17,7 +17,7 @@ export function ExtractPage() {
     workflow_hint?: string;
     keywords?: string[];
   } | null>(null);
-  const { setCurrentSchema } = useAppStore();
+  const { setCurrentSchema, addExtractionRecord } = useAppStore();
 
   useEffect(() => {
     setAdvisory(null);
@@ -37,12 +37,14 @@ export function ExtractPage() {
       });
       setResult(data as Record<string, unknown>);
       setCurrentSchema(data as Record<string, unknown>);
+      addExtractionRecord({ engine, timestamp: Date.now(), success: true });
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
+      addExtractionRecord({ engine, timestamp: Date.now(), success: false });
     } finally {
       setLoading(false);
     }
-  }, [engine, params, setCurrentSchema]);
+  }, [engine, params, setCurrentSchema, addExtractionRecord]);
 
   const doUpload = useCallback(
     async (files: FileList) => {
@@ -52,15 +54,17 @@ export function ExtractPage() {
       for (let i = 0; i < files.length; i++) fd.append("files", files[i]);
       try {
         const data = await apiUpload(`/extract/${engine}/file`, fd);
-        setResult(data as Record<string, unknown>);
-        setCurrentSchema(data as Record<string, unknown>);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : String(e));
-      } finally {
-        setLoading(false);
-      }
-    },
-    [engine, setCurrentSchema]
+      setResult(data as Record<string, unknown>);
+      setCurrentSchema(data as Record<string, unknown>);
+      addExtractionRecord({ engine, timestamp: Date.now(), success: true });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+      addExtractionRecord({ engine, timestamp: Date.now(), success: false });
+    } finally {
+      setLoading(false);
+    }
+  },
+  [engine, setCurrentSchema, addExtractionRecord]
   );
 
   return (
@@ -123,6 +127,7 @@ export function ExtractPage() {
               </div>
             </div>
           )}
+          <div>
             <label className="block text-xs font-semibold text-text-3 uppercase tracking-wider mb-2">
               参数 JSON
             </label>

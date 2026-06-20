@@ -1,4 +1,4 @@
-"""Example: VASP DFT extraction.
+﻿"""Example: VASP DFT extraction.
 
 This example demonstrates extracting mathematical structures from
 VASP density functional theory calculations.
@@ -8,11 +8,11 @@ import os
 import sys
 import tempfile
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "core"))
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "vasp-harness"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "engines"))
 
 from math_anything import load_harness
-from math_anything.vasp.core.harness import VaspHarness
+from vasp.core.harness import VaspHarness
 
 # Example VASP input files
 EXAMPLE_INCAR = """

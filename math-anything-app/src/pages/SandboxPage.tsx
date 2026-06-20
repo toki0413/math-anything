@@ -38,10 +38,10 @@ export default function SandboxPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-6">
+    <div className="max-w-5xl mx-auto p-6 space-y-6 bg-bg min-h-screen">
       <div>
-        <h1 className="text-2xl font-bold text-gray-800">Sandbox</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-2xl font-bold text-text">Sandbox</h1>
+        <p className="text-sm text-text-3 mt-1">
           Execute Python code in an isolated sandbox for constraint validation
           and custom analysis.
         </p>
@@ -50,16 +50,16 @@ export default function SandboxPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium text-text-2">
               Python Code
             </label>
             <div className="flex items-center gap-2">
-              <label className="text-xs text-gray-500">Timeout (s)</label>
+              <label className="text-xs text-text-3">Timeout (s)</label>
               <input
                 type="number"
                 value={timeout}
                 onChange={(e) => setTimeout_(Number(e.target.value))}
-                className="w-20 border border-gray-300 rounded px-2 py-1 text-sm"
+                className="w-20 border border-border rounded px-2 py-1 text-sm bg-bg-surface text-text"
                 min={1}
                 max={60}
               />
@@ -68,22 +68,22 @@ export default function SandboxPage() {
           <textarea
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm h-96 font-mono bg-gray-50 focus:ring-2 focus:ring-blue-300 focus:border-blue-400"
+            className="w-full border border-border rounded px-3 py-2 text-sm h-96 font-mono bg-bg-surface text-text focus:ring-2 focus:ring-accent/30 focus:border-accent/50"
             spellCheck={false}
           />
           <button
             onClick={runSandbox}
             disabled={loading || !code.trim()}
-            className="w-full bg-blue-600 text-white rounded px-4 py-2 text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-accent text-bg rounded px-4 py-2 text-sm font-medium hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {loading ? "Executing..." : "Run in Sandbox"}
           </button>
         </div>
 
         <div className="space-y-3">
-          <label className="text-sm font-medium text-gray-700">Output</label>
+          <label className="text-sm font-medium text-text-2">Output</label>
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded px-3 py-2 text-sm text-red-700">
+            <div className="bg-error-dim border border-error/20 rounded px-3 py-2 text-sm text-error">
               {error}
             </div>
           )}
@@ -93,7 +93,7 @@ export default function SandboxPage() {
                 className={`flex items-center gap-2 px-3 py-2 rounded text-sm font-medium ${
                   result.success
                     ? "bg-green-50 text-green-700 border border-green-200"
-                    : "bg-red-50 text-red-700 border border-red-200"
+                    : "bg-error-dim text-error border border-error/20"
                 }`}
               >
                 <span>{result.success ? "✓ Success" : "✗ Failed"}</span>
@@ -104,28 +104,28 @@ export default function SandboxPage() {
                 )}
               </div>
 
-              {result.stdout && (
+              {!!result.stdout && (
                 <div>
-                  <span className="text-xs text-gray-500">stdout</span>
+                  <span className="text-xs text-text-3">stdout</span>
                   <pre className="bg-gray-900 text-green-400 rounded px-3 py-2 text-xs overflow-auto max-h-64 font-mono mt-1">
                     {String(result.stdout)}
                   </pre>
                 </div>
               )}
 
-              {result.stderr && (
+              {!!result.stderr && (
                 <div>
-                  <span className="text-xs text-gray-500">stderr</span>
+                  <span className="text-xs text-text-3">stderr</span>
                   <pre className="bg-gray-900 text-yellow-400 rounded px-3 py-2 text-xs overflow-auto max-h-32 font-mono mt-1">
                     {String(result.stderr)}
                   </pre>
                 </div>
               )}
 
-              {result.error && (
+              {!!result.error && (
                 <div>
-                  <span className="text-xs text-gray-500">Error</span>
-                  <pre className="bg-red-50 border border-red-200 rounded px-3 py-2 text-xs overflow-auto max-h-32 font-mono mt-1 text-red-700">
+                  <span className="text-xs text-text-3">Error</span>
+                  <pre className="bg-error-dim border border-error/20 rounded px-3 py-2 text-xs overflow-auto max-h-32 font-mono mt-1 text-error">
                     {String(result.error)}
                   </pre>
                 </div>
@@ -133,7 +133,7 @@ export default function SandboxPage() {
             </div>
           )}
           {!result && !error && (
-            <div className="bg-gray-50 border border-gray-200 rounded px-3 py-2 text-sm text-gray-400 h-96 flex items-center justify-center">
+            <div className="bg-bg-surface border border-border rounded px-3 py-2 text-sm text-text-3 h-96 flex items-center justify-center">
               Run code to see output
             </div>
           )}

@@ -18,6 +18,46 @@ async fn get_backend_port(state: State<'_, Backend>) -> Result<u16, String> {
     Ok(*port)
 }
 
+#[tauri::command]
+fn get_extraction_engines() -> Vec<String> {
+    vec![
+        "vasp".to_string(),
+        "lammps".to_string(),
+        "abaqus".to_string(),
+        "ansys".to_string(),
+        "gaussian".to_string(),
+        "cp2k".to_string(),
+        "quantum_espresso".to_string(),
+        "openfoam".to_string(),
+        "su2".to_string(),
+        "dakota".to_string(),
+        "fluent".to_string(),
+        "comsol".to_string(),
+        "nwchem".to_string(),
+        "gamess".to_string(),
+        "fenics".to_string(),
+        "elmerfem".to_string(),
+        "dealii".to_string(),
+        "mfem".to_string(),
+    ]
+}
+
+#[tauri::command]
+fn check_rust_acceleration() -> bool {
+    // We're running inside the Rust process, so the module is available
+    true
+}
+
+#[tauri::command]
+fn rust_health_check() -> serde_json::Value {
+    serde_json::json!({
+        "status": "ok",
+        "rust_available": true,
+        "version": env!("CARGO_PKG_VERSION"),
+        "num_cpus": num_cpus::get(),
+    })
+}
+
 fn find_free_port() -> u16 {
     use std::net::TcpListener;
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind");
@@ -106,46 +146,39 @@ fn main() {
     let port = find_free_port();
     let port_for_setup = port;
 
+    let backend_state = Arc::new(Backend {
+        port: Mutex::new(port),
+        child: Mutex::new(None),
+        restart_count: Mutex::new(0),
+        max_restarts: 3,
+    });
+
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
-        .manage(Backend {
-            port: Mutex::new(port),
-            child: Mutex::new(None),
-            restart_count: Mutex::new(0),
-            max_restarts: 3,
-        })
-        .invoke_handler(tauri::generate_handler![get_backend_port])
+        .manage(backend_state.clone())
+        .invoke_handler(tauri::generate_handler![
+            get_backend_port,
+            get_extraction_engines,
+            check_rust_acceleration,
+            rust_health_check
+        ])
         .setup(move |app| {
             let port = port_for_setup;
-            let state_arc = Arc::new(Backend {
-                port: Mutex::new(port),
-                child: Mutex::new(None),
-                restart_count: Mutex::new(0),
-                max_restarts: 3,
-            });
 
             match start_backend(app, port) {
                 Ok(child) => {
-                    *state_arc.child.lock().unwrap() = Some(child);
-                    *state_arc.port.lock().unwrap() = port;
+                    *backend_state.child.lock().unwrap() = Some(child);
                     println!("Backend started on port {}", port);
-
-                    let managed: State<Backend> = app.state();
-                    *managed.port.lock().unwrap() = port;
-                    *managed.child.lock().unwrap() = Some(
-                        state_arc.child.lock().unwrap().take().unwrap()
-                    );
                 }
                 Err(e) => {
                     eprintln!("Warning: Could not start backend sidecar: {}", e);
                     eprintln!("The app will try to connect to http://localhost:8000 instead.");
-                    let managed: State<Backend> = app.state();
-                    *managed.port.lock().unwrap() = 8000;
+                    *backend_state.port.lock().unwrap() = 8000;
                 }
             }
 
             let app_handle = app.handle().clone();
-            spawn_health_monitor(app_handle, state_arc);
+            spawn_health_monitor(app_handle, backend_state.clone());
 
             Ok(())
         })

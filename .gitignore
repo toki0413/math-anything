@@ -58,6 +58,18 @@ math-anything/*-harness-auto/
 ANALYSIS_SUMMARY.md
 REVIEW_CHECKLIST.md
 
+# Rust build artifacts
+math-anything/math_anything_rs/target/
+
+# Documentation build
+math-anything/docs/_build/
+
+# Node modules and build outputs
+math-anything-app/node_modules/
+math-anything-app/dist/
+math-anything-app/src-tauri/target/
+math-anything-app/src-tauri/binaries/
+
 # Research/temporary files
 Deep_Research_Report_CBES.md
 crawl_academic_papers.py

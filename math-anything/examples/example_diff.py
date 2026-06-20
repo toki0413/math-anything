@@ -1,4 +1,4 @@
-"""Example: Math Anything Diff - Comparing simulation variants.
+﻿"""Example: Math Anything Diff - Comparing simulation variants.
 
 This example demonstrates how to use math-anything diff to track
 mathematical structure changes between simulation versions.
@@ -9,11 +9,11 @@ import os
 import sys
 import tempfile
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "core"))
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "lammps-harness"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "lib"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "engines"))
 
 from math_anything import load_harness
-from math_anything.lammps.core.harness import LammpsHarness
+from lammps.core.harness import LammpsHarness
 from math_anything.utils import MathDiffer
 
 # Variant 1: NVE with small timestep

@@ -1,4 +1,4 @@
-"""
+﻿"""
 Voxel Mathematical Structure Extraction Example
 ==============================================
 
@@ -18,12 +18,12 @@ import sys
 import numpy as np
 
 # Add core to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "core"))
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "voxel-harness"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "lib"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "engines"))
 
 from math_anything.extractors.lbm_boundary_extractor import LBMBoundaryExtractor
 from math_anything.extractors.voxel_extractor import VoxelMathExtractor
-from math_anything.voxel.core.harness import VoxelHarness
+from voxel.core.harness import VoxelHarness
 
 
 def create_sample_lbm_data():

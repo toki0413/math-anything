@@ -1,4 +1,4 @@
-"""Example: Extract mathematical structure from LAMMPS fix deform simulation.
+﻿"""Example: Extract mathematical structure from LAMMPS fix deform simulation.
 
 This example demonstrates Phase 0 validation: extracting fix deform
 as a 2nd-order tensor boundary condition.
@@ -10,13 +10,13 @@ import sys
 import tempfile
 
 # Add core to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "core"))
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "lammps-harness"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "lib"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "engines"))
 
 from math_anything import load_harness
 
 # Import harness to trigger registration
-from math_anything.lammps.core.harness import LammpsHarness
+from lammps.core.harness import LammpsHarness
 
 # Example LAMMPS input with fix deform (uniaxial tension)
 EXAMPLE_INPUT = """

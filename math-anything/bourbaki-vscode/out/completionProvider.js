@@ -108,7 +108,7 @@ function detectEngine(document) {
     return '';
 }
 class BourbakiCompletionProvider {
-    provideCompletionItems(document, position) {
+    provideCompletionItems(document, _position) {
         const engine = detectEngine(document);
         const params = ENGINE_PARAMS[engine];
         if (!params) {

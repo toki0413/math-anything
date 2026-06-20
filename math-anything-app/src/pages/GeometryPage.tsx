@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { Triangle, Loader2, Box, RotateCcw } from "lucide-react";
 import { api } from "../lib/api";
+import { renderSandboxedHtml } from "../lib/sandbox-html";
 
 const ENGINES = ["vasp", "lammps", "abaqus", "quantum_espresso", "gromacs", "multiwfn", "ansys"];
 
@@ -172,8 +173,8 @@ export function GeometryPage() {
 
             {vizHtml ? (
               <div
-                className="w-full border border-border rounded overflow-hidden"
-                dangerouslySetInnerHTML={{ __html: vizHtml }}
+                ref={(el) => renderSandboxedHtml(vizHtml, el)}
+                className="w-full h-96 border border-border rounded overflow-hidden"
               />
             ) : (
               <div className="h-48 bg-bg-surface border border-border rounded flex items-center justify-center text-text-3 text-sm">

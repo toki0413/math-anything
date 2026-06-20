@@ -1,4 +1,4 @@
-"""
+﻿"""
 Streaming Parser Example - Handling TB-scale MD Trajectories
 ===========================================================
 
@@ -18,7 +18,7 @@ import os
 import sys
 
 # Add core to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "core"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "lib"))
 
 from math_anything.utils.streaming_parser import (
     DumpSampler,

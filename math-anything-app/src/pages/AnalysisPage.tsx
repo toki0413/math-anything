@@ -10,6 +10,7 @@ import {
   vizPersistence,
   vizSINDy,
 } from "../lib/api";
+import { renderSandboxedHtml } from "../lib/sandbox-html";
 
 type AnalysisTab = "symmetry" | "spectral" | "dynamics" | "tda" | "sindy";
 
@@ -335,8 +336,8 @@ export function AnalysisPage() {
                 Visualization
               </h2>
               <div
-                className="w-full overflow-hidden"
-                dangerouslySetInnerHTML={{ __html: vizHtml }}
+                ref={(el) => renderSandboxedHtml(vizHtml, el)}
+                className="w-full h-96 overflow-hidden"
               />
             </div>
           )}
@@ -539,7 +540,7 @@ function ResultDisplay({
             <span className="font-mono">{String(result.complexity)} active terms</span>
           </div>
         )}
-        {result.library_type && (
+        {!!result.library_type && (
           <div className="flex justify-between">
             <span className="text-gray-500">Library:</span>
             <span>{String(result.library_type)}</span>

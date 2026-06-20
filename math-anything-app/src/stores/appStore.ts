@@ -1,6 +1,12 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+export interface ExtractionRecord {
+  engine: string;
+  timestamp: number;
+  success: boolean;
+}
+
 interface AppState {
   backendOnline: boolean;
   setBackendOnline: (v: boolean) => void;
@@ -8,8 +14,11 @@ interface AppState {
   setCurrentSchema: (s: Record<string, unknown> | null) => void;
   sidebarCollapsed: boolean;
   toggleSidebar: () => void;
+  hasApiKey: boolean;
   llmConfig: { provider: string; apiKey: string; baseUrl: string; model: string };
   setLlmConfig: (c: Partial<AppState["llmConfig"]>) => void;
+  extractionHistory: ExtractionRecord[];
+  addExtractionRecord: (r: ExtractionRecord) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -21,6 +30,7 @@ export const useAppStore = create<AppState>()(
       setCurrentSchema: (s) => set({ currentSchema: s }),
       sidebarCollapsed: false,
       toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
+      hasApiKey: false,
       llmConfig: {
         provider: "openai",
         apiKey: "",
@@ -28,14 +38,30 @@ export const useAppStore = create<AppState>()(
         model: "",
       },
       setLlmConfig: (c) =>
-        set((s) => ({ llmConfig: { ...s.llmConfig, ...c } })),
+        set((s) => {
+          const newConfig = { ...s.llmConfig, ...c };
+          return {
+            llmConfig: newConfig,
+            hasApiKey: newConfig.apiKey !== "",
+          };
+        }),
+      extractionHistory: [],
+      addExtractionRecord: (r) =>
+        set((s) => ({
+          extractionHistory: [r, ...s.extractionHistory].slice(0, 50),
+        })),
     }),
     {
       name: "math-anything-store",
       partialize: (state) => ({
         sidebarCollapsed: state.sidebarCollapsed,
-        llmConfig: state.llmConfig,
-        currentSchema: state.currentSchema,
+        hasApiKey: state.hasApiKey,
+        llmConfig: {
+          provider: state.llmConfig.provider,
+          baseUrl: state.llmConfig.baseUrl,
+          model: state.llmConfig.model,
+        },
+        extractionHistory: state.extractionHistory,
       }),
     }
   )

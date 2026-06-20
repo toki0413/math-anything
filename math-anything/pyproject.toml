@@ -1,0 +1,136 @@
+[build-system]
+requires = ["setuptools>=75.0", "wheel"]
+build-backend = "setuptools.build_meta"
+# To build the Rust extension with maturin instead:
+#   pip install maturin
+#   maturin develop --release
+# This produces the math_anything_rs wheel that the [rust] extra depends on.
+
+[project]
+name = "bourbaki"
+version = "3.0.0"
+description = "Bourbaki — Bird is the Word. Mathematical Structure Modeling for Computational Science."
+authors = [{ name = "Bourbaki Contributors" }]
+license = { text = "MIT" }
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Rust",
+]
+
+dependencies = [
+    "click>=8.0.0",
+    "prompt-toolkit>=3.0.0",
+    "numpy>=1.24",
+    "sympy>=1.12",
+    "networkx>=3.0",
+]
+
+[project.optional-dependencies]
+mcp = ["mcp>=1.0.0", "fastmcp>=0.1.0"]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "ruff>=0.3.0",
+    "mypy>=1.0",
+    "hypothesis>=6.0",
+]
+rust = ["math_anything_rs"]
+
+[project.scripts]
+bourbaki = "math_anything.cli:main"
+math-anything = "math_anything.cli:main"
+cli-anything = "math_anything.cli:main"
+bourbaki-mcp = "math_anything.mcp_server:main"
+
+[project.entry-points."math_anything.engines"]
+vasp = "math_anything.plugin:vasp_plugin"
+lammps = "math_anything.plugin:lammps_plugin"
+abaqus = "math_anything.plugin:abaqus_plugin"
+ansys = "math_anything.plugin:ansys_plugin"
+comsol = "math_anything.plugin:comsol_plugin"
+gromacs = "math_anything.plugin:gromacs_plugin"
+multiwfn = "math_anything.plugin:multiwfn_plugin"
+qe = "math_anything.plugin:qe_plugin"
+solidworks = "math_anything.plugin:solidworks_plugin"
+voxel = "math_anything.plugin:voxel_plugin"
+openfoam = "math_anything.plugin:openfoam_plugin"
+cp2k = "math_anything.plugin:cp2k_plugin"
+fluent = "math_anything.plugin:fluent_plugin"
+su2 = "math_anything.plugin:su2_plugin"
+gamess = "math_anything.plugin:gamess_plugin"
+nwchem = "math_anything.plugin:nwchem_plugin"
+liggghts = "math_anything.plugin:liggghts_plugin"
+dakota = "math_anything.plugin:dakota_plugin"
+gaussian = "math_anything.plugin:gaussian_plugin"
+
+[project.urls]
+Homepage = "https://github.com/bourbaki/math-anything"
+Documentation = "https://math-anything.readthedocs.io"
+Repository = "https://github.com/bourbaki/math-anything"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = [
+    "math_anything", "math_anything.*",
+    "bourbaki", "bourbaki.*",
+    "groups", "groups.*",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501", "E402", "F401"]
+
+[tool.ruff.lint.per-file-ignores]
+"math_anything/psrn/optimized_evaluator.py" = ["E999"]
+"math_anything/psrn/gpu_evaluator.py" = ["E999"]
+"math_anything/psrn/compiled_evaluator.py" = ["E999"]
+
+[tool.mypy]
+ignore_missing_imports = true
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.coverage.run]
+source = ["math_anything"]
+omit = [
+    "math_anything/cli.py",
+    "math_anything/commands/*",
+    "math_anything/repl/*",
+    "math_anything/psrn/demo.py",
+    "math_anything/psrn/benchmark*.py",
+    "math_anything/engines/*",
+    "math_anything/schemas/vasp_precision.py",
+    "math_anything/schemas/lammps_precision.py",
+    "math_anything/schemas/abaqus_precision.py",
+    "math_anything/schemas/ansys_precision.py",
+    "math_anything/schemas/comsol_precision.py",
+    "math_anything/schemas/gromacs_precision.py",
+    "math_anything/schemas/multiwfn_precision.py",
+    "*/__pycache__/*",
+    "*/tests/*",
+]
+
+[tool.coverage.report]
+fail_under = 50
+show_missing = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [".", "engines"]
+addopts = "-v --tb=short --cov=math_anything --cov-report=term-missing --cov-fail-under=50"
