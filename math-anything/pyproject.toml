@@ -45,6 +45,7 @@ dev = [
     "ruff>=0.3.0",
     "mypy>=1.0",
     "hypothesis>=6.0",
+    "scipy>=1.10.0",
 ]
 rust = ["math_anything_rs"]
 
