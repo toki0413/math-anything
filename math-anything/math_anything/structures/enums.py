@@ -5,7 +5,7 @@ OperatorType, SpectrumType, SymmetryGroup, StructureDomain, VariationalPrinciple
 
 from __future__ import annotations
 
-from enum import StrEnum
+from math_anything._compat import StrEnum
 
 
 class OperatorType(StrEnum):

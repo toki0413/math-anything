@@ -109,7 +109,11 @@ jobs:
 
       - name: Run unit tests | 运行单元测试
         working-directory: math-anything
-        run: pytest tests/unit/ -v --tb=short
+        run: pytest tests/unit/ -v --tb=short --cov-report=xml
+
+      - name: Check coverage threshold | 检查覆盖率阈值
+        working-directory: math-anything
+        run: coverage report --fail-under=50
 
       - name: Run integration tests | 运行集成测试
         working-directory: math-anything

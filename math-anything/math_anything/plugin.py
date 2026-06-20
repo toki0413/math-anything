@@ -208,9 +208,7 @@ def list_engines() -> list[str]:
 # pyproject.toml 中每个引擎注册为 math_anything.plugin:<name>_plugin，
 # PluginRegistry 通过 ep.load()() 调用这些 partial 得到 _EngineWrapper 实例。
 for _engine_name, (_module_path, _class_name) in BUILTIN_ENGINES.items():
-    globals()[f"{_engine_name}_plugin"] = partial(
-        _EngineWrapper, _engine_name, "1.0.0", _module_path, _class_name
-    )
+    globals()[f"{_engine_name}_plugin"] = partial(_EngineWrapper, _engine_name, "1.0.0", _module_path, _class_name)
 
 
 def get_engine(name: str) -> EnginePlugin:

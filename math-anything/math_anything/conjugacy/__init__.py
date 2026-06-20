@@ -13,11 +13,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import StrEnum
 from math import e, exp, log, pi, sin, sqrt
 from typing import Any, Callable
 
 import numpy as np
+
+from math_anything._compat import StrEnum
 
 
 class EMLPrimitive(StrEnum):

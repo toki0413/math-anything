@@ -17,9 +17,9 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from enum import StrEnum
 from typing import Any
 
+from math_anything._compat import StrEnum
 from math_anything.utils.safe_eval import safe_eval
 
 logger = logging.getLogger(__name__)

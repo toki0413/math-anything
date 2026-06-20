@@ -15,9 +15,9 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from enum import StrEnum
 from typing import Any
 
+from math_anything._compat import StrEnum
 from math_anything.utils.safe_eval import SafeEvalError, safe_eval
 
 
