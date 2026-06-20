@@ -1,221 +1,184 @@
 ---
-name: math-anything
-description: Extract mathematical structures from computational materials science engines (VASP, LAMMPS, Abaqus, Ansys, COMSOL, GROMACS, Multiwfn). Use when analyzing simulation inputs, comparing calculations, validating constraints, or understanding the mathematical essence behind computational setups.
+name: bourbaki
+description: Mathematical structure modeling for computational science. Reveals the shared mathematical foundation across physics domains (DFT, CFD, MD, FEM, EM, QC, PhaseField) through conservation fields, morphism chains, and type-theoretic verification.
 allowed-tools:
   - Read
   - Write
   - Bash
+  - RunCommand
 when_to_use: |
   Trigger when user mentions:
-  - "extract math structure" or "mathematical structure"
-  - "what equations does this solve"
-  - "compare VASP and LAMMPS" or cross-engine comparison
-  - "validate constraints" or "check parameters"
-  - "what is the math behind" any simulation engine
-  - "decrypt" or "understand" a calculation setup
-  - Any engine name (vasp, lammps, abaqus, ansys, comsol, gromacs, multiwfn)
-argument-hint: "[engine] [action] [parameters]"
+  - "mathematical structure" of a simulation
+  - "domain analysis" for DFT, CFD, MD, FEM, EM, QC, PhaseField
+  - "conservation law" or "invariant" tracking
+  - "morphism chain" or "approximation hierarchy"
+  - "dimensional analysis" or "Buckingham Pi"
+  - "equation discovery" or "symbolic regression"
+  - "verify" a mathematical structure or equation
+  - "translate" engine parameters between VASP, QE, LAMMPS, GROMACS, Abaqus, OpenFOAM, COMSOL, etc.
+  - Cross-domain comparison, e.g., "DFT vs MD" or "FEM vs FDTD"
+argument-hint: "[domain/action] [parameters]"
 arguments:
-  - engine
-  - action
+  - domain_or_action
   - parameters
 ---
 
----
-name: cli-anything
-description: Command-line interface for Math Anything - provides interactive REPL, extraction, diff comparison, and validation tools for computational materials science engines. Use when needing command-line access to math-anything functionality.
-allowed-tools:
-  - Read
-  - Write
-  - Bash
-when_to_use: |
-  Trigger when user mentions:
-  - "cli anything" or "cli-anything"
-  - "command line" interface for math-anything
-  - "terminal" or "shell" access to math-anything
-  - "run math-anything from command line"
-  - "math-anything repl" or "interactive mode"
-  - "extract from command line"
-  - "compare schemas via CLI"
-argument-hint: "[command] [options]"
-arguments:
-  - command
-  - options
----
+# Bourbaki
 
-# Math Anything
-
-A mathematical semantic layer for computational materials science. Extract equations, constraints, and relationships from simulation inputs so LLMs can reason about physics, not just read numbers.
+A mathematical semantic layer for computational science. It treats physics domains (DFT, CFD, MD, FEM, EM, QC, PhaseField) as instantiations of the same mathematical structures: conservation fields, morphism chains, and type-theoretic types.
 
 ## Core Philosophy
 
-**Zero intrusion**: Never modifies your input files. Only reads and reports.
+**Structure over syntax**: A VASP INCAR and a Quantum ESPRESSO input can express the same mathematical object — a plane-wave DFT calculation. Bourbaki extracts that object.
 
-**Zero judgment**: Doesn't tell you "ENCUT=200 is wrong." Reports "ENCUT=200 is outside typical range 200-800 eV." The decision is yours.
+**Invariants over parameters**: Instead of validating whether `ENCUT=300` is good, Bourbaki asks: does this setup preserve energy, momentum, and particle number through its approximation chain?
 
-**Mathematical precision**: Expresses structures in canonical forms. `H[n]ψ = εψ` means the same thing to any physicist.
+**Truthful about loss**: Every approximation loses something. Bourbaki tracks what is preserved, weakened, or lost at each morphism step.
 
-## Supported Engines
+## 3-Layer Architecture
 
-| Engine | Type | Mathematical Problem | Canonical Form |
-|--------|------|---------------------|----------------|
-| VASP | DFT | Nonlinear eigenvalue | `H[n]ψ = εψ` |
-| LAMMPS | MD | Initial value ODE | `m_i d²r_i/dt² = F_i` |
-| Abaqus | FEM | Boundary value | `∇·σ + f = 0` |
-| Ansys | FEM | Eigenvalue | `Kφ = λMφ` |
-| COMSOL | Multiphysics | Coupled PDE system | Multi-physics coupling |
-| GROMACS | Biomolecular MD | Stochastic ODE | Langevin dynamics |
-| Multiwfn | Wavefunction | Topological analysis | `∇ρ(r) = 0` |
-
-## CLI Anything Commands
-
-### Interactive REPL Mode
-
-Start an interactive session for exploring mathematical structures:
-
-```bash
-cli-anything repl                    # Start REPL
-cli-anything repl --session file     # Load existing session
+```
+Foundation (algorithms)
+    ↓
+Structures (types: conservation field, morphism, Riemannian geometry, spectral problem)
+    ↓
+Domains (physics: DFT, CFD, MD, FEM, EM, QC, PhaseField)
 ```
 
-### Extract Mathematical Structure
+## 7 Domains
 
-Extract schema from simulation input files:
-
-```bash
-cli-anything extract vasp INCAR POSCAR KPOINTS
-cli-anything extract lammps input.in
-cli-anything extract ansys model.inp --output schema.json
-```
-
-### Compare Calculations
-
-Compare two mathematical schemas:
-
-```bash
-cli-anything diff schema1.json schema2.json
-cli-anything diff schema1.json schema2.json --format json
-```
-
-### Cross-Engine Mapping
-
-Map parameters between different simulation engines:
-
-```bash
-cli-anything cross vasp_schema.json quantum_espresso
-cli-anything cross lammps_schema.json gromacs
-```
-
-### Validate Constraints
-
-Validate symbolic constraints in a schema:
-
-```bash
-cli-anything validate schema.json
-```
+| Domain | Fundamental Equation | Morphism Chain |
+|--------|---------------------|----------------|
+| DFT | Kohn-Sham | BO → KS → PW → SCF → XC |
+| CFD | Navier-Stokes | Incompressibility → Reynolds → Turbulence → LES/LES → Wall |
+| MD | Newton/Euler-Lagrange | Classical limit → Force field → Integrator |
+| FEM | Variational PDE | Strong form → Weak form → Discretization → Assembly |
+| EM | Maxwell | Frequency domain → Quasi-static → FDTD/FEM → PML |
+| QC | Many-electron Schrödinger | BO → HF → Basis → Post-HF/DFT → Relativistic |
+| PhaseField | Cahn-Hilliard / Allen-Cahn | Sharp interface → Diffuse → CH/AC → Anisotropy → Mechanics |
 
 ## Actions
 
-### 1. Extract Mathematical Structure
+### 1. Analyze a Domain
 
-Extract the complete mathematical structure from engine parameters.
+Understand the mathematical structure of a physics domain.
 
-**Input**: Engine name + parameter dictionary
-**Output**: EnhancedMathSchema with:
-- `mathematical_structure`: problem type, canonical form, properties
-- `variable_dependencies`: how variables depend on each other
-- `discretization_scheme`: numerical approximation method
-- `solution_strategy`: solver approach and convergence criteria
-- `approximations`: hierarchy of approximations from physics to numerics
-- `mathematical_decoding`: decryption of the computational setup
-
-**Example**:
 ```python
-# VASP extraction
-extract_mathematical_structure("vasp", {
-    "encut": 520,
-    "ediff": 1e-6,
-    "sigma": 0.05
-})
-# Returns: nonlinear eigenvalue problem H[n]ψ = εψ
-#          with SCF iteration, plane-wave basis
+from math_anything.domains import DOMAIN_REGISTRY
 
-# LAMMPS extraction
-extract_mathematical_structure("lammps", {
-    "timestep": 0.001,
-    "temperature": 300
-})
-# Returns: initial value ODE m d²r/dt² = F(r)
-#          with Velocity Verlet integration
+dft = DOMAIN_REGISTRY["dft"]({"ecutwfc": 500, "n_kpoints": [4, 4, 4]})
+analysis = dft.analyze()
+print(analysis.to_dict())
 ```
 
-### 2. Compare Calculations
+### 2. Compare Two Domains
 
-Compare two mathematical schemas and report semantic differences.
-
-**Input**: Two EnhancedMathSchema dictionaries
-**Output**: Diff report with categories:
-- `critical`: Changes affecting physical correctness
-- `warning`: Changes requiring attention
-- `info`: Informational changes
-
-**Example**:
 ```python
-compare_calculations(schema_v1, schema_v2, critical_only=True)
-# Reports: integrator changed, conservation lost, etc.
+comparison = DOMAIN_REGISTRY["dft"]().compare_with(DOMAIN_REGISTRY["md"]())
+print(comparison)
 ```
 
-### 3. Validate Constraints
+### 3. Build a Conservation Field
 
-Report symbolic constraints present in a schema without judging satisfaction.
-
-**Input**: EnhancedMathSchema dictionary
-**Output**: List of constraints with expressions and descriptions
-
-**Example**:
 ```python
-validate_constraints(schema)
-# Returns: ENCUT > 0, EDIFF > 0, SIGMA > 0, etc.
+from math_anything.structures.conservation_field import ConservationMatrixField
+
+field = ConservationMatrixField()
+field.build_from_navier_stokes(mu=0.01)
+print(field.conserved_quantities)
+print(field.eigenvalues)
 ```
 
-### 4. List Supported Engines
+### 4. Trace a Morphism Chain
 
-Return all supported simulation engines.
+```python
+from math_anything.domains import DOMAIN_REGISTRY
+
+dom = DOMAIN_REGISTRY["dft"]()
+chain = dom.build_morphism_chain()
+for step in chain:
+    print(step["name"], step["invariants_kept"], step["invariants_lost"])
+```
+
+### 5. Dimensional Analysis
+
+```python
+from math_anything.dimensional.equation_checker import SymbolicDimensionalAnalyzer
+
+analyzer = SymbolicDimensionalAnalyzer()
+result = analyzer.check_equation("rho * v * v", "p")
+print(result)
+```
+
+### 6. Discover Equations from Data
+
+```python
+from math_anything.psrn.sindyc import SINDyC
+import numpy as np
+
+X = np.random.randn(100, 2)
+y = X[:, 0] ** 2
+sindyc = SINDyC()
+result = sindyc.discover(X, y, variable_names=["x", "y"])
+print(result)
+```
+
+### 7. Verify a Mathematical Structure
+
+```python
+from math_anything.type_theory.verify import VerificationPipeline
+
+pipeline = VerificationPipeline()
+result = pipeline.verify("mass conservation implies div(rho*v) = -drho/dt")
+print(result.overall_passed)
+```
+
+### 8. Translate Engine Parameters
+
+```python
+from math_anything.adapters import translate_params
+
+result = translate_params("vasp", {"ENCUT": 520, "EDIFF": 1e-6, "ISMEAR": 0})
+print(result)  # domain-agnostic parameters
+```
+
+## MCP Tool Mapping
+
+When Bourbaki is configured as an MCP server, use these tools:
+
+| Tool | Purpose |
+|------|---------|
+| `list_domains` | Discover available physics domains |
+| `analyze_domain` | Get conservation field + morphism chain for a domain |
+| `compare_domains` | Cross-domain structural comparison |
+| `build_conservation_field` | Build conservation matrix field for an equation |
+| `analyze_morphism_chain` | Trace invariant changes through approximations |
+| `compute_riemann_geometry` | Compute curvature tensors from metric/Christoffel |
+| `solve_numerical` | Symplectic integrator, eigenvalue, SCF, conservation law, FEM, continuum |
+| `dimensional_analyze` | Buckingham Pi + dimensional consistency |
+| `discover_equations` | Symbolic regression from data |
+| `verify_structure` | Multi-layer verification pipeline |
+| `translate_engine_params` | Engine-specific → domain-agnostic parameters |
 
 ## Usage Patterns
 
-**Understand a calculation**:
+**Understand a VASP input**:
 ```
-> extract vasp {"encut": 520, "sigma": 0.05}
-< This is a nonlinear eigenvalue problem H[n]ψ = εψ
-< Requires SCF iteration due to circular dependency V_eff → n → ψ
-< Plane-wave basis with cutoff 520 eV
-```
-
-**Compare two setups**:
-```
-> compare schema1 schema2
-< Critical: Time integrator changed from symplectic to non-symplectic
-< Warning: Time step increased by 10x
+> translate_engine_params("vasp", {"ENCUT": 520, "EDIFF": 1e-6})
+> analyze_domain("dft", {"ecutwfc": 520, "scf_tol": 1e-6})
+> This is a nonlinear eigenvalue problem H[n]ψ = εψ with plane-wave basis and SCF iteration.
 ```
 
-**Check constraints**:
+**Compare DFT and MD**:
 ```
-> validate schema
-< ENCUT = 520 > 0 ✓
-< SIGMA = 0.05 > 0 ✓
+> compare_domains("dft", {}, "md", {})
+< Both conserve energy; DFT additionally conserves particle number in KS space; MD loses quantum phase.
 ```
 
-**CLI usage**:
-```bash
-# Extract and save
-cli-anything extract vasp INCAR POSCAR --output vasp_schema.json
-
-# Compare via CLI
-cli-anything diff vasp_schema.json lammps_schema.json
-
-# Interactive exploration
-cli-anything repl
+**Check if an equation is dimensionally consistent**:
+```
+> dimensional_analyze(expression_lhs="rho * v * v", expression_rhs="p")
+< consistent: True
 ```
 
 ## Guardrails
@@ -228,8 +191,4 @@ cli-anything repl
 
 ## Outputs
 
-All outputs are JSON-serializable dictionaries following the EnhancedMathSchema format. They can be:
-- Saved to files for later analysis
-- Fed to other tools or LLMs
-- Compared across engine boundaries
-- Used to guide ML model design with physics context
+All outputs are JSON-serializable dictionaries. They can be saved, compared across domains, fed to other tools, or used to guide ML model design with physics context.

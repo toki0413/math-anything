@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "bourbaki": {
+      "command": "python",
+      "args": ["-m", "math_anything.mcp_server"],
+      "env": {
+        "PYTHONPATH": "C:/Users/wanzh/Desktop/math-anything/math-anything"
+      }
+    }
+  }
+}

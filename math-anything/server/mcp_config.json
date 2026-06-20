@@ -1,0 +1,86 @@
+{
+  "mcpServers": {
+    "bourbaki": {
+      "command": "python",
+      "args": ["-m", "math_anything.mcp_server"],
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+      "description": "Bourbaki MCP Server — Mathematical structure modeling for computational science across 7 physics domains",
+      "tools": [
+        {
+          "name": "analyze_domain",
+          "description": "Analyze a physics domain: conservation field + morphism chain + constraint propagation. Domains: dft, cfd, md, fem, em, qc, phase_field."
+        },
+        {
+          "name": "compare_domains",
+          "description": "Compare two physics domains structurally — reveals shared invariants and domain-specific approximations."
+        },
+        {
+          "name": "list_domains",
+          "description": "List all 7 physics domains with their equation types and morphism chain lengths."
+        },
+        {
+          "name": "build_conservation_field",
+          "description": "Build conservation matrix field for Navier-Stokes, Euler, Schrodinger, Maxwell, elasticity, MHD, heat, Dirac, Einstein field, Klein-Gordon, wave, Kohn-Sham, Boltzmann, shallow water, nonlinear Schrodinger, Vlasov, Hartree-Fock, or advection-diffusion equations."
+        },
+        {
+          "name": "analyze_morphism_chain",
+          "description": "Trace how invariants are preserved, lost, or introduced through a domain's morphism chain."
+        },
+        {
+          "name": "compute_riemann_geometry",
+          "description": "Compute Riemann tensor, Ricci tensor, and scalar curvature from metric and Christoffel symbols."
+        },
+        {
+          "name": "solve_numerical",
+          "description": "Unified numerical solver for symplectic integration, eigenvalue problems, SCF iteration, conservation law flux Jacobians, variational/FEM Poisson, and continuum mechanics."
+        },
+        {
+          "name": "dimensional_analyze",
+          "description": "Buckingham Pi theorem dimensional analysis and symbolic dimensional consistency checking."
+        },
+        {
+          "name": "discover_equations",
+          "description": "Discover governing equations from data using SINDyC or genetic symbolic regression."
+        },
+        {
+          "name": "verify_structure",
+          "description": "Verify mathematical structure through symbolic, type-system, logic, LLM-semantic, or Lean4-formal layers."
+        },
+        {
+          "name": "translate_engine_params",
+          "description": "Translate engine-specific parameters (VASP, QE, Gaussian, LAMMPS, GROMACS, Abaqus, Ansys, OpenFOAM, COMSOL) to domain-agnostic parameters."
+        }
+      ],
+      "resources": [
+        {
+          "uri": "bourbaki://version",
+          "description": "Server version and capability summary"
+        },
+        {
+          "uri": "bourbaki://domains/{domain_name}",
+          "description": "Detailed configuration for a physics domain"
+        },
+        {
+          "uri": "bourbaki://conservation-laws/{equation_type}",
+          "description": "Conservation laws reference for an equation type"
+        }
+      ],
+      "prompts": [
+        {
+          "name": "analyze_simulation",
+          "description": "Analyze the mathematical structure of a simulation through its domain"
+        },
+        {
+          "name": "compare_approaches",
+          "description": "Compare two physics domains at the structural level"
+        },
+        {
+          "name": "discover_from_data",
+          "description": "Discover governing equations from data using symbolic regression"
+        }
+      ]
+    }
+  }
+}
