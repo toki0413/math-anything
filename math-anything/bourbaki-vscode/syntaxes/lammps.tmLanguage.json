@@ -1,0 +1,31 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "LAMMPS input",
+  "scopeName": "source.lammps",
+  "fileTypes": ["lmp"],
+  "patterns": [
+    { "include": "#comment" },
+    { "include": "#command" },
+    { "include": "#number" }
+  ],
+  "repository": {
+    "comment": {
+      "patterns": [{
+        "name": "comment.line.number-sign.lammps",
+        "match": "#.*$"
+      }]
+    },
+    "command": {
+      "patterns": [{
+        "name": "keyword.control.lammps",
+        "match": "\\b(units|dimension|boundary|atom_style|pair_style|bond_style|angle_style|kspace_style|read_data|region|create_atoms|group|fix|compute|dump|thermo|timestep|run|minimize|variable|print|neigh_modify|pair_modify|special_bonds|velocity)\\b"
+      }]
+    },
+    "number": {
+      "patterns": [{
+        "name": "constant.numeric.lammps",
+        "match": "[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?"
+      }]
+    }
+  }
+}

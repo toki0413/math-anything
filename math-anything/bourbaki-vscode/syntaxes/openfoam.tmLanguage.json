@@ -1,0 +1,38 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "OpenFOAM",
+  "scopeName": "source.openfoam",
+  "fileTypes": ["controlDict", "fvSchemes", "fvSolution", "transportProperties"],
+  "patterns": [
+    { "include": "#comment" },
+    { "include": "#keyword" },
+    { "include": "#number" },
+    { "include": "#string" }
+  ],
+  "repository": {
+    "comment": {
+      "patterns": [{
+        "name": "comment.line.openfoam",
+        "match": "//.*$"
+      }]
+    },
+    "keyword": {
+      "patterns": [{
+        "name": "keyword.control.openfoam",
+        "match": "\\b(application|startFrom|startTime|stopAt|endTime|deltaT|writeControl|writeInterval|purgeWrite|runTimeModifiable|libs|functions|solvers|interpolationSchemes|divSchemes|gradSchemes|laplacianSchemes|snGradSchemes|fluxRequired| SIMPLE| PISO| PIMPLE| nOuterCorrectors| nCorrectors| nNonOrthogonalCorrectors| pRefCell| pRefValue)\\b"
+      }]
+    },
+    "number": {
+      "patterns": [{
+        "name": "constant.numeric.openfoam",
+        "match": "[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?"
+      }]
+    },
+    "string": {
+      "patterns": [{
+        "name": "string.quoted.double.openfoam",
+        "match": "\"[^\"]*\""
+      }]
+    }
+  }
+}

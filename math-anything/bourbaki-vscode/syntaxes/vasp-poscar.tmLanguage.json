@@ -1,0 +1,31 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "VASP POSCAR",
+  "scopeName": "source.vasp.poscar",
+  "fileTypes": ["poscar"],
+  "patterns": [
+    { "include": "#comment" },
+    { "include": "#number" },
+    { "include": "#element" }
+  ],
+  "repository": {
+    "comment": {
+      "patterns": [{
+        "name": "comment.line.number-sign.vasp.poscar",
+        "match": "#.*$"
+      }]
+    },
+    "number": {
+      "patterns": [{
+        "name": "constant.numeric.vasp.poscar",
+        "match": "[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?"
+      }]
+    },
+    "element": {
+      "patterns": [{
+        "name": "entity.name.tag.vasp.poscar",
+        "match": "\\b(H|He|Li|Be|B|C|N|O|F|Ne|Na|Mg|Al|Si|P|S|Cl|Ar|K|Ca|Sc|Ti|V|Cr|Mn|Fe|Co|Ni|Cu|Zn|Ga|Ge|As|Se|Br|Kr|Rb|Sr|Y|Zr|Nb|Mo|Tc|Ru|Rh|Pd|Ag|Cd|In|Sn|Sb|Te|I|Xe|Cs|Ba|La|Hf|Ta|W|Re|Os|Ir|Pt|Au|Hg|Tl|Pb|Bi|Po|At|Rn|Fr|Ra|Ac|Rf|Db|Sg|Bh|Hs|Mt|Ds|Rg|Cn|Nh|Fl|Mc|Lv|Ts|Og|Ce|Pr|Nd|Pm|Sm|Eu|Gd|Tb|Dy|Ho|Er|Tm|Yb|Lu|Th|Pa|U|Np|Pu|Am|Cm|Bk|Cf|Es|Fm|Md|No|Lr)\\b"
+      }]
+    }
+  }
+}

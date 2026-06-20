@@ -1,0 +1,9 @@
+node_modules/
+out/**/*.map
+.vscode/
+.vscode-test/
+*.vsix
+package-lock.json
+yarn.lock
+*.log
+.DS_Store

@@ -1,0 +1,22 @@
+{
+  "identifier": "default",
+  "description": "Default capabilities for Math-Anything",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "core:event:default",
+    "core:event:allow-emit",
+    "core:event:allow-listen",
+    "core:window:default",
+    "core:window:allow-close",
+    "core:window:allow-set-title",
+    "core:window:allow-center",
+    "core:webview:default",
+    "shell:default",
+    "shell:allow-spawn",
+    "shell:allow-execute",
+    "shell:allow-kill",
+    "shell:allow-stdin-write",
+    "shell:allow-open"
+  ]
+}

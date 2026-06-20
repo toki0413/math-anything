@@ -1,0 +1,28 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "VASP INCAR",
+  "scopeName": "source.vasp.incar",
+  "fileTypes": ["incar"],
+  "patterns": [
+    { "include": "#comment" },
+    { "include": "#assignment" }
+  ],
+  "repository": {
+    "comment": {
+      "patterns": [{
+        "name": "comment.line.number-sign.vasp.incar",
+        "match": "#.*$"
+      }]
+    },
+    "assignment": {
+      "patterns": [{
+        "name": "meta.assignment.vasp.incar",
+        "match": "^\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*=\\s*(.+?)$",
+        "captures": {
+          "1": { "name": "variable.parameter.vasp.incar" },
+          "2": { "name": "string.unquoted.vasp.incar" }
+        }
+      }]
+    }
+  }
+}

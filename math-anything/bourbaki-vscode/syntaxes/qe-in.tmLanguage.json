@@ -1,0 +1,42 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Quantum ESPRESSO input",
+  "scopeName": "source.qe.in",
+  "fileTypes": ["in"],
+  "patterns": [
+    { "include": "#comment" },
+    { "include": "#namelist" },
+    { "include": "#card" },
+    { "include": "#assignment" }
+  ],
+  "repository": {
+    "comment": {
+      "patterns": [{
+        "name": "comment.line.qe.in",
+        "match": "[!#].*$"
+      }]
+    },
+    "namelist": {
+      "patterns": [{
+        "name": "storage.type.qe.in",
+        "match": "&[A-Za-z_][A-Za-z0-9_]*"
+      }]
+    },
+    "card": {
+      "patterns": [{
+        "name": "keyword.control.qe.in",
+        "match": "^[A-Z_]+"
+      }]
+    },
+    "assignment": {
+      "patterns": [{
+        "name": "meta.assignment.qe.in",
+        "match": "([A-Za-z_][A-Za-z0-9_]*)\\s*=\\s*(.+?)(?:[,!#]|$)",
+        "captures": {
+          "1": { "name": "variable.parameter.qe.in" },
+          "2": { "name": "string.unquoted.qe.in" }
+        }
+      }]
+    }
+  }
+}
