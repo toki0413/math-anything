@@ -665,7 +665,13 @@ class ImprovedSymbolicRegression:
             if len(nodes) > 1:
                 node, parent, direction = random.choice(nodes[1:])
                 if node.node_type not in (NodeType.CONST, NodeType.VAR):
+                    unary_ops = {NodeType.SIN, NodeType.COS, NodeType.SQRT, NodeType.ABS}
+                    was_unary = node.node_type in unary_ops
                     node.node_type = self._random_operator()
+                    is_unary = node.node_type in unary_ops
+                    # 单目变双目时补齐 right，否则 evaluate 会遇到 None
+                    if was_unary and not is_unary and node.right is None:
+                        node.right = self._random_terminal()
 
         elif mutation_type < 0.6:
             # Terminal mutation: change constant value
