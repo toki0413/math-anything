@@ -134,3 +134,10 @@ class CategoryEngine:
             "morphisms": {name: m.to_dict() for name, m in self.morphisms.items()},
             "structures": list(self.structures.keys()),
         }
+
+    @property
+    def loop_engine(self):
+        """Return a topology-aware LoopEngine over this category."""
+        from math_anything.topology.loop_engine import LoopEngine
+
+        return LoopEngine(self)
