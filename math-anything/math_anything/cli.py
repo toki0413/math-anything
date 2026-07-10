@@ -289,6 +289,29 @@ For more information: https://github.com/toki/math-anything
         help="Target engine (e.g., quantum_espresso, gromacs)",
     )
 
+    # Loops command
+    loops_parser = subparsers.add_parser(
+        "loops",
+        help="Detect topology loops in an engine's morphism graph",
+    )
+    loops_parser.add_argument(
+        "engine",
+        choices=ENGINE_NAMES,
+        help="Engine name",
+    )
+    loops_parser.add_argument(
+        "files",
+        nargs="*",
+        help="Input files to extract schema from",
+    )
+    loops_parser.add_argument(
+        "--output",
+        "-o",
+        type=str,
+        default=None,
+        help="Output JSON file",
+    )
+
     # Check command
     check_parser = subparsers.add_parser(
         "check",
@@ -749,6 +772,65 @@ def cmd_cross(args):
         return 1
 
 
+def cmd_loops(args: argparse.Namespace) -> int:
+    """Handle the loops subcommand."""
+    import json as _json
+
+    from math_anything.categories.engine import CategoryEngine
+    from math_anything.topology.loop_engine import LoopEngine
+    from math_anything.topology.classifier import LoopClassifier
+
+    engine = _get_engine(args.engine)
+    schema = None
+    if args.files:
+        schema = _extract_schema(args.engine, args.files)
+
+    # Build a default CategoryEngine for the engine/domain.
+    ce = CategoryEngine()
+    # TODO: in future, populate from domain-specific morphism registry.
+    # For now, register the DFT example morphisms to demonstrate loop detection.
+    from math_anything.morphisms.approximations import (
+        BornOppenheimerApproximation,
+        KohnShamMapping,
+        PlaneWaveTruncation,
+    )
+    ce.register_morphism(BornOppenheimerApproximation())
+    ce.register_morphism(KohnShamMapping())
+    ce.register_morphism(PlaneWaveTruncation(encut=520))
+    ce.link("born_oppenheimer", "FullManyBody", "ElectronicSchrodinger")
+    ce.link("kohn_sham", "ElectronicSchrodinger", "KohnSham_Full")
+    ce.link("plane_wave_truncation", "KohnSham_Full", "KohnSham_Truncated")
+
+    le = LoopEngine(ce)
+    loops = le.find_loops()
+    classifier = LoopClassifier()
+    loops_data = []
+    for loop in loops:
+        loops_data.append(
+            {
+                "type": classifier.classify(loop).value,
+                "nodes": list(loop.nodes),
+                "edges": list(loop.edges),
+                "directed": loop.is_directed,
+                "canonical_form": loop.canonical_form,
+            }
+        )
+
+    report = {
+        "engine": args.engine,
+        "schema_present": schema is not None,
+        "betti": le.betti_numbers(),
+        "loops": loops_data,
+    }
+
+    output = _json.dumps(report, indent=2, ensure_ascii=False)
+    if args.output:
+        Path(args.output).write_text(output, encoding="utf-8")
+    else:
+        safe_print(output)
+    return 0
+
+
 def cmd_validate(args):
     """Validate schema constraints."""
     print(f"Validating {args.schema_file}...")
@@ -864,6 +946,7 @@ def main():
         "check": cmd_check,
         "diff": cmd_diff,
         "cross": cmd_cross,
+        "loops": cmd_loops,
         "validate": cmd_validate,
         "config": cmd_config,
         "watch": cmd_watch,
