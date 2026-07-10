@@ -41,6 +41,8 @@ from math_anything.draft.base import get_draft_engine
 from math_anything.insight.base import get_insight_engine
 from math_anything.repl import MathAnythingREPL, MathDiff
 from math_anything.schemas import MathSchema
+from math_anything.topology.classifier import LoopClassifier
+from math_anything.topology.loop_engine import LoopEngine
 from math_anything.utils.terminal import safe_print
 
 
@@ -774,39 +776,39 @@ def cmd_cross(args):
 
 def cmd_loops(args: argparse.Namespace) -> int:
     """Handle the loops subcommand."""
-    import json as _json
+    import json
 
     from math_anything.categories.engine import CategoryEngine
-    from math_anything.topology.loop_engine import LoopEngine
-    from math_anything.topology.classifier import LoopClassifier
 
-    engine = _get_engine(args.engine)
     schema = None
     if args.files:
-        schema = _extract_schema(args.engine, args.files)
+        try:
+            schema = _extract_schema(args.engine, args.files)
+        except Exception as e:
+            print(f"Error extracting schema: {e}")
+            return 1
 
-    # Build a default CategoryEngine for the engine/domain.
-    ce = CategoryEngine()
-    # TODO: in future, populate from domain-specific morphism registry.
-    # For now, register the DFT example morphisms to demonstrate loop detection.
-    from math_anything.morphisms.approximations import (
-        BornOppenheimerApproximation,
-        KohnShamMapping,
-        PlaneWaveTruncation,
-    )
-    ce.register_morphism(BornOppenheimerApproximation())
-    ce.register_morphism(KohnShamMapping())
-    ce.register_morphism(PlaneWaveTruncation(encut=520))
-    ce.link("born_oppenheimer", "FullManyBody", "ElectronicSchrodinger")
-    ce.link("kohn_sham", "ElectronicSchrodinger", "KohnSham_Full")
-    ce.link("plane_wave_truncation", "KohnSham_Full", "KohnSham_Truncated")
+    try:
+        # Build a default CategoryEngine for the engine/domain.
+        ce = CategoryEngine()
+        # NOTE: This is a demonstration scaffold. In future, populate from a
+        # domain-specific morphism registry using args.engine and the schema.
+        from math_anything.morphisms.approximations import (
+            BornOppenheimerApproximation,
+            KohnShamMapping,
+            PlaneWaveTruncation,
+        )
+        ce.register_morphism(BornOppenheimerApproximation())
+        ce.register_morphism(KohnShamMapping())
+        ce.register_morphism(PlaneWaveTruncation(encut=520))
+        ce.link("born_oppenheimer", "FullManyBody", "ElectronicSchrodinger")
+        ce.link("kohn_sham", "ElectronicSchrodinger", "KohnSham_Full")
+        ce.link("plane_wave_truncation", "KohnSham_Full", "KohnSham_Truncated")
 
-    le = LoopEngine(ce)
-    loops = le.find_loops()
-    classifier = LoopClassifier()
-    loops_data = []
-    for loop in loops:
-        loops_data.append(
+        le = LoopEngine(ce)
+        loops = le.find_loops()
+        classifier = LoopClassifier()
+        loops_data = [
             {
                 "type": classifier.classify(loop).value,
                 "nodes": list(loop.nodes),
@@ -814,21 +816,27 @@ def cmd_loops(args: argparse.Namespace) -> int:
                 "directed": loop.is_directed,
                 "canonical_form": loop.canonical_form,
             }
-        )
+            for loop in loops
+        ]
 
-    report = {
-        "engine": args.engine,
-        "schema_present": schema is not None,
-        "betti": le.betti_numbers(),
-        "loops": loops_data,
-    }
+        report = {
+            "engine": args.engine,
+            "schema_present": schema is not None,
+            "betti": le.betti_numbers(),
+            "loops": loops_data,
+        }
 
-    output = _json.dumps(report, indent=2, ensure_ascii=False)
-    if args.output:
-        Path(args.output).write_text(output, encoding="utf-8")
-    else:
-        safe_print(output)
-    return 0
+        output = json.dumps(report, indent=2, ensure_ascii=False)
+        if args.output:
+            out_path = Path(args.output)
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            out_path.write_text(output, encoding="utf-8")
+        else:
+            safe_print(output)
+        return 0
+    except Exception as e:
+        print(f"Error: {e}")
+        return 1
 
 
 def cmd_validate(args):
