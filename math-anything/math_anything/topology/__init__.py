@@ -3,14 +3,10 @@
 from __future__ import annotations
 
 from .loop import Loop, LoopType
+from .loop_engine import LoopEngine
 
-# Stubs replaced in upcoming tasks.
-class LoopEngine:
-    pass
-
-
+# Stub replaced in upcoming task.
 class LoopClassifier:
     pass
-
 
 __all__ = ["Loop", "LoopEngine", "LoopClassifier", "LoopType"]
