@@ -56,9 +56,8 @@ class LoopEngine:
         # minimum_cycle_basis does not support multigraphs, so compute on a
         # simple undirected view while keeping the original edges for lookups.
         simple = nx.Graph(undirected)
-        try:
-            cycles = nx.minimum_cycle_basis(simple)
-        except nx.NetworkXNoCycle:
+        cycles = nx.minimum_cycle_basis(simple)
+        if not cycles:
             return []
 
         loops: list[Loop] = []
@@ -70,28 +69,24 @@ class LoopEngine:
             if ordered is None:
                 continue
 
-            edges: list[str] = []
-            is_directed = True
-            for u, v in zip(ordered, ordered[1:]):
-                # Prefer directed edge key if it exists. Sort keys so the
-                # choice is deterministic when parallel morphisms exist.
-                key = None
-                if digraph.has_edge(u, v):
-                    key = sorted(digraph[u][v])[0]
-                elif digraph.has_edge(v, u):
-                    key = sorted(digraph[v][u])[0]
-                    is_directed = False
-                else:
-                    key = sorted(undirected[u][v])[0]
-                    is_directed = False
-                edges.append(key)
+            forward = self._edges_for_orientation(digraph, ordered)
+            backward = self._edges_for_orientation(digraph, list(reversed(ordered)))
+            if forward is not None:
+                edges, is_directed = forward, True
+                normalized = self._normalize_cycle(ordered)
+            elif backward is not None:
+                edges, is_directed = backward, True
+                normalized = self._normalize_cycle(list(reversed(ordered)))
+            else:
+                edges, is_directed = self._edges_for_orientation(undirected, ordered), False
+                normalized = self._normalize_cycle(ordered)
 
             loops.append(
                 Loop(
-                    nodes=tuple(ordered),
+                    nodes=tuple(normalized),
                     edges=tuple(edges),
                     is_directed=is_directed,
-                    canonical_form=" -> ".join(ordered),
+                    canonical_form=" -> ".join(normalized),
                 )
             )
         return loops
@@ -100,12 +95,15 @@ class LoopEngine:
         self, graph: nx.Graph, cycle_nodes: list[str]
     ) -> list[str] | None:
         """Return a closed walk ordering of nodes in an undirected cycle."""
-        start = cycle_nodes[0]
+        start = sorted(cycle_nodes)[0]
         ordered = [start]
         visited = {start}
         current = start
         while len(visited) < len(cycle_nodes):
-            neighbors = [n for n in graph.neighbors(current) if n in cycle_nodes and n not in visited]
+            neighbors = sorted(
+                n for n in graph.neighbors(current)
+                if n in cycle_nodes and n not in visited
+            )
             if not neighbors:
                 return None
             nxt = neighbors[0]
@@ -117,3 +115,24 @@ class LoopEngine:
             return None
         ordered.append(start)
         return ordered
+
+    def _edges_for_orientation(
+        self, graph: nx.MultiDiGraph | nx.MultiGraph, ordered: list[str]
+    ) -> list[str] | None:
+        """Return edge keys if every consecutive pair has an edge in the given order."""
+        edges: list[str] = []
+        for u, v in zip(ordered, ordered[1:]):
+            if not graph.has_edge(u, v):
+                return None
+            edges.append(sorted(graph[u][v])[0])
+        return edges
+
+    def _normalize_cycle(self, ordered: list[str]) -> list[str]:
+        """Return a rotation/reversal-invariant form of a closed walk."""
+        # Drop the repeated start at the end for normalization.
+        nodes = ordered[:-1]
+        rotations = [nodes[i:] + nodes[:i] for i in range(len(nodes))]
+        reversals = [list(reversed(r)) for r in rotations]
+        candidates = [tuple(r) for r in rotations + reversals]
+        best = min(candidates)
+        return list(best) + [best[0]]

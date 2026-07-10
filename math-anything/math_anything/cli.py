@@ -837,9 +837,9 @@ def cmd_loops(args: argparse.Namespace) -> int:
 
         output = json.dumps(report, indent=2, ensure_ascii=False)
         if args.output:
-            out_path = Path(args.output)
-            if out_path.is_absolute() or ".." in out_path.parts:
-                print("Error: --output must be a relative path inside the working directory")
+            out_path = Path(args.output).resolve()
+            if not out_path.is_relative_to(Path.cwd().resolve()):
+                print("Error: --output must be inside the working directory")
                 return 1
             out_path.parent.mkdir(parents=True, exist_ok=True)
             out_path.write_text(output, encoding="utf-8")

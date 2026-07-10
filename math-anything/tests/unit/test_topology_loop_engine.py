@@ -1,7 +1,6 @@
 import pytest
 
 from math_anything.categories.engine import CategoryEngine
-from math_anything.topology.loop import LoopType
 from math_anything.topology.loop_engine import LoopEngine
 
 
@@ -61,11 +60,12 @@ def test_parallel_edges_are_deterministic():
     ce.link("m2", "A", "B")
     ce.link("m3", "B", "A")
     le = LoopEngine(ce)
-    loops = le.find_loops()
+    first = le.find_loops()
+    second = le.find_loops()
     # Multi-edge cycles collapse to a single edge in the simple graph view,
     # so no independent loop is detected here. The important assertion is
-    # that the method does not crash and is deterministic.
-    assert isinstance(loops, list)
+    # that repeated calls produce identical results.
+    assert first == second
 
 
 def test_betti_numbers_square_with_diagonal():
