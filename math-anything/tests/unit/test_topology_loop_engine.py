@@ -81,3 +81,16 @@ def test_betti_numbers_square_with_diagonal():
     betti = le.betti_numbers()
     assert betti["beta0"] == 1
     assert betti["beta1"] == 2
+
+
+def test_directed_triangle_loop_is_directed():
+    ce = CategoryEngine()
+    for name in ("ab", "bc", "ca"):
+        ce.register_morphism(type(name.capitalize(), (), {"name": name})())
+    ce.link("ab", "A", "B")
+    ce.link("bc", "B", "C")
+    ce.link("ca", "C", "A")
+    le = LoopEngine(ce)
+    loops = le.find_loops()
+    assert len(loops) == 1
+    assert loops[0].is_directed is True

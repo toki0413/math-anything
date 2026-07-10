@@ -56,7 +56,11 @@ class LoopEngine:
         # minimum_cycle_basis does not support multigraphs, so compute on a
         # simple undirected view while keeping the original edges for lookups.
         simple = nx.Graph(undirected)
-        cycles = nx.minimum_cycle_basis(simple)
+        try:
+            cycles = nx.minimum_cycle_basis(simple)
+        except Exception:
+            # NetworkX may raise on unusual graph configurations; treat as no loops.
+            return []
         if not cycles:
             return []
 

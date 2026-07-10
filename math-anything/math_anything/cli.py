@@ -781,7 +781,7 @@ def cmd_loops(args: argparse.Namespace) -> int:
     from math_anything.topology.loop_engine import LoopEngine
 
     # Phase 1–2 scaffold: only DFT-family engines have a demonstration graph.
-    supported_engines = {"vasp", "qe", "quantum_espresso", "cp2k"}
+    supported_engines = {"vasp", "qe", "cp2k"}
     if args.engine.lower() not in supported_engines:
         print(
             f"Error: engine '{args.engine}' is not yet supported by loops. "
