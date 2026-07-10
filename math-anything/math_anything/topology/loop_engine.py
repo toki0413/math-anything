@@ -31,6 +31,21 @@ class LoopEngine:
             )
         return graph
 
+    def betti_numbers(self) -> dict[str, int]:
+        """Return Betti numbers of the underlying undirected graph.
+
+        β0 = number of connected components.
+        β1 = number of independent cycles (first Betti number).
+        """
+        graph = self.build_graph().to_undirected()
+        if graph.number_of_nodes() == 0:
+            return {"beta0": 0, "beta1": 0}
+
+        beta0 = nx.number_connected_components(graph)
+        # β1 = E - V + C for each component summed.
+        beta1 = graph.number_of_edges() - graph.number_of_nodes() + beta0
+        return {"beta0": beta0, "beta1": beta1}
+
     def find_loops(self) -> list[Loop]:
         """Return a cycle basis of the underlying undirected graph as Loop objects."""
         digraph = self.build_graph()
