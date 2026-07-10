@@ -2,11 +2,8 @@
 
 from __future__ import annotations
 
+from .classifier import LoopClassifier
 from .loop import Loop, LoopType
 from .loop_engine import LoopEngine
-
-# Stub replaced in upcoming task.
-class LoopClassifier:
-    pass
 
 __all__ = ["Loop", "LoopEngine", "LoopClassifier", "LoopType"]
