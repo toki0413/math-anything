@@ -7,7 +7,10 @@ from __future__ import annotations
 
 import functools
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from math_anything.topology.loop_engine import LoopEngine
 
 
 @dataclass
