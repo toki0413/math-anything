@@ -33,3 +33,16 @@ def test_classify_unknown():
     )
     classifier = LoopClassifier()
     assert classifier.classify(loop) == LoopType.UNKNOWN
+
+
+def test_classify_with_none_category_morphism():
+    loop = Loop(
+        nodes=("A", "B", "A"),
+        edges=("m1", "m2"),
+        is_directed=True,
+        canonical_form="A->B->A",
+    )
+    classifier = LoopClassifier()
+    morphism_lookup = {"m1": type("M", (), {"category": None})(), "m2": type("M", (), {"category": "approximation"})()}
+    result = classifier.classify(loop, morphism_lookup=morphism_lookup)
+    assert isinstance(result, LoopType)

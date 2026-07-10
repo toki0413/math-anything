@@ -72,7 +72,7 @@ class LoopClassifier:
             for edge in loop.edges:
                 morph = morphism_lookup.get(edge)
                 if morph is not None:
-                    categories.add(getattr(morph, "category", "").lower())
+                    categories.add((getattr(morph, "category", "") or "").lower())
             if len(categories) >= 2:
                 return LoopType.MULTISCALE
 
