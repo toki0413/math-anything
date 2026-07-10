@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
-# Placeholder exports; real imports added in later tasks.
-class Loop:
-    pass
+from .loop import Loop, LoopType
 
-
+# Stubs replaced in upcoming tasks.
 class LoopEngine:
     pass
 
@@ -15,4 +13,4 @@ class LoopClassifier:
     pass
 
 
-__all__ = ["Loop", "LoopEngine", "LoopClassifier"]
+__all__ = ["Loop", "LoopEngine", "LoopClassifier", "LoopType"]
