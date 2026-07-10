@@ -378,8 +378,6 @@ class TestAdaptersModule(unittest.TestCase):
 
 
 def test_mcp_analyze_loops_tool_exists():
-    import asyncio
-
     from math_anything.mcp_server import mcp
 
     tools = asyncio.run(mcp.list_tools())
@@ -392,8 +390,12 @@ def test_mcp_analyze_loops_runs():
 
     result = analyze_loops("vasp", {})
     data = json.loads(result)
+    assert data["engine"] == "vasp"
     assert "betti" in data
+    assert "beta0" in data["betti"]
+    assert "beta1" in data["betti"]
     assert "loops" in data
+    assert isinstance(data["loops"], list)
 
 
 if __name__ == "__main__":
