@@ -43,6 +43,9 @@ def test_classify_with_none_category_morphism():
         canonical_form="A->B->A",
     )
     classifier = LoopClassifier()
-    morphism_lookup = {"m1": type("M", (), {"category": None})(), "m2": type("M", (), {"category": "approximation"})()}
+    morphism_lookup = {
+        "m1": type("M", (), {"category": None})(),
+        "m2": type("M", (), {"category": "approximation"})(),
+    }
     result = classifier.classify(loop, morphism_lookup=morphism_lookup)
-    assert isinstance(result, LoopType)
+    assert result == LoopType.MULTISCALE

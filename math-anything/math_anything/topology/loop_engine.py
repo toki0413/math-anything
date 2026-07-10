@@ -73,15 +73,16 @@ class LoopEngine:
             edges: list[str] = []
             is_directed = True
             for u, v in zip(ordered, ordered[1:]):
-                # Prefer directed edge key if it exists.
+                # Prefer directed edge key if it exists. Sort keys so the
+                # choice is deterministic when parallel morphisms exist.
                 key = None
                 if digraph.has_edge(u, v):
-                    key = next(iter(digraph[u][v]))
+                    key = sorted(digraph[u][v])[0]
                 elif digraph.has_edge(v, u):
-                    key = next(iter(digraph[v][u]))
+                    key = sorted(digraph[v][u])[0]
                     is_directed = False
                 else:
-                    key = next(iter(undirected[u][v]))
+                    key = sorted(undirected[u][v])[0]
                     is_directed = False
                 edges.append(key)
 
@@ -112,7 +113,7 @@ class LoopEngine:
             visited.add(nxt)
             current = nxt
         # Close the loop if start is a neighbor of the last node.
-        if start not in list(graph.neighbors(current)):
+        if start not in graph.neighbors(current):
             return None
         ordered.append(start)
         return ordered

@@ -41,8 +41,6 @@ from math_anything.draft.base import get_draft_engine
 from math_anything.insight.base import get_insight_engine
 from math_anything.repl import MathAnythingREPL, MathDiff
 from math_anything.schemas import MathSchema
-from math_anything.topology.classifier import LoopClassifier
-from math_anything.topology.loop_engine import LoopEngine
 from math_anything.utils.terminal import safe_print
 
 
@@ -779,6 +777,17 @@ def cmd_loops(args: argparse.Namespace) -> int:
     import json
 
     from math_anything.categories.engine import CategoryEngine
+    from math_anything.topology.classifier import LoopClassifier
+    from math_anything.topology.loop_engine import LoopEngine
+
+    # Phase 1–2 scaffold: only DFT-family engines have a demonstration graph.
+    supported_engines = {"vasp", "qe", "quantum_espresso", "cp2k"}
+    if args.engine.lower() not in supported_engines:
+        print(
+            f"Error: engine '{args.engine}' is not yet supported by loops. "
+            f"Supported engines: {sorted(supported_engines)}"
+        )
+        return 1
 
     schema = None
     if args.files:
@@ -829,6 +838,9 @@ def cmd_loops(args: argparse.Namespace) -> int:
         output = json.dumps(report, indent=2, ensure_ascii=False)
         if args.output:
             out_path = Path(args.output)
+            if out_path.is_absolute() or ".." in out_path.parts:
+                print("Error: --output must be a relative path inside the working directory")
+                return 1
             out_path.parent.mkdir(parents=True, exist_ok=True)
             out_path.write_text(output, encoding="utf-8")
         else:
