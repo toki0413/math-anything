@@ -712,6 +712,62 @@ def translate_engine_params(engine: str, parameters: dict[str, Any]) -> str:
 
 
 # ═══════════════════════════════════════════════════════════════════
+# Topology Layer — Loop detection in morphism graphs
+# ═══════════════════════════════════════════════════════════════════
+
+
+@mcp.tool()
+def analyze_loops(engine: str, parameters: dict[str, Any] | None = None) -> str:
+    """Detect and classify topology loops in an engine's morphism graph.
+
+    Args:
+        engine: Engine name (e.g., vasp, lammps, qe)
+        parameters: Optional engine parameters; currently unused but reserved
+            for future domain-specific loop population.
+    """
+    import json as _json
+
+    from math_anything.categories.engine import CategoryEngine
+    from math_anything.topology.classifier import LoopClassifier
+    from math_anything.topology.loop_engine import LoopEngine
+
+    parameters = parameters or {}
+
+    ce = CategoryEngine()
+    from math_anything.morphisms.approximations import (
+        BornOppenheimerApproximation,
+        KohnShamMapping,
+        PlaneWaveTruncation,
+    )
+    ce.register_morphism(BornOppenheimerApproximation())
+    ce.register_morphism(KohnShamMapping())
+    ce.register_morphism(PlaneWaveTruncation(encut=520))
+    ce.link("born_oppenheimer", "FullManyBody", "ElectronicSchrodinger")
+    ce.link("kohn_sham", "ElectronicSchrodinger", "KohnSham_Full")
+    ce.link("plane_wave_truncation", "KohnSham_Full", "KohnSham_Truncated")
+
+    le = LoopEngine(ce)
+    classifier = LoopClassifier()
+    loops = le.find_loops()
+
+    report = {
+        "engine": engine,
+        "betti": le.betti_numbers(),
+        "loops": [
+            {
+                "type": classifier.classify(loop).value,
+                "nodes": list(loop.nodes),
+                "edges": list(loop.edges),
+                "directed": loop.is_directed,
+                "canonical_form": loop.canonical_form,
+            }
+            for loop in loops
+        ],
+    }
+    return _json.dumps(report, indent=2, ensure_ascii=False)
+
+
+# ═══════════════════════════════════════════════════════════════════
 # MCP Resources
 # ═══════════════════════════════════════════════════════════════════
 

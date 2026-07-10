@@ -21,9 +21,9 @@ class TestMCPToolRegistration(unittest.TestCase):
         self.assertEqual(self.mcp.name, "bourbaki-mcp")
 
     def test_tool_count(self):
-        """Should have 11 tools registered."""
+        """Should have 12 tools registered."""
         tools = asyncio.run(self.mcp.list_tools())
-        self.assertEqual(len(tools), 11)
+        self.assertEqual(len(tools), 12)
 
     def test_required_tools_exist(self):
         """Check all required tools are registered."""
@@ -45,6 +45,8 @@ class TestMCPToolRegistration(unittest.TestCase):
             "verify_structure",
             # Engine Adapter
             "translate_engine_params",
+            # Topology Layer
+            "analyze_loops",
         ]
         for name in required:
             self.assertIn(name, tool_names, f"Tool '{name}' not registered")
@@ -373,6 +375,25 @@ class TestAdaptersModule(unittest.TestCase):
         from math_anything.adapters import list_all_engines
         engines = list_all_engines()
         self.assertGreater(len(engines), 6)
+
+
+def test_mcp_analyze_loops_tool_exists():
+    import asyncio
+
+    from math_anything.mcp_server import mcp
+
+    tools = asyncio.run(mcp.list_tools())
+    tool_names = [t.name for t in tools]
+    assert "analyze_loops" in tool_names
+
+
+def test_mcp_analyze_loops_runs():
+    from math_anything.mcp_server import analyze_loops
+
+    result = analyze_loops("vasp", {})
+    data = json.loads(result)
+    assert "betti" in data
+    assert "loops" in data
 
 
 if __name__ == "__main__":
