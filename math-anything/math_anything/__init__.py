@@ -150,6 +150,11 @@ _lazy_imports = {
     "to_mermaid": ".visualization",
     "to_graphviz": ".visualization",
     "save_html": ".visualization",
+    # Topology loop engineering
+    "Loop": ".topology",
+    "LoopType": ".topology",
+    "LoopEngine": ".topology",
+    "LoopClassifier": ".topology",
 }
 
 
@@ -272,4 +277,9 @@ __all__ = [
     "KNOWN_CONSTANTS",
     # Structure Bridge
     "StructureBridge",
+    # Topology loop engineering
+    "Loop",
+    "LoopType",
+    "LoopEngine",
+    "LoopClassifier",
 ]
