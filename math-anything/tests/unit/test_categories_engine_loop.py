@@ -17,6 +17,7 @@ def test_category_engine_loop_engine():
 
     le = ce.loop_engine
     assert le is not None
+    assert ce.loop_engine is le  # cached property returns same instance
     loops = le.find_loops()
     assert len(loops) == 0  # DAG example
     betti = le.betti_numbers()

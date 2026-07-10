@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import functools
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -135,8 +136,8 @@ class CategoryEngine:
             "structures": list(self.structures.keys()),
         }
 
-    @property
-    def loop_engine(self):
+    @functools.cached_property
+    def loop_engine(self) -> "LoopEngine":
         """Return a topology-aware LoopEngine over this category."""
         from math_anything.topology.loop_engine import LoopEngine
 
