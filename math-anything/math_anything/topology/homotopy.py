@@ -31,14 +31,20 @@ def cumulative_invariants_along_path(
         morphism = category_engine.morphisms.get(name)
         if morphism is None:
             raise KeyError(f"Morphism '{name}' not registered")
+        invariants_kept = getattr(morphism, "invariants_kept", [])
+        lost_source = getattr(morphism, "get_invariants_lost", None)
+        if callable(lost_source):
+            invariants_lost = lost_source()
+        else:
+            invariants_lost = getattr(morphism, "invariants_lost", [])
         if not kept:
-            kept.update(getattr(morphism, "invariants_kept", []))
+            kept.update(invariants_kept)
         else:
             for inv in list(kept):
-                if inv in getattr(morphism, "invariants_lost", []):
+                if inv in invariants_lost:
                     kept.discard(inv)
-            kept &= set(getattr(morphism, "invariants_kept", []))
-        lost.update(getattr(morphism, "invariants_lost", []))
+            kept &= set(invariants_kept)
+        lost.update(invariants_lost)
 
     return {"kept": sorted(kept), "lost": sorted(lost)}
 
@@ -51,7 +57,8 @@ def are_paths_homotopic(
     """Check whether two explicit morphism paths are homotopic.
 
     Two paths are considered homotopic when they connect the same source and
-    target structures and preserve the same final set of invariants.
+    target structures and preserve the same final sets of kept and lost
+    invariants.
     """
     if not path_a or not path_b:
         return HomotopyWitness(
@@ -90,8 +97,10 @@ def are_paths_homotopic(
 
     kept_a = set(inv_a["kept"])
     kept_b = set(inv_b["kept"])
+    lost_a = set(inv_a["lost"])
+    lost_b = set(inv_b["lost"])
     shared = sorted(kept_a & kept_b)
-    equivalent = kept_a == kept_b
+    equivalent = kept_a == kept_b and lost_a == lost_b
 
     confidence = 1.0 if equivalent else len(shared) / max(len(kept_a | kept_b), 1)
 

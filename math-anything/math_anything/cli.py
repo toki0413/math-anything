@@ -888,6 +888,7 @@ def cmd_loops(args: argparse.Namespace) -> int:
 def cmd_homotopy(args: argparse.Namespace) -> int:
     """Check homotopy between two DFT-family engine parameterizations."""
     import json
+
     from math_anything.categories.engine import CategoryEngine
     from math_anything.morphisms.approximations import (
         BornOppenheimerApproximation,
@@ -902,54 +903,70 @@ def cmd_homotopy(args: argparse.Namespace) -> int:
         "cp2k": args.param_b if args.param_b is not None else 520.0,
     }
 
-    def build_engine(cutoff: float):
+    def build_engine(prefix: str, cutoff: float):
         ce = CategoryEngine()
-        ce.register_morphism(BornOppenheimerApproximation())
-        ce.register_morphism(KohnShamMapping())
-        ce.register_morphism(PlaneWaveTruncation(encut=cutoff))
-        ce.link("born_oppenheimer", "FullManyBody", "ElectronicSchrodinger")
-        ce.link("kohn_sham", "ElectronicSchrodinger", "KohnSham_Full")
-        ce.link("plane_wave_truncation", "KohnSham_Full", "KohnSham_Truncated")
-        return ce, ["born_oppenheimer", "kohn_sham", "plane_wave_truncation"]
+        bo = BornOppenheimerApproximation()
+        ks = KohnShamMapping()
+        pw = PlaneWaveTruncation(encut=cutoff)
+        for m in (bo, ks, pw):
+            m.name = f"{prefix}_{m.name}"
+            ce.register_morphism(m)
+        ce.link(f"{prefix}_born_oppenheimer", "FullManyBody", "ElectronicSchrodinger")
+        ce.link(f"{prefix}_kohn_sham", "ElectronicSchrodinger", "KohnSham_Full")
+        ce.link(
+            f"{prefix}_plane_wave_truncation",
+            "KohnSham_Full",
+            "KohnSham_Truncated",
+        )
+        path = [
+            f"{prefix}_born_oppenheimer",
+            f"{prefix}_kohn_sham",
+            f"{prefix}_plane_wave_truncation",
+        ]
+        return ce, path
 
-    cutoff_a = canonical[args.engine_a]
-    cutoff_b = canonical[args.engine_b]
-    ce_a, path_a = build_engine(cutoff_a)
-    ce_b, path_b = build_engine(cutoff_b)
+    try:
+        cutoff_a = canonical[args.engine_a]
+        cutoff_b = canonical[args.engine_b]
+        ce_a, path_a = build_engine(args.engine_a, cutoff_a)
+        ce_b, path_b = build_engine(args.engine_b, cutoff_b)
 
-    # Compare paths in a merged engine so morphism names resolve once.
-    ce_merged = CategoryEngine()
-    for ce in (ce_a, ce_b):
-        for name, m in ce.morphisms.items():
-            ce_merged.register_morphism(m)
-        for link in ce.morphism_links:
-            ce_merged.morphism_links.append(link)
+        # Compare paths in a single merged engine with namespaced morphisms.
+        ce_merged = CategoryEngine()
+        for ce in (ce_a, ce_b):
+            for m in ce.morphisms.values():
+                ce_merged.register_morphism(m)
+            for link in ce.morphism_links:
+                ce_merged.morphism_links.append(link)
 
-    witness = are_paths_homotopic(ce_merged, path_a, path_b)
+        witness = are_paths_homotopic(ce_merged, path_a, path_b)
 
-    report = {
-        "engine_a": args.engine_a,
-        "engine_b": args.engine_b,
-        "cutoff_a_eV": cutoff_a,
-        "cutoff_b_eV": cutoff_b,
-        "witness": {
-            "equivalent": witness.equivalent,
-            "shared_invariants": witness.shared_invariants,
-            "confidence": witness.confidence,
-        },
-    }
+        report = {
+            "engine_a": args.engine_a,
+            "engine_b": args.engine_b,
+            "cutoff_a_eV": cutoff_a,
+            "cutoff_b_eV": cutoff_b,
+            "witness": {
+                "equivalent": witness.equivalent,
+                "shared_invariants": witness.shared_invariants,
+                "confidence": witness.confidence,
+            },
+        }
 
-    output = json.dumps(report, indent=2, ensure_ascii=False)
-    if args.output:
-        out_path = Path(args.output).resolve()
-        if not out_path.is_relative_to(Path.cwd().resolve()):
-            print("Error: --output must be inside the working directory")
-            return 1
-        out_path.parent.mkdir(parents=True, exist_ok=True)
-        out_path.write_text(output, encoding="utf-8")
-    else:
-        safe_print(output)
-    return 0
+        output = json.dumps(report, indent=2, ensure_ascii=False)
+        if args.output:
+            out_path = Path(args.output).resolve()
+            if not out_path.is_relative_to(Path.cwd().resolve()):
+                print("Error: --output must be inside the working directory")
+                return 1
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            out_path.write_text(output, encoding="utf-8")
+        else:
+            safe_print(output)
+        return 0
+    except Exception as e:
+        print(f"Error: {e}")
+        return 1
 
 
 def cmd_validate(args):
