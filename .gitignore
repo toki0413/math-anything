@@ -80,3 +80,16 @@ generate_figure7_8.py
 generate_final_revised.py
 generate_final_simple.py
 scientific_skills_analysis.py
+
+# Build/IDE artifacts
+.build/
+.trae/
+
+# Test/coverage output
+coverage.xml
+coverage_report.txt
+fresh_*_output.txt
+full_coverage_report.txt
+new_test_results*.txt
+unit_test_output.txt
+validation_report.txt
