@@ -109,11 +109,6 @@ from .geometry import (
     TensorField,
     VectorField,
 )
-from .neural_network import (
-    ActivationMorphism,
-    LinearMorphism,
-    LossMorphism,
-)
 from .groups import (
     BandCompatibility,
     BandStructureAnalysis,
@@ -130,6 +125,11 @@ from .groups import (
     character_table_d2h,
     character_table_oh,
     character_table_td,
+)
+from .neural_network import (
+    ActivationMorphism,
+    LinearMorphism,
+    LossMorphism,
 )
 from .properties import (
     OperatorType,
