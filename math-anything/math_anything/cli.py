@@ -1086,7 +1086,7 @@ def cmd_ml(args: argparse.Namespace) -> int:
 
             loss_fn = LossMorphism(name="loss", loss=args.loss)
             dataset = [
-                (np.array([x]), np.array([2 * x + 1]))
+                (np.array([x] * args.input_dim), np.array([2.0 * x + 1.0] * args.output_dim))
                 for x in [-1.0, 0.0, 1.0]
             ]
 
