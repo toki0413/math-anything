@@ -2,7 +2,7 @@
 
 import pytest
 
-from math_anything.domains import DOMAIN_REGISTRY, list_domains, get_domain
+from math_anything.domains import DOMAIN_REGISTRY, get_domain, list_domains
 from math_anything.domains.base import Domain, DomainAnalysis
 
 
