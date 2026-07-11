@@ -21,9 +21,9 @@ class TestMCPToolRegistration(unittest.TestCase):
         self.assertEqual(self.mcp.name, "bourbaki-mcp")
 
     def test_tool_count(self):
-        """Should have 12 tools registered."""
+        """Should have 13 tools registered."""
         tools = asyncio.run(self.mcp.list_tools())
-        self.assertEqual(len(tools), 12)
+        self.assertEqual(len(tools), 13)
 
     def test_required_tools_exist(self):
         """Check all required tools are registered."""
@@ -47,6 +47,8 @@ class TestMCPToolRegistration(unittest.TestCase):
             "translate_engine_params",
             # Topology Layer
             "analyze_loops",
+            # ML surrogate Layer
+            "analyze_ml_model",
         ]
         for name in required:
             self.assertIn(name, tool_names, f"Tool '{name}' not registered")
@@ -396,6 +398,27 @@ def test_mcp_analyze_loops_runs():
     assert "beta1" in data["betti"]
     assert "loops" in data
     assert isinstance(data["loops"], list)
+
+
+def test_mcp_analyze_ml_model_tool_exists():
+    from math_anything.mcp_server import mcp
+
+    tools = asyncio.run(mcp.list_tools())
+    tool_names = [t.name for t in tools]
+    assert "analyze_ml_model" in tool_names
+
+
+def test_mcp_analyze_ml_model_runs():
+    from math_anything.mcp_server import analyze_ml_model
+
+    result = analyze_ml_model(
+        input_dim=2,
+        output_dim=1,
+        architecture="mlp",
+    )
+    report = json.loads(result)
+    assert report["domain"] == "supervised_learning"
+    assert "morphism_chain" in report
 
 
 if __name__ == "__main__":

@@ -781,6 +781,79 @@ def analyze_loops(engine: str, parameters: dict[str, Any] | None = None) -> str:
 
 
 # ═══════════════════════════════════════════════════════════════════
+# ML Surrogate Layer — Supervised learning as morphism chain
+# ═══════════════════════════════════════════════════════════════════
+
+
+@mcp.tool()
+def analyze_ml_model(
+    input_dim: int = 2,
+    output_dim: int = 1,
+    architecture: str = "mlp",
+    loss: str = "mse",
+) -> str:
+    """Analyze a supervised-learning model as a morphism chain.
+
+    Reveals which mathematical properties are preserved, lost, and introduced
+    when approximating a target function with a neural network.
+    """
+    from math_anything.domains import DOMAIN_REGISTRY
+    from math_anything.structures.neural_network import (
+        ActivationMorphism,
+        LinearMorphism,
+        LossMorphism,
+    )
+    from math_anything.topology.training_curvature import (
+        OptimizationState,
+        trajectory_curvature,
+    )
+
+    domain = DOMAIN_REGISTRY["supervised_learning"]({
+        "input_dim": input_dim,
+        "output_dim": output_dim,
+        "architecture": architecture,
+        "loss": loss,
+    })
+    analysis = domain.analyze()
+
+    # Demonstrate forward pass through a tiny network
+    linear = LinearMorphism(name="linear_1", input_dim=input_dim, output_dim=output_dim)
+    activation = ActivationMorphism(name="relu_1", activation="relu")
+    loss_fn = LossMorphism(name="loss", loss=loss)
+
+    x = [1.0] * input_dim
+    y_pred = activation.apply(linear.apply(x))
+    y_true = [0.0] * output_dim
+    demo_loss = loss_fn.apply((y_pred, y_true))
+
+    # Dummy optimization trajectory for curvature illustration
+    states = [
+        OptimizationState(step=0, loss=demo_loss * 1.5, weights=[0.0]),
+        OptimizationState(step=1, loss=demo_loss, weights=[0.5]),
+        OptimizationState(step=2, loss=demo_loss * 0.5, weights=[1.0]),
+    ]
+    curvatures = trajectory_curvature(states)
+
+    report = {
+        "domain": analysis.domain_name,
+        "architecture": architecture,
+        "input_dim": input_dim,
+        "output_dim": output_dim,
+        "preserved": analysis.preserved,
+        "lost": analysis.lost,
+        "emerged": analysis.emerged,
+        "morphism_chain": analysis.morphism_chain,
+        "demo_forward_pass": {
+            "input": x,
+            "predicted": y_pred.tolist() if hasattr(y_pred, "tolist") else y_pred,
+            "loss": demo_loss,
+        },
+        "optimization_curvature": curvatures,
+    }
+    return json.dumps(report, indent=2, ensure_ascii=False, default=str)
+
+
+# ═══════════════════════════════════════════════════════════════════
 # MCP Resources
 # ═══════════════════════════════════════════════════════════════════
 

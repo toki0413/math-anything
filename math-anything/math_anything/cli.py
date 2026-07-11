@@ -325,6 +325,17 @@ For more information: https://github.com/toki/math-anything
         help="Emit Mermaid or Graphviz representation of the morphism graph",
     )
 
+    # ML surrogate command
+    ml_parser = subparsers.add_parser(
+        "ml",
+        help="Analyze a supervised-learning model as a morphism chain",
+    )
+    ml_parser.add_argument("--input-dim", type=int, default=2)
+    ml_parser.add_argument("--output-dim", type=int, default=1)
+    ml_parser.add_argument("--architecture", type=str, default="mlp")
+    ml_parser.add_argument("--loss", type=str, default="mse")
+    ml_parser.add_argument("--visualize", choices=["mermaid"], default=None)
+
     # Homotopy command
     homotopy_parser = subparsers.add_parser(
         "homotopy",
@@ -1001,6 +1012,58 @@ def cmd_homotopy(args: argparse.Namespace) -> int:
         return 1
 
 
+def cmd_ml(args: argparse.Namespace) -> int:
+    """Analyze a supervised-learning model."""
+    import json
+
+    from math_anything.domains import DOMAIN_REGISTRY
+    from math_anything.topology.visualization import to_mermaid
+
+    try:
+        domain = DOMAIN_REGISTRY["supervised_learning"]({
+            "input_dim": args.input_dim,
+            "output_dim": args.output_dim,
+            "architecture": args.architecture,
+            "loss": args.loss,
+        })
+        analysis = domain.analyze()
+
+        report = {
+            "domain": analysis.domain_name,
+            "architecture": args.architecture,
+            "input_dim": args.input_dim,
+            "output_dim": args.output_dim,
+            "preserved": analysis.preserved,
+            "lost": analysis.lost,
+            "emerged": analysis.emerged,
+            "morphism_chain": analysis.morphism_chain,
+        }
+
+        if args.visualize == "mermaid":
+            from math_anything.categories.engine import CategoryEngine
+
+            ce = CategoryEngine()
+            for step in analysis.morphism_chain:
+                ce.register_morphism(type("M", (), {
+                    "name": step["name"],
+                    "source_type": "MLState",
+                    "target_type": "MLState",
+                })())
+            prev = "Input"
+            for step in analysis.morphism_chain:
+                ce.link(step["name"], prev, step["name"])
+                prev = step["name"]
+            output = to_mermaid(ce)
+        else:
+            output = json.dumps(report, indent=2, ensure_ascii=False)
+
+        safe_print(output)
+        return 0
+    except Exception as e:
+        print(f"Error: {e}")
+        return 1
+
+
 def cmd_validate(args):
     """Validate schema constraints."""
     print(f"Validating {args.schema_file}...")
@@ -1128,6 +1191,7 @@ def main():
         "cross": cmd_cross,
         "loops": cmd_loops,
         "homotopy": cmd_homotopy,
+        "ml": cmd_ml,
         "validate": cmd_validate,
         "config": cmd_config,
         "watch": cmd_watch,
