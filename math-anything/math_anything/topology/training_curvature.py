@@ -46,3 +46,53 @@ def trajectory_curvature(states: list[OptimizationState]) -> list[float]:
         curvatures.append(float(angle / np.pi))
 
     return curvatures
+
+
+@dataclass
+class TrainingResult:
+    """Result of training a tiny network, including optimization states."""
+
+    states: list[OptimizationState]
+    final_loss: float
+
+
+def _flatten_weights(network: Any) -> np.ndarray:
+    """Flatten all linear-layer weights and biases into a single vector."""
+    from math_anything.structures.neural_network import LinearMorphism
+
+    parts = []
+    for layer in network.layers:
+        if isinstance(layer, LinearMorphism):
+            parts.append(layer.weight.flatten())
+            parts.append(layer.bias.flatten())
+    return np.concatenate(parts) if parts else np.array([])
+
+
+def train_and_capture(
+    network: Any,
+    dataset: list[tuple[Any, Any]],
+    loss_fn: Any,
+    epochs: int = 10,
+    lr: float = 0.05,
+) -> TrainingResult:
+    """Train a tiny network and capture (weights, loss) optimization states."""
+    states: list[OptimizationState] = []
+
+    for epoch in range(epochs):
+        epoch_loss = 0.0
+        for x, y in dataset:
+            y_pred = network.forward(x)
+            epoch_loss += float(loss_fn.apply((y_pred, y)))
+            grads = network.backward(x, y, loss_fn)
+            network.sgd_step(grads, lr)
+
+        weights = _flatten_weights(network)
+        states.append(OptimizationState(step=epoch, loss=epoch_loss, weights=weights))
+
+    final_loss = states[-1].loss if states else float("inf")
+    return TrainingResult(states=states, final_loss=final_loss)
+
+
+def training_result_curvature(result: TrainingResult) -> list[float]:
+    """Compute optimization-trajectory curvature from a training result."""
+    return trajectory_curvature(result.states)

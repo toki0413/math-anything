@@ -57,3 +57,29 @@ def test_curved_trajectory_has_nonzero_curvature():
     ]
     curvatures = trajectory_curvature(states)
     assert any(abs(c) > 1e-3 for c in curvatures)
+
+
+def test_train_and_capture_produces_curvature():
+    from math_anything.structures.neural_network import (
+        ActivationMorphism,
+        LinearMorphism,
+        LossMorphism,
+        SequentialNetwork,
+    )
+    from math_anything.topology.training_curvature import (
+        train_and_capture,
+        training_result_curvature,
+    )
+
+    net = SequentialNetwork([
+        LinearMorphism(name="linear_1", input_dim=1, output_dim=2),
+        ActivationMorphism(name="relu_1", activation="relu"),
+        LinearMorphism(name="linear_2", input_dim=2, output_dim=1),
+    ])
+    loss_fn = LossMorphism(name="mse", loss="mse")
+    dataset = [(np.array([x]), np.array([2 * x + 1])) for x in [-1.0, 0.0, 1.0]]
+
+    result = train_and_capture(net, dataset, loss_fn, epochs=10, lr=0.05)
+    assert len(result.states) > 0
+    curvatures = training_result_curvature(result)
+    assert isinstance(curvatures, list)
