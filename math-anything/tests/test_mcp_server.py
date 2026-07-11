@@ -438,5 +438,21 @@ def test_mcp_analyze_ml_model_reports_cross_domain_homotopy():
     assert 0.0 <= homotopy["confidence"] <= 1.0
 
 
+def test_mcp_analyze_ml_model_reports_optimization_landscape_homotopy():
+    from math_anything.mcp_server import analyze_ml_model
+
+    raw = analyze_ml_model(
+        input_dim=1,
+        output_dim=1,
+        architecture="mlp",
+        loss="mse",
+        compare_paths=True,
+    )
+    report = json.loads(raw)
+    assert "optimization_landscape_homotopy" in report
+    assert isinstance(report["optimization_landscape_homotopy"]["equivalent"], bool)
+    assert 0.0 <= report["optimization_landscape_homotopy"]["confidence"] <= 1.0
+
+
 if __name__ == "__main__":
     unittest.main()

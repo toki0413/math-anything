@@ -791,6 +791,7 @@ def analyze_ml_model(
     output_dim: int = 1,
     architecture: str = "mlp",
     loss: str = "mse",
+    compare_paths: bool = False,
 ) -> str:
     """Analyze a supervised-learning model as a morphism chain.
 
@@ -863,6 +864,45 @@ def analyze_ml_model(
             "confidence": homotopy_witness.confidence,
         },
     }
+
+    if compare_paths:
+        import numpy as np
+
+        from math_anything.structures.neural_network import (
+            ActivationMorphism,
+            LinearMorphism,
+            SequentialNetwork,
+        )
+        from math_anything.structures.neural_network import (
+            LossMorphism as LossFn,
+        )
+        from math_anything.topology.optimization_landscape import (
+            training_paths_homotopic,
+        )
+        from math_anything.topology.training_curvature import train_and_capture
+
+        loss_fn = LossFn(name="loss", loss=loss)
+        dataset = [
+            (np.array([x] * input_dim), np.array([2.0 * x + 1.0] * output_dim))
+            for x in [-1.0, 0.0, 1.0]
+        ]
+
+        def _make_network():
+            return SequentialNetwork([
+                LinearMorphism(name="linear_1", input_dim=input_dim, output_dim=4),
+                ActivationMorphism(name="relu_1", activation="relu"),
+                LinearMorphism(name="linear_2", input_dim=4, output_dim=output_dim),
+            ])
+
+        result_a = train_and_capture(_make_network(), dataset, loss_fn, epochs=5, lr=0.05)
+        result_b = train_and_capture(_make_network(), dataset, loss_fn, epochs=5, lr=0.05)
+        witness = training_paths_homotopic(result_a, result_b)
+        report["optimization_landscape_homotopy"] = {
+            "equivalent": witness.equivalent,
+            "shared_invariants": witness.shared_invariants,
+            "confidence": witness.confidence,
+        }
+
     return json.dumps(report, indent=2, ensure_ascii=False, default=str)
 
 
