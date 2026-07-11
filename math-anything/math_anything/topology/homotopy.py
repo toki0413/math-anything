@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
 
 from math_anything.categories.engine import CategoryEngine
 
@@ -23,7 +22,7 @@ class HomotopyWitness:
 
 def cumulative_invariants_along_path(
     category_engine: CategoryEngine, path: list[str]
-) -> dict[str, set[str]]:
+) -> dict[str, list[str]]:
     """Accumulate kept and lost invariants along an explicit morphism path."""
     kept: set[str] = set()
     lost: set[str] = set()
@@ -41,7 +40,7 @@ def cumulative_invariants_along_path(
             kept &= set(getattr(morphism, "invariants_kept", []))
         lost.update(getattr(morphism, "invariants_lost", []))
 
-    return {"kept": kept, "lost": lost}
+    return {"kept": sorted(kept), "lost": sorted(lost)}
 
 
 def are_paths_homotopic(
@@ -66,8 +65,9 @@ def are_paths_homotopic(
         )
 
     links = {link.morphism.name: link for link in category_engine.morphism_links}
-    if path_a[0] not in links or path_b[0] not in links:
-        raise ValueError("Path contains morphisms that are not linked")
+    for name in path_a + path_b:
+        if name not in links:
+            raise ValueError(f"Morphism '{name}' is registered but not linked")
 
     source_a = links[path_a[0]].source_structure
     source_b = links[path_b[0]].source_structure
@@ -88,10 +88,12 @@ def are_paths_homotopic(
     inv_a = cumulative_invariants_along_path(category_engine, path_a)
     inv_b = cumulative_invariants_along_path(category_engine, path_b)
 
-    shared = sorted(inv_a["kept"] & inv_b["kept"])
-    equivalent = inv_a["kept"] == inv_b["kept"]
+    kept_a = set(inv_a["kept"])
+    kept_b = set(inv_b["kept"])
+    shared = sorted(kept_a & kept_b)
+    equivalent = kept_a == kept_b
 
-    confidence = 1.0 if equivalent else len(shared) / max(len(inv_a["kept"] | inv_b["kept"]), 1)
+    confidence = 1.0 if equivalent else len(shared) / max(len(kept_a | kept_b), 1)
 
     return HomotopyWitness(
         equivalent=equivalent,

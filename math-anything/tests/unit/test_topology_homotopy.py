@@ -1,7 +1,9 @@
-import pytest
-
 from math_anything.categories.engine import CategoryEngine
-from math_anything.topology.homotopy import HomotopyWitness, are_paths_homotopic
+from math_anything.topology.homotopy import (
+    HomotopyWitness,
+    are_paths_homotopic,
+    cumulative_invariants_along_path,
+)
 
 
 def _make_morphism(name, source, target, kept=None, lost=None):
@@ -49,3 +51,69 @@ def test_non_homotopic_paths_differ():
 
     witness = are_paths_homotopic(ce, ["m1", "m2"], ["m3"])
     assert witness.equivalent is False
+
+
+def test_empty_path_returns_not_equivalent():
+    ce = CategoryEngine()
+    ce.register_morphism(_make_morphism("m1", "A", "B", kept=["energy"], lost=[]))
+    ce.link("m1", "A", "B")
+
+    witness = are_paths_homotopic(ce, [], ["m1"])
+    assert witness.equivalent is False
+    assert witness.path_a == ()
+    assert witness.path_b == ("m1",)
+
+    witness = are_paths_homotopic(ce, ["m1"], [])
+    assert witness.equivalent is False
+    assert witness.path_a == ("m1",)
+    assert witness.path_b == ()
+
+    witness = are_paths_homotopic(ce, [], [])
+    assert witness.equivalent is False
+
+
+def test_unlinked_morphism_raises_value_error():
+    ce = CategoryEngine()
+    ce.register_morphism(_make_morphism("m1", "A", "B", kept=["energy"], lost=[]))
+    ce.register_morphism(_make_morphism("m2", "B", "C", kept=["energy"], lost=[]))
+    ce.register_morphism(_make_morphism("m3", "B", "C", kept=["energy"], lost=[]))
+    ce.link("m1", "A", "B")
+    ce.link("m2", "B", "C")
+    # m3 is registered but not linked
+
+    try:
+        are_paths_homotopic(ce, ["m1", "m2"], ["m1", "m3"])
+        raise AssertionError("Expected ValueError for unlinked morphism")
+    except ValueError as exc:
+        assert "m3" in str(exc)
+
+
+def test_source_target_mismatch_returns_not_equivalent():
+    ce = CategoryEngine()
+    ce.register_morphism(_make_morphism("m1", "A", "B", kept=["energy"], lost=[]))
+    ce.register_morphism(_make_morphism("m2", "B", "C", kept=["energy"], lost=[]))
+    ce.register_morphism(_make_morphism("m3", "A", "D", kept=["energy"], lost=[]))
+    ce.link("m1", "A", "B")
+    ce.link("m2", "B", "C")
+    ce.link("m3", "A", "D")
+
+    witness = are_paths_homotopic(ce, ["m1", "m2"], ["m3"])
+    assert witness.equivalent is False
+
+
+def test_cumulative_invariants_unregistered_morphism_raises_key_error():
+    ce = CategoryEngine()
+    try:
+        cumulative_invariants_along_path(ce, ["missing"])
+        raise AssertionError("Expected KeyError for unregistered morphism")
+    except KeyError as exc:
+        assert "missing" in str(exc)
+
+
+def test_cumulative_invariants_returns_serializable_lists():
+    ce = CategoryEngine()
+    ce.register_morphism(_make_morphism("m1", "A", "B", kept=["energy"], lost=["momentum"]))
+    result = cumulative_invariants_along_path(ce, ["m1"])
+    assert result == {"kept": ["energy"], "lost": ["momentum"]}
+    assert isinstance(result["kept"], list)
+    assert isinstance(result["lost"], list)
