@@ -311,6 +311,12 @@ For more information: https://github.com/toki/math-anything
         default=None,
         help="Output JSON file",
     )
+    loops_parser.add_argument(
+        "--visualize",
+        choices=["mermaid", "graphviz"],
+        default=None,
+        help="Emit Mermaid or Graphviz representation of the morphism graph",
+    )
 
     # Homotopy command
     homotopy_parser = subparsers.add_parser(
@@ -851,6 +857,15 @@ def cmd_loops(args: argparse.Namespace) -> int:
         le = LoopEngine(ce)
         loops = le.find_loops()
         classifier = LoopClassifier()
+
+        from math_anything.topology.curvature import discrete_curvature
+
+        loss_weights = {"born_oppenheimer": 0.0, "kohn_sham": 0.05, "plane_wave_truncation": 0.1}
+        curvature_map = {
+            loop.canonical_form: round(discrete_curvature(loop, loss_weights), 4)
+            for loop in loops
+        }
+
         loops_data = [
             {
                 "type": classifier.classify(loop).value,
@@ -858,6 +873,7 @@ def cmd_loops(args: argparse.Namespace) -> int:
                 "edges": list(loop.edges),
                 "directed": loop.is_directed,
                 "canonical_form": loop.canonical_form,
+                "curvature": curvature_map[loop.canonical_form],
             }
             for loop in loops
         ]
@@ -867,9 +883,19 @@ def cmd_loops(args: argparse.Namespace) -> int:
             "schema_present": schema is not None,
             "betti": le.betti_numbers(),
             "loops": loops_data,
+            "curvature": curvature_map,
         }
 
-        output = json.dumps(report, indent=2, ensure_ascii=False)
+        if args.visualize == "mermaid":
+            from math_anything.topology.visualization import to_mermaid
+
+            output = to_mermaid(ce, loops, curvature_map)
+        elif args.visualize == "graphviz":
+            from math_anything.topology.visualization import to_graphviz
+
+            output = to_graphviz(ce, loops, curvature_map)
+        else:
+            output = json.dumps(report, indent=2, ensure_ascii=False)
         if args.output:
             out_path = Path(args.output).resolve()
             if not out_path.is_relative_to(Path.cwd().resolve()):

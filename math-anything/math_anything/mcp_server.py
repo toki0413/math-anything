@@ -731,7 +731,9 @@ def analyze_loops(engine: str, parameters: dict[str, Any] | None = None) -> str:
     """
     from math_anything.categories.engine import CategoryEngine
     from math_anything.topology.classifier import LoopClassifier
+    from math_anything.topology.curvature import discrete_curvature
     from math_anything.topology.loop_engine import LoopEngine
+    from math_anything.topology.visualization import to_mermaid
 
     parameters = parameters or {}
 
@@ -753,20 +755,29 @@ def analyze_loops(engine: str, parameters: dict[str, Any] | None = None) -> str:
         classifier = LoopClassifier()
         loops = le.find_loops()
 
+        loss_weights = {"born_oppenheimer": 0.0, "kohn_sham": 0.05, "plane_wave_truncation": 0.1}
+        loops_data = []
+        for loop in loops:
+            curvature = round(discrete_curvature(loop, loss_weights), 4)
+            loops_data.append({
+                "type": classifier.classify(loop).value,
+                "nodes": list(loop.nodes),
+                "edges": list(loop.edges),
+                "directed": loop.is_directed,
+                "canonical_form": loop.canonical_form,
+                "curvature": curvature,
+            })
+
         report = {
             "engine": engine,
             "betti": le.betti_numbers(),
-            "loops": [
-                {
-                    "type": classifier.classify(loop).value,
-                    "nodes": list(loop.nodes),
-                    "edges": list(loop.edges),
-                    "directed": loop.is_directed,
-                    "canonical_form": loop.canonical_form,
-                }
-                for loop in loops
-            ],
+            "loops": loops_data,
         }
+        report["curvature"] = {
+            loop.canonical_form: round(discrete_curvature(loop, loss_weights), 4)
+            for loop in loops
+        }
+        report["visualization"] = {"mermaid": to_mermaid(ce, loops, report["curvature"])}
         return json.dumps(report, indent=2, ensure_ascii=False)
     except Exception as e:
         return json.dumps({"error": str(e), "engine": engine}, indent=2)
