@@ -8,10 +8,10 @@ from math_anything.domains.base import Domain, DomainAnalysis
 
 class TestDomainRegistry:
 
-    def test_seven_domains_registered(self):
+    def test_eight_domains_registered(self):
         domains = list_domains()
-        assert len(domains) == 7
-        for expected in ["cfd", "dft", "em", "fem", "md", "phase_field", "qc"]:
+        assert len(domains) == 8
+        for expected in ["cfd", "dft", "em", "fem", "md", "phase_field", "qc", "supervised_learning"]:
             assert expected in domains
 
     def test_get_domain_valid(self):

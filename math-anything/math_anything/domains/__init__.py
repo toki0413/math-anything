@@ -56,6 +56,7 @@ from math_anything.domains.dft import DFTDomain
 from math_anything.domains.em import EMDomain
 from math_anything.domains.fem import FEMDomain
 from math_anything.domains.md import MDDomain
+from math_anything.domains.ml import SupervisedLearningDomain
 from math_anything.domains.phase_field import PhaseFieldDomain
 from math_anything.domains.qc import QCDomain
 
@@ -73,4 +74,5 @@ __all__ = [
     "EMDomain",
     "QCDomain",
     "PhaseFieldDomain",
+    "SupervisedLearningDomain",
 ]
