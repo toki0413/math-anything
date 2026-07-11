@@ -61,5 +61,5 @@ def test_cli_ml_compare_with_dft():
     )
     assert result.returncode == 0, result.stderr
     report = json.loads(result.stdout)
-    assert "dft_homotopy" in report
-    assert "equivalent" in report["dft_homotopy"]
+    assert "cross_domain_homotopy" in report
+    assert "equivalent" in report["cross_domain_homotopy"]

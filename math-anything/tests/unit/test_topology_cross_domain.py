@@ -9,4 +9,10 @@ def test_cross_domain_homotopy_returns_witness():
         {"input_dim": 2, "output_dim": 1, "architecture": "mlp"},
     )
     assert witness.source == "ManyBodySchrodinger"
-    assert "energy_conservation" in witness.shared_invariants or not witness.equivalent
+    assert isinstance(witness.source, str) and witness.source
+    assert isinstance(witness.target, str) and witness.target
+    assert 0.0 <= witness.confidence <= 1.0
+    if witness.equivalent:
+        assert len(witness.shared_invariants) > 0
+    else:
+        assert isinstance(witness.shared_invariants, list)

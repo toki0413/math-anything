@@ -421,5 +421,22 @@ def test_mcp_analyze_ml_model_runs():
     assert "morphism_chain" in report
 
 
+def test_mcp_analyze_ml_model_reports_cross_domain_homotopy():
+    from math_anything.mcp_server import analyze_ml_model
+
+    result = analyze_ml_model(
+        input_dim=2,
+        output_dim=1,
+        architecture="mlp",
+    )
+    report = json.loads(result)
+    assert "cross_domain_homotopy" in report
+    homotopy = report["cross_domain_homotopy"]
+    assert isinstance(homotopy["equivalent"], bool)
+    assert isinstance(homotopy["shared_invariants"], list)
+    assert isinstance(homotopy["confidence"], float)
+    assert 0.0 <= homotopy["confidence"] <= 1.0
+
+
 if __name__ == "__main__":
     unittest.main()

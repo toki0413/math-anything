@@ -1050,7 +1050,7 @@ def cmd_ml(args: argparse.Namespace) -> int:
 
             witness = cross_domain_homotopy(
                 args.compare_with,
-                {},
+                {"n_electrons": 2},
                 "supervised_learning",
                 {
                     "input_dim": args.input_dim,
@@ -1059,7 +1059,7 @@ def cmd_ml(args: argparse.Namespace) -> int:
                     "loss": args.loss,
                 },
             )
-            report["dft_homotopy"] = {
+            report["cross_domain_homotopy"] = {
                 "equivalent": witness.equivalent,
                 "shared_invariants": witness.shared_invariants,
                 "confidence": witness.confidence,

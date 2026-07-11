@@ -857,7 +857,7 @@ def analyze_ml_model(
             "loss": demo_loss,
         },
         "optimization_curvature": curvatures,
-        "dft_homotopy": {
+        "cross_domain_homotopy": {
             "equivalent": homotopy_witness.equivalent,
             "shared_invariants": homotopy_witness.shared_invariants,
             "confidence": homotopy_witness.confidence,
