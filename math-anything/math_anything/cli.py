@@ -312,6 +312,40 @@ For more information: https://github.com/toki/math-anything
         help="Output JSON file",
     )
 
+    # Homotopy command
+    homotopy_parser = subparsers.add_parser(
+        "homotopy",
+        help="Check whether two DFT-family engine configurations are homotopic",
+    )
+    homotopy_parser.add_argument(
+        "engine_a",
+        choices=["vasp", "qe", "cp2k"],
+        help="Source engine",
+    )
+    homotopy_parser.add_argument(
+        "engine_b",
+        choices=["vasp", "qe", "cp2k"],
+        help="Target engine",
+    )
+    homotopy_parser.add_argument(
+        "--param-a",
+        type=float,
+        default=None,
+        help="Canonical cutoff parameter for engine A (eV)",
+    )
+    homotopy_parser.add_argument(
+        "--param-b",
+        type=float,
+        default=None,
+        help="Canonical cutoff parameter for engine B (eV)",
+    )
+    homotopy_parser.add_argument(
+        "-o",
+        "--output",
+        type=str,
+        help="Output JSON file (must be relative to cwd)",
+    )
+
     # Check command
     check_parser = subparsers.add_parser(
         "check",
@@ -851,6 +885,73 @@ def cmd_loops(args: argparse.Namespace) -> int:
         return 1
 
 
+def cmd_homotopy(args: argparse.Namespace) -> int:
+    """Check homotopy between two DFT-family engine parameterizations."""
+    import json
+    from math_anything.categories.engine import CategoryEngine
+    from math_anything.morphisms.approximations import (
+        BornOppenheimerApproximation,
+        KohnShamMapping,
+        PlaneWaveTruncation,
+    )
+    from math_anything.topology.homotopy import are_paths_homotopic
+
+    canonical = {
+        "vasp": args.param_a if args.param_a is not None else 520.0,
+        "qe": args.param_b if args.param_b is not None else 520.0,
+        "cp2k": args.param_b if args.param_b is not None else 520.0,
+    }
+
+    def build_engine(cutoff: float):
+        ce = CategoryEngine()
+        ce.register_morphism(BornOppenheimerApproximation())
+        ce.register_morphism(KohnShamMapping())
+        ce.register_morphism(PlaneWaveTruncation(encut=cutoff))
+        ce.link("born_oppenheimer", "FullManyBody", "ElectronicSchrodinger")
+        ce.link("kohn_sham", "ElectronicSchrodinger", "KohnSham_Full")
+        ce.link("plane_wave_truncation", "KohnSham_Full", "KohnSham_Truncated")
+        return ce, ["born_oppenheimer", "kohn_sham", "plane_wave_truncation"]
+
+    cutoff_a = canonical[args.engine_a]
+    cutoff_b = canonical[args.engine_b]
+    ce_a, path_a = build_engine(cutoff_a)
+    ce_b, path_b = build_engine(cutoff_b)
+
+    # Compare paths in a merged engine so morphism names resolve once.
+    ce_merged = CategoryEngine()
+    for ce in (ce_a, ce_b):
+        for name, m in ce.morphisms.items():
+            ce_merged.register_morphism(m)
+        for link in ce.morphism_links:
+            ce_merged.morphism_links.append(link)
+
+    witness = are_paths_homotopic(ce_merged, path_a, path_b)
+
+    report = {
+        "engine_a": args.engine_a,
+        "engine_b": args.engine_b,
+        "cutoff_a_eV": cutoff_a,
+        "cutoff_b_eV": cutoff_b,
+        "witness": {
+            "equivalent": witness.equivalent,
+            "shared_invariants": witness.shared_invariants,
+            "confidence": witness.confidence,
+        },
+    }
+
+    output = json.dumps(report, indent=2, ensure_ascii=False)
+    if args.output:
+        out_path = Path(args.output).resolve()
+        if not out_path.is_relative_to(Path.cwd().resolve()):
+            print("Error: --output must be inside the working directory")
+            return 1
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(output, encoding="utf-8")
+    else:
+        safe_print(output)
+    return 0
+
+
 def cmd_validate(args):
     """Validate schema constraints."""
     print(f"Validating {args.schema_file}...")
@@ -967,6 +1068,7 @@ def main():
         "diff": cmd_diff,
         "cross": cmd_cross,
         "loops": cmd_loops,
+        "homotopy": cmd_homotopy,
         "validate": cmd_validate,
         "config": cmd_config,
         "watch": cmd_watch,
