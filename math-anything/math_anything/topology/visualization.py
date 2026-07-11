@@ -27,10 +27,10 @@ def to_mermaid(
 
     if loops:
         lines.append("    subgraph Loops")
-        for loop in loops:
+        for idx, loop in enumerate(loops):
             label = loop.canonical_form
             curvature = curvature_map.get(loop.canonical_form, 0.0)
-            lines.append(f"    note[{label} | curvature={curvature:.3f}]")
+            lines.append(f"    note{idx}[{label} | curvature={curvature:.3f}]")
         lines.append("    end")
 
     return "\n".join(lines) + "\n"

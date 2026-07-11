@@ -1,6 +1,6 @@
 from math_anything.categories.engine import CategoryEngine
 from math_anything.topology.loop_engine import LoopEngine
-from math_anything.topology.visualization import to_mermaid, to_graphviz
+from math_anything.topology.visualization import to_graphviz, to_mermaid
 
 
 def _triangle_engine():

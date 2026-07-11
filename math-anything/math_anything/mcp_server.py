@@ -756,9 +756,11 @@ def analyze_loops(engine: str, parameters: dict[str, Any] | None = None) -> str:
         loops = le.find_loops()
 
         loss_weights = {"born_oppenheimer": 0.0, "kohn_sham": 0.05, "plane_wave_truncation": 0.1}
+        curvature_map = {}
         loops_data = []
         for loop in loops:
             curvature = round(discrete_curvature(loop, loss_weights), 4)
+            curvature_map[loop.canonical_form] = curvature
             loops_data.append({
                 "type": classifier.classify(loop).value,
                 "nodes": list(loop.nodes),
@@ -773,11 +775,8 @@ def analyze_loops(engine: str, parameters: dict[str, Any] | None = None) -> str:
             "betti": le.betti_numbers(),
             "loops": loops_data,
         }
-        report["curvature"] = {
-            loop.canonical_form: round(discrete_curvature(loop, loss_weights), 4)
-            for loop in loops
-        }
-        report["visualization"] = {"mermaid": to_mermaid(ce, loops, report["curvature"])}
+        report["curvature"] = curvature_map
+        report["visualization"] = {"mermaid": to_mermaid(ce, loops, curvature_map)}
         return json.dumps(report, indent=2, ensure_ascii=False)
     except Exception as e:
         return json.dumps({"error": str(e), "engine": engine}, indent=2)

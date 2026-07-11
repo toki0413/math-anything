@@ -6,7 +6,7 @@ from pathlib import Path
 
 def test_cli_loops_subcommand_exists():
     result = subprocess.run(
-        [sys.executable, "-m", "math_anything.cli", "loops", "--help"],
+        [sys.executable, "-m", "math_anything", "loops", "--help"],
         capture_output=True,
         text=True,
     )
@@ -16,7 +16,7 @@ def test_cli_loops_subcommand_exists():
 
 def test_cli_loops_vasp_executes():
     result = subprocess.run(
-        [sys.executable, "-m", "math_anything.cli", "loops", "vasp"],
+        [sys.executable, "-m", "math_anything", "loops", "--engine", "vasp"],
         capture_output=True,
         text=True,
     )
@@ -29,7 +29,7 @@ def test_cli_loops_vasp_executes():
 
 def test_cli_loops_rejects_unsupported_engine():
     result = subprocess.run(
-        [sys.executable, "-m", "math_anything.cli", "loops", "lammps"],
+        [sys.executable, "-m", "math_anything", "loops", "--engine", "lammps"],
         capture_output=True,
         text=True,
     )
@@ -41,7 +41,7 @@ def test_cli_loops_writes_relative_output():
     out_file = Path("test_loops_output.json")
     try:
         result = subprocess.run(
-            [sys.executable, "-m", "math_anything.cli", "loops", "vasp", "--output", str(out_file)],
+            [sys.executable, "-m", "math_anything", "loops", "--engine", "vasp", "--output", str(out_file)],
             capture_output=True,
             text=True,
         )
@@ -57,7 +57,7 @@ def test_cli_loops_writes_relative_output():
 def test_cli_loops_rejects_absolute_output():
     absolute_path = "/tmp/loops_report.json" if sys.platform != "win32" else "C:\\loops_report.json"
     result = subprocess.run(
-        [sys.executable, "-m", "math_anything.cli", "loops", "vasp", "--output", absolute_path],
+        [sys.executable, "-m", "math_anything", "loops", "--engine", "vasp", "--output", absolute_path],
         capture_output=True,
         text=True,
     )

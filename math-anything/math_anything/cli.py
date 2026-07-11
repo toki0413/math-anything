@@ -295,8 +295,9 @@ For more information: https://github.com/toki/math-anything
         help="Detect topology loops in an engine's morphism graph",
     )
     loops_parser.add_argument(
-        "engine",
+        "--engine",
         choices=ENGINE_NAMES,
+        required=True,
         help="Engine name",
     )
     loops_parser.add_argument(
