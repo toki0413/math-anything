@@ -117,3 +117,68 @@ class LossMorphism(Morphism):
         if self.loss == "mse":
             return float(np.mean((y_pred - y_true) ** 2))
         return float(np.mean(np.abs(y_pred - y_true)))
+
+
+
+class SequentialNetwork:
+    """A tiny sequential MLP built from LinearMorphism and ActivationMorphism.
+
+    Supports forward evaluation, manual backprop for linear+relu, and SGD updates.
+    This is intentionally minimal: no new runtime dependencies, deterministic
+    seed-0 initialization, and fast enough for unit tests.
+    """
+
+    def __init__(self, layers: list[Morphism]):
+        self.layers = layers
+        self._cache: list[tuple[np.ndarray, np.ndarray]] = []
+
+    def forward(self, x: np.ndarray) -> np.ndarray:
+        """Forward pass, caching pre- and post-activations for backward."""
+        self._cache = []
+        h = np.asarray(x, dtype=float)
+        for layer in self.layers:
+            if isinstance(layer, LinearMorphism):
+                z = layer.weight @ h + layer.bias
+                self._cache.append((h, z))
+                h = z
+            elif isinstance(layer, ActivationMorphism):
+                h = layer.apply(h)
+                self._cache.append((None, h))
+            else:
+                h = layer.apply(h)
+                self._cache.append((None, h))
+        return h
+
+    def backward(
+        self,
+        x: np.ndarray,
+        y_true: np.ndarray,
+        loss_fn: LossMorphism,
+    ) -> dict[str, np.ndarray]:
+        """Backprop for MSE loss through linear + relu layers."""
+        y_pred = self.forward(x)
+        y_true = np.asarray(y_true, dtype=float)
+        delta = 2 * (y_pred - y_true) / max(y_true.size, 1)
+
+        grads: dict[str, np.ndarray] = {}
+        for idx in reversed(range(len(self.layers))):
+            layer = self.layers[idx]
+            prev_input, pre_activation = self._cache[idx]
+            if isinstance(layer, ActivationMorphism) and layer.activation == "relu":
+                delta = delta * (pre_activation > 0).astype(float)
+            elif isinstance(layer, LinearMorphism):
+                grads[f"{layer.name}_weight"] = np.outer(delta, prev_input)
+                grads[f"{layer.name}_bias"] = delta
+                delta = layer.weight.T @ delta
+        return grads
+
+    def sgd_step(self, gradients: dict[str, np.ndarray], lr: float) -> None:
+        """Apply gradients to linear-layer weights and biases."""
+        for layer in self.layers:
+            if isinstance(layer, LinearMorphism):
+                w_key = f"{layer.name}_weight"
+                b_key = f"{layer.name}_bias"
+                if w_key in gradients:
+                    layer.weight -= lr * gradients[w_key]
+                if b_key in gradients:
+                    layer.bias -= lr * gradients[b_key]
