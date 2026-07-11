@@ -109,6 +109,11 @@ from .geometry import (
     TensorField,
     VectorField,
 )
+from .neural_network import (
+    ActivationMorphism,
+    LinearMorphism,
+    LossMorphism,
+)
 from .groups import (
     BandCompatibility,
     BandStructureAnalysis,
@@ -186,6 +191,10 @@ __all__ = [
     "RightCauchyGreen",
     "GreenLagrangeStrain",
     "PolarDecomposition",
+    # Neural-network morphisms
+    "LinearMorphism",
+    "ActivationMorphism",
+    "LossMorphism",
     "StarAlgebra",
     "CStarAlgebra",
     "VonNeumannAlgebra",
