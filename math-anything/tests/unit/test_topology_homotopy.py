@@ -117,3 +117,33 @@ def test_cumulative_invariants_returns_serializable_lists():
     assert result == {"kept": ["energy"], "lost": ["momentum"]}
     assert isinstance(result["kept"], list)
     assert isinstance(result["lost"], list)
+
+
+def test_same_kept_different_lost_not_equivalent_and_confidence_below_one():
+    ce = CategoryEngine()
+    ce.register_morphism(_make_morphism("m1", "A", "B", kept=["energy"], lost=["spin"]))
+    ce.register_morphism(_make_morphism("m2", "B", "C", kept=["energy"], lost=[]))
+    ce.register_morphism(_make_morphism("alt", "A", "C", kept=["energy"], lost=["density"]))
+    ce.link("m1", "A", "B")
+    ce.link("m2", "B", "C")
+    ce.link("alt", "A", "C")
+
+    witness = are_paths_homotopic(ce, ["m1", "m2"], ["alt"])
+    assert witness.equivalent is False
+    assert witness.confidence < 1.0
+
+
+def test_identical_kept_and_lost_sets_are_equivalent_with_confidence_one():
+    ce = CategoryEngine()
+    ce.register_morphism(_make_morphism("m1", "A", "B", kept=["energy"], lost=["spin"]))
+    ce.register_morphism(_make_morphism("m2", "B", "C", kept=["energy"], lost=["density"]))
+    ce.register_morphism(
+        _make_morphism("alt", "A", "C", kept=["energy"], lost=["spin", "density"])
+    )
+    ce.link("m1", "A", "B")
+    ce.link("m2", "B", "C")
+    ce.link("alt", "A", "C")
+
+    witness = are_paths_homotopic(ce, ["m1", "m2"], ["alt"])
+    assert witness.equivalent is True
+    assert witness.confidence == 1.0

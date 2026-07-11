@@ -23,7 +23,11 @@ class HomotopyWitness:
 def cumulative_invariants_along_path(
     category_engine: CategoryEngine, path: list[str]
 ) -> dict[str, list[str]]:
-    """Accumulate kept and lost invariants along an explicit morphism path."""
+    """Accumulate kept and lost invariants along an explicit morphism path.
+
+    Returns a JSON-serializable dict mapping ``"kept"`` and ``"lost"`` to sorted
+    lists of invariant names encountered along ``path``.
+    """
     kept: set[str] = set()
     lost: set[str] = set()
 
@@ -102,7 +106,13 @@ def are_paths_homotopic(
     shared = sorted(kept_a & kept_b)
     equivalent = kept_a == kept_b and lost_a == lost_b
 
-    confidence = 1.0 if equivalent else len(shared) / max(len(kept_a | kept_b), 1)
+    if equivalent:
+        confidence = 1.0
+    else:
+        all_a = kept_a | lost_a
+        all_b = kept_b | lost_b
+        union = all_a | all_b
+        confidence = len(all_a & all_b) / len(union) if union else 1.0
 
     return HomotopyWitness(
         equivalent=equivalent,
