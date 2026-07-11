@@ -803,6 +803,7 @@ def analyze_ml_model(
         ActivationMorphism,
         LinearMorphism,
         LossMorphism,
+        SequentialNetwork,
     )
     from math_anything.topology.cross_domain import cross_domain_homotopy
     from math_anything.topology.training_curvature import (
@@ -868,20 +869,12 @@ def analyze_ml_model(
     if compare_paths:
         import numpy as np
 
-        from math_anything.structures.neural_network import (
-            ActivationMorphism,
-            LinearMorphism,
-            SequentialNetwork,
-        )
-        from math_anything.structures.neural_network import (
-            LossMorphism as LossFn,
-        )
         from math_anything.topology.optimization_landscape import (
             training_paths_homotopic,
         )
         from math_anything.topology.training_curvature import train_and_capture
 
-        loss_fn = LossFn(name="loss", loss=loss)
+        loss_fn = LossMorphism(name="loss", loss=loss)
         dataset = [
             (np.array([x] * input_dim), np.array([2.0 * x + 1.0] * output_dim))
             for x in [-1.0, 0.0, 1.0]
