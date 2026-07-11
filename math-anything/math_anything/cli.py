@@ -335,6 +335,12 @@ For more information: https://github.com/toki/math-anything
     ml_parser.add_argument("--architecture", type=str, default="mlp")
     ml_parser.add_argument("--loss", type=str, default="mse")
     ml_parser.add_argument("--visualize", choices=["mermaid"], default=None)
+    ml_parser.add_argument(
+        "--compare-with",
+        type=str,
+        default=None,
+        help="Cross-domain homotopy comparison target",
+    )
 
     # Homotopy command
     homotopy_parser = subparsers.add_parser(
@@ -1038,6 +1044,26 @@ def cmd_ml(args: argparse.Namespace) -> int:
             "emerged": analysis.emerged,
             "morphism_chain": analysis.morphism_chain,
         }
+
+        if args.compare_with:
+            from math_anything.topology.cross_domain import cross_domain_homotopy
+
+            witness = cross_domain_homotopy(
+                args.compare_with,
+                {},
+                "supervised_learning",
+                {
+                    "input_dim": args.input_dim,
+                    "output_dim": args.output_dim,
+                    "architecture": args.architecture,
+                    "loss": args.loss,
+                },
+            )
+            report["dft_homotopy"] = {
+                "equivalent": witness.equivalent,
+                "shared_invariants": witness.shared_invariants,
+                "confidence": witness.confidence,
+            }
 
         if args.visualize == "mermaid":
             from math_anything.categories.engine import CategoryEngine

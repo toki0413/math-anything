@@ -803,6 +803,7 @@ def analyze_ml_model(
         LinearMorphism,
         LossMorphism,
     )
+    from math_anything.topology.cross_domain import cross_domain_homotopy
     from math_anything.topology.training_curvature import (
         OptimizationState,
         trajectory_curvature,
@@ -834,6 +835,13 @@ def analyze_ml_model(
     ]
     curvatures = trajectory_curvature(states)
 
+    homotopy_witness = cross_domain_homotopy(
+        "dft",
+        {"n_electrons": 2},
+        "supervised_learning",
+        {"input_dim": input_dim, "output_dim": output_dim, "architecture": architecture},
+    )
+
     report = {
         "domain": analysis.domain_name,
         "architecture": architecture,
@@ -849,6 +857,11 @@ def analyze_ml_model(
             "loss": demo_loss,
         },
         "optimization_curvature": curvatures,
+        "dft_homotopy": {
+            "equivalent": homotopy_witness.equivalent,
+            "shared_invariants": homotopy_witness.shared_invariants,
+            "confidence": homotopy_witness.confidence,
+        },
     }
     return json.dumps(report, indent=2, ensure_ascii=False, default=str)
 
