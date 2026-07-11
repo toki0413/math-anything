@@ -64,3 +64,15 @@ def test_cli_homotopy_rejects_absolute_output():
     result = _run_homotopy("vasp", "qe", "--output", absolute_path)
     assert result.returncode == 1
     assert "working directory" in result.stdout
+
+
+def test_cli_homotopy_param_a_binds_to_engine_a_for_qe():
+    """--param-a must apply to engine_a regardless of engine name."""
+    result = _run_homotopy("qe", "vasp", "--param-a", "300")
+    assert result.returncode == 0, result.stderr
+    report = json.loads(result.stdout)
+    assert report["engine_a"] == "qe"
+    assert report["engine_b"] == "vasp"
+    assert report["cutoff_a_eV"] == 300.0
+    assert report["cutoff_b_eV"] == 520.0
+    assert report["witness"]["equivalent"] is False

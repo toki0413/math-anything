@@ -2,15 +2,56 @@
 
 from __future__ import annotations
 
+import re
+
+from math_anything.categories.engine import CategoryEngine
 from math_anything.topology.loop import Loop
 
+_ID_RE = re.compile(r"[^A-Za-z0-9_]+")
 
-def _escape(node: str) -> str:
-    return node.replace(" ", "_").replace("-", "_")
+
+def _escape_id(node: str) -> str:
+    """Sanitize a string so it is a valid Mermaid/Graphviz node ID.
+
+    Only alphanumeric characters and underscores are preserved; everything
+    else is collapsed to an underscore.
+    """
+    return _ID_RE.sub("_", node)
+
+
+# Backwards-compatible alias used by earlier callers.
+_escape = _escape_id
+
+
+def _escape_label_mermaid(label: str) -> str:
+    """Escape a label for safe use inside Mermaid quoted text.
+
+    Mermaid node text and edge labels can be wrapped in double quotes.  We
+    escape characters that would otherwise terminate the quoted region or be
+    interpreted as syntax.
+    """
+    escaped = (
+        label.replace("\\", "\\\\")
+        .replace('"', '\\"')
+        .replace("]", "\\]")
+        .replace("|", "\\|")
+    )
+    return f'"{escaped}"'
+
+
+def _escape_label_graphviz(label: str) -> str:
+    """Escape a label for safe use inside a Graphviz double-quoted string.
+
+    Backslashes that are not part of a recognized escape such as ``\\n`` are
+    doubled, and internal double quotes are escaped.
+    """
+    escaped = re.sub(r"\\(?!n)", r"\\\\", label)
+    escaped = escaped.replace('"', '\\"')
+    return f'"{escaped}"'
 
 
 def to_mermaid(
-    category_engine,
+    category_engine: CategoryEngine,
     loops: list[Loop] | None = None,
     curvature_map: dict[str, float] | None = None,
 ) -> str:
@@ -20,9 +61,9 @@ def to_mermaid(
     lines = ["graph LR"]
 
     for link in category_engine.morphism_links:
-        src = _escape(link.source_structure)
-        dst = _escape(link.target_structure)
-        name = _escape(link.morphism.name)
+        src = _escape_id(link.source_structure)
+        dst = _escape_id(link.target_structure)
+        name = _escape_label_mermaid(link.morphism.name)
         lines.append(f"    {src} -->|{name}| {dst}")
 
     if loops:
@@ -30,14 +71,15 @@ def to_mermaid(
         for idx, loop in enumerate(loops):
             label = loop.canonical_form
             curvature = curvature_map.get(loop.canonical_form, 0.0)
-            lines.append(f"    note{idx}[{label} | curvature={curvature:.3f}]")
+            text = _escape_label_mermaid(f"{label} | curvature={curvature:.3f}")
+            lines.append(f"    note{idx}[{text}]")
         lines.append("    end")
 
     return "\n".join(lines) + "\n"
 
 
 def to_graphviz(
-    category_engine,
+    category_engine: CategoryEngine,
     loops: list[Loop] | None = None,
     curvature_map: dict[str, float] | None = None,
 ) -> str:
@@ -47,10 +89,10 @@ def to_graphviz(
     lines = ["digraph G {"]
 
     for link in category_engine.morphism_links:
-        src = _escape(link.source_structure)
-        dst = _escape(link.target_structure)
-        name = _escape(link.morphism.name)
-        lines.append(f'    {src} -> {dst} [label="{name}"];')
+        src = _escape_id(link.source_structure)
+        dst = _escape_id(link.target_structure)
+        name = _escape_label_graphviz(link.morphism.name)
+        lines.append(f"    {src} -> {dst} [label={name}];")
 
     if loops:
         lines.append('    subgraph cluster_loops {')
@@ -58,9 +100,12 @@ def to_graphviz(
         for loop in loops:
             label = loop.canonical_form
             curvature = curvature_map.get(loop.canonical_form, 0.0)
-            node_id = _escape(f"loop_{label}")
+            node_id = _escape_id(f"loop_{label}")
+            node_label = _escape_label_graphviz(
+                f"{label}\ncurvature={curvature:.3f}"
+            )
             lines.append(
-                f'        {node_id} [shape=note, label="{label}\\ncurvature={curvature:.3f}"];'
+                f"        {node_id} [shape=note, label={node_label}];"
             )
         lines.append("    }")
 

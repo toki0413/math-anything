@@ -731,7 +731,7 @@ def analyze_loops(engine: str, parameters: dict[str, Any] | None = None) -> str:
     """
     from math_anything.categories.engine import CategoryEngine
     from math_anything.topology.classifier import LoopClassifier
-    from math_anything.topology.curvature import discrete_curvature
+    from math_anything.topology.curvature import compute_curvature_map
     from math_anything.topology.loop_engine import LoopEngine
     from math_anything.topology.visualization import to_mermaid
 
@@ -756,18 +756,16 @@ def analyze_loops(engine: str, parameters: dict[str, Any] | None = None) -> str:
         loops = le.find_loops()
 
         loss_weights = {"born_oppenheimer": 0.0, "kohn_sham": 0.05, "plane_wave_truncation": 0.1}
-        curvature_map = {}
+        curvature_map = compute_curvature_map(loops, loss_weights)
         loops_data = []
         for loop in loops:
-            curvature = round(discrete_curvature(loop, loss_weights), 4)
-            curvature_map[loop.canonical_form] = curvature
             loops_data.append({
                 "type": classifier.classify(loop).value,
                 "nodes": list(loop.nodes),
                 "edges": list(loop.edges),
                 "directed": loop.is_directed,
                 "canonical_form": loop.canonical_form,
-                "curvature": curvature,
+                "curvature": curvature_map[loop.canonical_form],
             })
 
         report = {

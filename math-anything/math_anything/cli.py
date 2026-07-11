@@ -295,10 +295,16 @@ For more information: https://github.com/toki/math-anything
         help="Detect topology loops in an engine's morphism graph",
     )
     loops_parser.add_argument(
+        "engine_positional",
+        nargs="?",
+        metavar="engine",
+        help="Engine name (positional; --engine takes precedence)",
+    )
+    loops_parser.add_argument(
         "--engine",
         choices=ENGINE_NAMES,
-        required=True,
-        help="Engine name",
+        default=None,
+        help="Engine name (flag form; overrides positional engine)",
     )
     loops_parser.add_argument(
         "files",
@@ -859,13 +865,10 @@ def cmd_loops(args: argparse.Namespace) -> int:
         loops = le.find_loops()
         classifier = LoopClassifier()
 
-        from math_anything.topology.curvature import discrete_curvature
+        from math_anything.topology.curvature import compute_curvature_map
 
         loss_weights = {"born_oppenheimer": 0.0, "kohn_sham": 0.05, "plane_wave_truncation": 0.1}
-        curvature_map = {
-            loop.canonical_form: round(discrete_curvature(loop, loss_weights), 4)
-            for loop in loops
-        }
+        curvature_map = compute_curvature_map(loops, loss_weights)
 
         loops_data = [
             {
@@ -912,6 +915,9 @@ def cmd_loops(args: argparse.Namespace) -> int:
         return 1
 
 
+DEFAULT_CUTOFF_EV = 520.0
+
+
 def cmd_homotopy(args: argparse.Namespace) -> int:
     """Check homotopy between two DFT-family engine parameterizations."""
     import json
@@ -924,11 +930,8 @@ def cmd_homotopy(args: argparse.Namespace) -> int:
     )
     from math_anything.topology.homotopy import are_paths_homotopic
 
-    canonical = {
-        "vasp": args.param_a if args.param_a is not None else 520.0,
-        "qe": args.param_b if args.param_b is not None else 520.0,
-        "cp2k": args.param_b if args.param_b is not None else 520.0,
-    }
+    cutoff_a = args.param_a if args.param_a is not None else DEFAULT_CUTOFF_EV
+    cutoff_b = args.param_b if args.param_b is not None else DEFAULT_CUTOFF_EV
 
     def build_engine(prefix: str, cutoff: float):
         ce = CategoryEngine()
@@ -953,8 +956,6 @@ def cmd_homotopy(args: argparse.Namespace) -> int:
         return ce, path
 
     try:
-        cutoff_a = canonical[args.engine_a]
-        cutoff_b = canonical[args.engine_b]
         ce_a, path_a = build_engine(args.engine_a, cutoff_a)
         ce_b, path_b = build_engine(args.engine_b, cutoff_b)
 
@@ -964,7 +965,11 @@ def cmd_homotopy(args: argparse.Namespace) -> int:
             for m in ce.morphisms.values():
                 ce_merged.register_morphism(m)
             for link in ce.morphism_links:
-                ce_merged.morphism_links.append(link)
+                ce_merged.link(
+                    link.morphism.name,
+                    link.source_structure,
+                    link.target_structure,
+                )
 
         witness = are_paths_homotopic(ce_merged, path_a, path_b)
 
@@ -1101,6 +1106,16 @@ def main():
     if not args.command:
         parser.print_help()
         return 0
+
+    # Resolve the loops engine argument.  The --engine flag wins over a
+    # positional engine for backward compatibility.
+    if args.command == "loops":
+        if args.engine is None and args.engine_positional is None:
+            parser.error("the following arguments are required: engine or --engine")
+        if args.engine is None:
+            args.engine = args.engine_positional
+        elif args.engine_positional is not None:
+            args.files.insert(0, args.engine_positional)
 
     # Dispatch to command handler
     commands = {

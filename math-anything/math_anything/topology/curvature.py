@@ -46,3 +46,19 @@ def riemannian_curvature_bridge(
         return 0.0 if scalar == 0.0 else 1.0
     normalized = abs(scalar) / abs(reference)
     return float(min(normalized, 1.0))
+
+
+def compute_curvature_map(
+    loops: list[Loop],
+    loss_weights: dict[str, float] | None = None,
+) -> dict[str, float]:
+    """Return a mapping from loop canonical form to discrete curvature.
+
+    ``loss_weights`` maps morphism names to irreversibility loss factors.  When
+    omitted, every morphism is treated as lossless and all curvatures are zero.
+    """
+    weights = loss_weights or {}
+    return {
+        loop.canonical_form: round(discrete_curvature(loop, weights), 4)
+        for loop in loops
+    }

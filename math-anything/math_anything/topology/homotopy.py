@@ -80,6 +80,17 @@ def are_paths_homotopic(
         if name not in links:
             raise ValueError(f"Morphism '{name}' is registered but not linked")
 
+    for path_label, path in (("path_a", path_a), ("path_b", path_b)):
+        for i in range(len(path) - 1):
+            current_target = links[path[i]].target_structure
+            next_source = links[path[i + 1]].source_structure
+            if current_target != next_source:
+                raise ValueError(
+                    f"{path_label} is disconnected: morphism '{path[i]}' ends at "
+                    f"'{current_target}' but morphism '{path[i + 1]}' starts at "
+                    f"'{next_source}'"
+                )
+
     source_a = links[path_a[0]].source_structure
     source_b = links[path_b[0]].source_structure
     target_a = links[path_a[-1]].target_structure

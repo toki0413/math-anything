@@ -63,3 +63,35 @@ def test_cli_loops_rejects_absolute_output():
     )
     assert result.returncode == 1
     assert "working directory" in result.stdout
+
+
+def test_cli_loops_accepts_positional_engine():
+    result = subprocess.run(
+        [sys.executable, "-m", "math_anything", "loops", "vasp"],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    data = json.loads(result.stdout)
+    assert data["engine"] == "vasp"
+
+
+def test_cli_loops_flag_wins_over_positional_engine():
+    result = subprocess.run(
+        [sys.executable, "-m", "math_anything", "loops", "vasp", "--engine", "qe"],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    data = json.loads(result.stdout)
+    assert data["engine"] == "qe"
+
+
+def test_cli_loops_errors_without_engine():
+    result = subprocess.run(
+        [sys.executable, "-m", "math_anything", "loops"],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 2
+    assert "engine" in result.stderr.lower()

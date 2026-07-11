@@ -29,3 +29,20 @@ def test_to_graphviz_contains_digraph():
     text = to_graphviz(ce, loops, curvature_map={})
     assert "digraph" in text
     assert "A" in text and "B" in text
+
+
+def test_visualization_escapes_special_characters():
+    ce = CategoryEngine()
+    ce.register_morphism(
+        type("Special", (), {"name": 'edge"|[]:()'})()
+    )
+    ce.link('edge"|[]:()', 'Node A', 'Node-B')
+    text = to_mermaid(ce, loops=[], curvature_map={})
+    assert "edge" in text
+    assert 'edge"|[]:()' not in text
+    assert 'edge\\"' in text
+
+    graphviz_text = to_graphviz(ce, loops=[], curvature_map={})
+    assert "edge" in graphviz_text
+    assert 'edge"|[]:()' not in graphviz_text
+    assert 'edge\\"' in graphviz_text
