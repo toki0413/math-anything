@@ -33,7 +33,7 @@ class LinearMorphism(Morphism):
 
     @property
     def mathematical_form(self) -> str:
-        return f"y = W_{{{self.input_dim}x{self.output_dim}}} x + b"
+        return f"y = W_{{{self.output_dim}x{self.input_dim}}} x + b"
 
     def apply(self, input_data: Any) -> np.ndarray:
         x = np.asarray(input_data, dtype=float)
@@ -58,7 +58,13 @@ class ActivationMorphism(Morphism):
         if self.activation not in {"relu", "tanh", "sigmoid"}:
             raise ValueError(f"Unsupported activation: {activation}")
 
-        self.invariants_kept = ["element_wise_structure", "differentiability"]
+        if self.activation == "relu":
+            self.invariants_kept = [
+                "element_wise_structure",
+                "differentiability_almost_everywhere",
+            ]
+        else:
+            self.invariants_kept = ["element_wise_structure", "differentiability"]
         self.invariants_lost = ["linearity"]
         self.invariants_introduced = ["nonlinear_representation_capacity"]
 
@@ -72,6 +78,8 @@ class ActivationMorphism(Morphism):
             return np.maximum(0.0, x)
         if self.activation == "tanh":
             return np.tanh(x)
+        # Clamp for numerical stability before exponentiation.
+        x = np.clip(x, -500.0, 500.0)
         return 1.0 / (1.0 + np.exp(-x))
 
 
@@ -89,7 +97,10 @@ class LossMorphism(Morphism):
         if self.loss not in {"mse", "mae"}:
             raise ValueError(f"Unsupported loss: {loss}")
 
-        self.invariants_kept = ["differentiability"]
+        if self.loss == "mae":
+            self.invariants_kept = ["differentiability_almost_everywhere"]
+        else:
+            self.invariants_kept = ["differentiability"]
         self.invariants_lost = ["full_state_information"]
         self.invariants_introduced = ["optimization_objective"]
 

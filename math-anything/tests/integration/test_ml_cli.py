@@ -38,3 +38,4 @@ def test_cli_ml_mermaid_output():
     )
     assert result.returncode == 0, result.stderr
     assert "graph LR" in result.stdout
+    assert "data_sampling" in result.stdout

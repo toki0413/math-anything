@@ -55,7 +55,10 @@ class SupervisedLearningDomain(Domain):
             {
                 "name": f"model_{self.params.get('architecture', 'mlp')}",
                 "type": "surrogate",
-                "description": "Parametric function family approximating the target",
+                "description": (
+                    "Parametric function family approximating the target "
+                    f"({self.params.get('activation', 'relu')} activation)"
+                ),
                 "invariants_kept": ["differentiability"],
                 "invariants_lost": ["true_target_function"],
                 "invariants_introduced": ["approximation_error", "optimization_landscape"],
