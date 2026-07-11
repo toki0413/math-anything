@@ -11,7 +11,7 @@ def test_topology_package_imports():
 
 
 def test_top_level_imports():
-    from math_anything import Loop, LoopEngine, LoopClassifier, LoopType
+    from math_anything import Loop, LoopClassifier, LoopEngine, LoopType
 
     assert Loop is not None
     assert LoopType.CONVERGENCE is not None
