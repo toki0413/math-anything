@@ -341,6 +341,11 @@ For more information: https://github.com/toki/math-anything
         default=None,
         help="Cross-domain homotopy comparison target",
     )
+    ml_parser.add_argument(
+        "--compare-paths",
+        action="store_true",
+        help="Train two identical runs and report optimization-landscape homotopy",
+    )
 
     # Homotopy command
     homotopy_parser = subparsers.add_parser(
@@ -1060,6 +1065,43 @@ def cmd_ml(args: argparse.Namespace) -> int:
                 },
             )
             report["cross_domain_homotopy"] = {
+                "equivalent": witness.equivalent,
+                "shared_invariants": witness.shared_invariants,
+                "confidence": witness.confidence,
+            }
+
+        if args.compare_paths:
+            import numpy as np
+
+            from math_anything.structures.neural_network import (
+                ActivationMorphism,
+                LinearMorphism,
+                LossMorphism,
+                SequentialNetwork,
+            )
+            from math_anything.topology.optimization_landscape import (
+                training_paths_homotopic,
+            )
+            from math_anything.topology.training_curvature import train_and_capture
+
+            loss_fn = LossMorphism(name="loss", loss=args.loss)
+            dataset = [
+                (np.array([x]), np.array([2 * x + 1]))
+                for x in [-1.0, 0.0, 1.0]
+            ]
+
+            def _make_network():
+                return SequentialNetwork([
+                    LinearMorphism(name="linear_1", input_dim=args.input_dim, output_dim=4),
+                    ActivationMorphism(name="relu_1", activation="relu"),
+                    LinearMorphism(name="linear_2", input_dim=4, output_dim=args.output_dim),
+                ])
+
+            result_a = train_and_capture(_make_network(), dataset, loss_fn, epochs=5, lr=0.05)
+            result_b = train_and_capture(_make_network(), dataset, loss_fn, epochs=5, lr=0.05)
+
+            witness = training_paths_homotopic(result_a, result_b)
+            report["optimization_landscape_homotopy"] = {
                 "equivalent": witness.equivalent,
                 "shared_invariants": witness.shared_invariants,
                 "confidence": witness.confidence,

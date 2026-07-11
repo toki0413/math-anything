@@ -63,3 +63,27 @@ def test_cli_ml_compare_with_dft():
     report = json.loads(result.stdout)
     assert "cross_domain_homotopy" in report
     assert "equivalent" in report["cross_domain_homotopy"]
+
+
+def test_cli_ml_compare_paths_runs():
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "math_anything",
+            "ml",
+            "--input-dim",
+            "1",
+            "--output-dim",
+            "1",
+            "--compare-paths",
+        ],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    data = json.loads(result.stdout)
+    assert "optimization_landscape_homotopy" in data
+    assert isinstance(data["optimization_landscape_homotopy"]["equivalent"], bool)
+    assert 0.0 <= data["optimization_landscape_homotopy"]["confidence"] <= 1.0
