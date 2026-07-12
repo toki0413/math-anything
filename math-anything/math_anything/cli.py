@@ -1066,39 +1066,30 @@ def cmd_ml(args: argparse.Namespace) -> int:
 
         from math_anything.structures.surrogate_backend import (
             SurrogateModel,
-            get_backend,
             list_backends,
         )
+
+        def _demo_with_backend(backend_name: str):
+            model = SurrogateModel(
+                backend=backend_name,
+                input_dim=args.input_dim,
+                output_dim=args.output_dim,
+                hidden_dim=4,
+            )
+            dataset = [
+                (np.array([x] * args.input_dim), np.array([2.0 * x + 1.0] * args.output_dim))
+                for x in [-1.0, 0.0, 1.0]
+            ]
+            model.fit(dataset, epochs=5, lr=0.05)
+            return model.predict(np.array([0.5] * args.input_dim))
 
         backend_used = args.backend
         backend_available = args.backend in list_backends()
         try:
-            model = SurrogateModel(
-                backend=args.backend,
-                input_dim=args.input_dim,
-                output_dim=args.output_dim,
-                hidden_dim=4,
-            )
-            dataset = [
-                (np.array([x] * args.input_dim), np.array([2.0 * x + 1.0] * args.output_dim))
-                for x in [-1.0, 0.0, 1.0]
-            ]
-            model.fit(dataset, epochs=5, lr=0.05)
-            demo_pred = model.predict(np.array([0.5] * args.input_dim))
+            demo_pred = _demo_with_backend(args.backend)
         except ImportError:
             backend_used = "numpy"
-            model = SurrogateModel(
-                backend="numpy",
-                input_dim=args.input_dim,
-                output_dim=args.output_dim,
-                hidden_dim=4,
-            )
-            dataset = [
-                (np.array([x] * args.input_dim), np.array([2.0 * x + 1.0] * args.output_dim))
-                for x in [-1.0, 0.0, 1.0]
-            ]
-            model.fit(dataset, epochs=5, lr=0.05)
-            demo_pred = model.predict(np.array([0.5] * args.input_dim))
+            demo_pred = _demo_with_backend("numpy")
 
         report["backend_requested"] = args.backend
         report["backend_used"] = backend_used

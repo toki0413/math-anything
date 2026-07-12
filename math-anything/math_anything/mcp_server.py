@@ -877,9 +877,9 @@ def analyze_ml_model(
 
     backend_used = backend
     backend_available = backend in list_backends()
-    try:
+    def _demo_with_backend(backend_name: str):
         model = SurrogateModel(
-            backend=backend,
+            backend=backend_name,
             input_dim=input_dim,
             output_dim=output_dim,
             hidden_dim=4,
@@ -889,21 +889,13 @@ def analyze_ml_model(
             for x in [-1.0, 0.0, 1.0]
         ]
         model.fit(dataset, epochs=5, lr=0.05)
-        demo_pred = model.predict(np.array([0.5] * input_dim))
+        return model.predict(np.array([0.5] * input_dim))
+
+    try:
+        demo_pred = _demo_with_backend(backend)
     except ImportError:
         backend_used = "numpy"
-        model = SurrogateModel(
-            backend="numpy",
-            input_dim=input_dim,
-            output_dim=output_dim,
-            hidden_dim=4,
-        )
-        dataset = [
-            (np.array([x] * input_dim), np.array([2.0 * x + 1.0] * output_dim))
-            for x in [-1.0, 0.0, 1.0]
-        ]
-        model.fit(dataset, epochs=5, lr=0.05)
-        demo_pred = model.predict(np.array([0.5] * input_dim))
+        demo_pred = _demo_with_backend("numpy")
 
     report["backend_requested"] = backend
     report["backend_used"] = backend_used

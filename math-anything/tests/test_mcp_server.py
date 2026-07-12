@@ -487,5 +487,22 @@ def test_mcp_analyze_ml_model_reports_backend():
     assert "surrogate_demo_prediction" in report
 
 
+def test_mcp_analyze_ml_model_backend_fallback():
+    from math_anything.mcp_server import analyze_ml_model
+
+    raw = analyze_ml_model(
+        input_dim=1,
+        output_dim=1,
+        architecture="mlp",
+        loss="mse",
+        backend="deepmd",
+    )
+    report = json.loads(raw)
+    assert report["backend_requested"] == "deepmd"
+    assert report["backend_used"] == "numpy"
+    assert report["backend_available"] is True
+    assert "surrogate_demo_prediction" in report
+
+
 if __name__ == "__main__":
     unittest.main()
