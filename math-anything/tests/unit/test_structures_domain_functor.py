@@ -166,6 +166,65 @@ def test_cross_domain_functor_is_natural():
     assert valid, reason
 
 
+def test_bad_morphism_mapping_returns_false_not_keyerror():
+    """A functor mapping to an unregistered/unlinked morphism must return (False, str)."""
+    engine, path_a, path_b = build_domain_pair_engine(
+        "supervised_learning",
+        {"input_dim": 2, "output_dim": 1},
+        "supervised_learning",
+        {"input_dim": 2, "output_dim": 1},
+    )
+    object_map_f = _build_identity_object_map(engine, "a")
+    morphism_map_f = {name: name for name in path_a}
+    F = DomainFunctor(object_map_f, morphism_map_f)
+
+    object_map_g = _build_cross_object_map(engine, "a", "b")
+    morphism_map_g = {a_name: b_name for a_name, b_name in zip(path_a, path_b)}
+    # Map one source morphism to a name that is not registered or linked.
+    morphism_map_g[path_a[0]] = "not_a_registered_morphism"
+    G = DomainFunctor(object_map_g, morphism_map_g)
+
+    eta = build_bridge_natural_transformation(
+        engine,
+        source_prefix="a",
+        target_prefix="b",
+        bridge_invariants_kept=["parameter_space"],
+        bridge_invariants_lost=[],
+    )
+
+    valid, reason = is_domain_natural_transformation(
+        F, G, eta, engine, test_morphisms=path_a
+    )
+    assert not valid
+    assert "not_a_registered_morphism" in reason
+
+
+def test_terminal_morphism_inherits_last_step_invariants():
+    """Terminal morphisms must inherit the last real chain step's invariants_kept."""
+    engine, path_a, _ = build_domain_pair_engine(
+        "supervised_learning",
+        {"input_dim": 2, "output_dim": 1},
+        "supervised_learning",
+        {"input_dim": 2, "output_dim": 1},
+    )
+    terminal_name = path_a[-1]
+    terminal_morphism = engine.morphisms[terminal_name]
+    # Last real step for supervised_learning is optimizer_step.
+    assert terminal_morphism.invariants_kept == ["parameter_space"]
+
+
+def test_build_domain_pair_engine_rejects_equal_prefixes():
+    with pytest.raises(ValueError, match="must differ"):
+        build_domain_pair_engine(
+            "supervised_learning",
+            {"input_dim": 2, "output_dim": 1},
+            "supervised_learning",
+            {"input_dim": 2, "output_dim": 1},
+            prefix_a="same",
+            prefix_b="same",
+        )
+
+
 def test_missing_bridge_component_is_not_natural():
     engine, path_a, path_b = build_domain_pair_engine(
         "supervised_learning",

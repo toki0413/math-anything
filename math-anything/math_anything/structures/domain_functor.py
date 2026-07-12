@@ -113,6 +113,9 @@ def build_domain_pair_engine(
         available = sorted(DOMAIN_REGISTRY.keys())
         raise KeyError(f"Unknown domain. Available: {available}")
 
+    if prefix_a == prefix_b:
+        raise ValueError("prefix_a and prefix_b must differ")
+
     dom_a = DOMAIN_REGISTRY[domain_a_name](params_a)
     dom_b = DOMAIN_REGISTRY[domain_b_name](params_b)
 
@@ -191,18 +194,23 @@ def is_domain_natural_transformation(
         path1 = [f_f, eta_dst]
         path2 = [eta_src, f_g]
 
-        for label, path in (("η_Y ∘ F(f)", path1), ("G(f) ∘ η_X", path2)):
-            for i in range(len(path) - 1):
-                current_target = links[path[i]].target_structure
-                next_source = links[path[i + 1]].source_structure
-                if current_target != next_source:
-                    return False, (
-                        f"{label} is disconnected: morphism '{path[i]}' ends at "
-                        f"'{current_target}' but morphism '{path[i + 1]}' starts at "
-                        f"'{next_source}'"
-                    )
+        for path in (path1, path2):
+            for name in path:
+                if name not in links:
+                    return False, f"Morphism '{name}' is not registered or linked"
 
         try:
+            for label, path in (("η_Y ∘ F(f)", path1), ("G(f) ∘ η_X", path2)):
+                for i in range(len(path) - 1):
+                    current_target = links[path[i]].target_structure
+                    next_source = links[path[i + 1]].source_structure
+                    if current_target != next_source:
+                        return False, (
+                            f"{label} is disconnected: morphism '{path[i]}' ends at "
+                            f"'{current_target}' but morphism '{path[i + 1]}' starts at "
+                            f"'{next_source}'"
+                        )
+
             inv1 = cumulative_invariants_along_path(engine, path1)
             inv2 = cumulative_invariants_along_path(engine, path2)
         except KeyError as e:
