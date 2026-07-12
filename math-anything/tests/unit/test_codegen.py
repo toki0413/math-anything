@@ -6,23 +6,23 @@ from unittest.mock import patch
 
 import pytest
 
-from math_anything.codegen.source_analyzer import (
-    ExtractionConfidence,
-    ExtractedCommand,
-    ExtractedParameter,
-    SourceCodeAnalyzer,
-    quick_analyze,
-)
 from math_anything.codegen.constraint_inference import (
     ConstraintInference,
     InferredConstraint,
-    quick_infer,
     extract_symbolic_constraints,
+    quick_infer,
 )
-from math_anything.utils.safe_eval import safe_eval, SafeEvalError
-
+from math_anything.codegen.source_analyzer import (
+    ExtractedCommand,
+    ExtractedParameter,
+    ExtractionConfidence,
+    SourceCodeAnalyzer,
+    quick_analyze,
+)
+from math_anything.utils.safe_eval import SafeEvalError, safe_eval
 
 # ── SourceCodeAnalyzer fixtures ──
+
 
 @pytest.fixture
 def analyzer():
@@ -99,6 +99,7 @@ def mixed_source_dir(tmp_path):
 
 # ── SourceCodeAnalyzer: creation ──
 
+
 class TestAnalyzerCreation:
     def test_creates_with_empty_results(self, analyzer):
         assert analyzer.results == []
@@ -120,6 +121,7 @@ class TestAnalyzerCreation:
 
 
 # ── SourceCodeAnalyzer: analyze ──
+
 
 class TestAnalyzerAnalyze:
     def test_analyze_cpp_dir(self, analyzer, cpp_source_dir):
@@ -192,6 +194,7 @@ class TestAnalyzerAnalyze:
 
 # ── SourceCodeAnalyzer: _detect_language ──
 
+
 class TestAnalyzerDetectLanguage:
     def test_cpp_extension(self, analyzer):
         assert analyzer._detect_language(Path("test.cpp")) == "cpp"
@@ -217,6 +220,7 @@ class TestAnalyzerDetectLanguage:
 
 # ── SourceCodeAnalyzer: _infer_param_type ──
 
+
 class TestAnalyzerInferParamType:
     def test_double_type(self, analyzer):
         assert analyzer._infer_param_type("double x = atof(args[0])") == "float"
@@ -238,6 +242,7 @@ class TestAnalyzerInferParamType:
 
 # ── SourceCodeAnalyzer: _infer_param_name ──
 
+
 class TestAnalyzerInferParamName:
     def test_double_assignment(self, analyzer):
         name = analyzer._infer_param_name("double temperature = atof(args[1])", "1")
@@ -253,6 +258,7 @@ class TestAnalyzerInferParamName:
 
 
 # ── SourceCodeAnalyzer: _extract_description ──
+
 
 class TestAnalyzerExtractDescription:
     def test_cpp_comment(self, analyzer):
@@ -273,6 +279,7 @@ class TestAnalyzerExtractDescription:
 
 # ── SourceCodeAnalyzer: _extract_equations_from_comments ──
 
+
 class TestAnalyzerExtractEquations:
     def test_latex_equation(self, analyzer):
         lines = ["// equation: E = mc^2"]
@@ -292,43 +299,33 @@ class TestAnalyzerExtractEquations:
 
 # ── SourceCodeAnalyzer: infer_constraints ──
 
+
 class TestAnalyzerInferConstraints:
     def test_comparison_constraint(self, analyzer):
-        param = ExtractedParameter(
-            name="temperature", param_type="float",
-            confidence=ExtractionConfidence.HEURISTIC
-        )
+        param = ExtractedParameter(name="temperature", param_type="float", confidence=ExtractionConfidence.HEURISTIC)
         constraints = analyzer.infer_constraints(param, ["if (temperature > 0)"])
         assert len(constraints) > 0
         assert "temperature > 0" in constraints[0]
 
     def test_must_be_positive(self, analyzer):
-        param = ExtractedParameter(
-            name="timestep", param_type="float",
-            confidence=ExtractionConfidence.HEURISTIC
-        )
+        param = ExtractedParameter(name="timestep", param_type="float", confidence=ExtractionConfidence.HEURISTIC)
         constraints = analyzer.infer_constraints(param, ["timestep must be positive"])
         assert len(constraints) > 0
         assert "timestep > 0" in constraints[0]
 
     def test_range_constraint(self, analyzer):
-        param = ExtractedParameter(
-            name="alpha", param_type="float",
-            confidence=ExtractionConfidence.HEURISTIC
-        )
+        param = ExtractedParameter(name="alpha", param_type="float", confidence=ExtractionConfidence.HEURISTIC)
         constraints = analyzer.infer_constraints(param, ["range [0, 1]"])
         assert len(constraints) > 0
 
     def test_no_constraints(self, analyzer):
-        param = ExtractedParameter(
-            name="x", param_type="float",
-            confidence=ExtractionConfidence.HEURISTIC
-        )
+        param = ExtractedParameter(name="x", param_type="float", confidence=ExtractionConfidence.HEURISTIC)
         constraints = analyzer.infer_constraints(param, ["no constraints here"])
         assert constraints == []
 
 
 # ── quick_analyze ──
+
 
 class TestQuickAnalyze:
     def test_quick_analyze(self, cpp_source_dir):
@@ -341,6 +338,7 @@ class TestQuickAnalyze:
 
 
 # ── ConstraintInference: creation ──
+
 
 class TestConstraintInferenceCreation:
     def test_creates_with_empty_constraints(self):
@@ -365,52 +363,43 @@ class TestConstraintInferenceCreation:
 
 # ── ConstraintInference: infer ──
 
+
 class TestConstraintInferenceInfer:
     def test_infer_comparison(self):
         ci = ConstraintInference()
-        constraints = ci.infer(
-            parameters=[{"name": "dt"}],
-            command_contexts={"fix": ["if (dt > 0)"]}
-        )
+        constraints = ci.infer(parameters=[{"name": "dt"}], command_contexts={"fix": ["if (dt > 0)"]})
         assert "dt > 0" in constraints
 
     def test_infer_must_be(self):
         ci = ConstraintInference()
         constraints = ci.infer(
-            parameters=[{"name": "timestep"}],
-            command_contexts={"fix": ["timestep must be greater than 0"]}
+            parameters=[{"name": "timestep"}], command_contexts={"fix": ["timestep must be greater than 0"]}
         )
         assert any("timestep" in c for c in constraints)
 
     def test_infer_physical_positive(self):
         ci = ConstraintInference()
         constraints = ci.infer(
-            parameters=[{"name": "temperature"}],
-            command_contexts={"fix": ["temperature is positive"]}
+            parameters=[{"name": "temperature"}], command_contexts={"fix": ["temperature is positive"]}
         )
         assert any("temperature > 0" in c for c in constraints)
 
     def test_infer_physical_negative(self):
         ci = ConstraintInference()
-        constraints = ci.infer(
-            parameters=[{"name": "pressure"}],
-            command_contexts={"fix": ["pressure is negative"]}
-        )
+        constraints = ci.infer(parameters=[{"name": "pressure"}], command_contexts={"fix": ["pressure is negative"]})
         assert any("pressure < 0" in c for c in constraints)
 
     def test_infer_cfl_condition(self):
         ci = ConstraintInference()
         constraints = ci.infer(
-            parameters=[{"name": "dt"}],
-            command_contexts={"fix": ["CFL condition: dt < dx^2/(2*D)"]}
+            parameters=[{"name": "dt"}], command_contexts={"fix": ["CFL condition: dt < dx^2/(2*D)"]}
         )
         assert any("dt < dx^2" in c for c in constraints)
 
     def test_infer_elastic_modulus(self):
         ci = ConstraintInference()
         constraints = ci.infer(
-            parameters=[{"name": "mu"}],
-            command_contexts={"fix": ["shear modulus mu from Young modulus E"]}
+            parameters=[{"name": "mu"}], command_contexts={"fix": ["shear modulus mu from Young modulus E"]}
         )
         assert any("mu = E" in c for c in constraints)
 
@@ -421,10 +410,7 @@ class TestConstraintInferenceInfer:
 
     def test_infer_deduplicates(self):
         ci = ConstraintInference()
-        constraints = ci.infer(
-            parameters=[{"name": "dt"}],
-            command_contexts={"fix": ["if (dt > 0)", "if (dt > 0)"]}
-        )
+        constraints = ci.infer(parameters=[{"name": "dt"}], command_contexts={"fix": ["if (dt > 0)", "if (dt > 0)"]})
         # Should be deduplicated
         dt_constraints = [c for c in constraints if "dt > 0" in c]
         assert len(dt_constraints) == 1
@@ -432,20 +418,19 @@ class TestConstraintInferenceInfer:
 
 # ── ConstraintInference: infer_from_docs ──
 
+
 class TestConstraintInferenceDocs:
     def test_infer_must_be_from_docs(self):
         ci = ConstraintInference()
         constraints = ci.infer_from_docs(
-            parameters=[{"name": "timestep"}],
-            doc_sections=[{"content": "timestep must be positive"}]
+            parameters=[{"name": "timestep"}], doc_sections=[{"content": "timestep must be positive"}]
         )
         assert len(constraints) > 0
 
     def test_infer_range_from_docs(self):
         ci = ConstraintInference()
         constraints = ci.infer_from_docs(
-            parameters=[{"name": "alpha"}],
-            doc_sections=[{"content": "range: [0, 1] for alpha"}]
+            parameters=[{"name": "alpha"}], doc_sections=[{"content": "range: [0, 1] for alpha"}]
         )
         assert any("alpha" in c for c in constraints)
 
@@ -457,27 +442,28 @@ class TestConstraintInferenceDocs:
 
 # ── ConstraintInference: infer_from_equations ──
 
+
 class TestConstraintInferenceEquations:
     def test_conservation_from_continuity(self):
         ci = ConstraintInference()
-        constraints = ci.infer_from_equations([
-            {"form": "∂ρ/∂t + ∇·(ρv) = 0", "type": "continuity", "source_file": "test.cpp"}
-        ])
+        constraints = ci.infer_from_equations(
+            [{"form": "∂ρ/∂t + ∇·(ρv) = 0", "type": "continuity", "source_file": "test.cpp"}]
+        )
         assert len(constraints) > 0
         assert any(c.constraint_type == "conservation" for c in constraints)
 
     def test_energy_conservation(self):
         ci = ConstraintInference()
-        constraints = ci.infer_from_equations([
-            {"form": "E_total = KE + PE", "type": "energy", "source_file": "test.cpp"}
-        ])
+        constraints = ci.infer_from_equations(
+            [{"form": "E_total = KE + PE", "type": "energy", "source_file": "test.cpp"}]
+        )
         assert any(c.constraint_type == "conservation" for c in constraints)
 
     def test_entropy_constraint(self):
         ci = ConstraintInference()
-        constraints = ci.infer_from_equations([
-            {"form": "S = k * log(W)", "type": "entropy", "source_file": "test.cpp"}
-        ])
+        constraints = ci.infer_from_equations(
+            [{"form": "S = k * log(W)", "type": "entropy", "source_file": "test.cpp"}]
+        )
         assert any("dS/dt >= 0" in c.expression for c in constraints)
 
     def test_no_constraints_from_empty(self):
@@ -488,6 +474,7 @@ class TestConstraintInferenceEquations:
 
 # ── ConstraintInference: build_relationship_graph ──
 
+
 class TestConstraintInferenceGraph:
     def test_build_graph(self):
         ci = ConstraintInference()
@@ -497,7 +484,7 @@ class TestConstraintInferenceGraph:
                 constraint_type="inequality",
                 variables=["dt", "dx", "D"],
                 confidence=0.7,
-                source="test"
+                source="test",
             )
         ]
         graph = ci.build_relationship_graph(constraints)
@@ -515,6 +502,7 @@ class TestConstraintInferenceGraph:
 
 # ── ConstraintInference: generate_llm_prompt ──
 
+
 class TestConstraintInferencePrompt:
     def test_generate_prompt(self):
         ci = ConstraintInference()
@@ -525,7 +513,7 @@ class TestConstraintInferencePrompt:
                 variables=["dt"],
                 confidence=0.9,
                 source="test",
-                physical_meaning="Timestep must be positive"
+                physical_meaning="Timestep must be positive",
             )
         ]
         prompt = ci.generate_llm_prompt(constraints)
@@ -540,6 +528,7 @@ class TestConstraintInferencePrompt:
 
 
 # ── ConstraintInference: validate_constraint (safe_eval) ──
+
 
 class TestConstraintInferenceValidate:
     def test_validate_true_constraint(self):
@@ -574,6 +563,7 @@ class TestConstraintInferenceValidate:
 
 # ── ConstraintInference: _extract_variables ──
 
+
 class TestConstraintInferenceExtractVars:
     def test_extract_variables(self):
         ci = ConstraintInference()
@@ -594,6 +584,7 @@ class TestConstraintInferenceExtractVars:
 
 # ── quick_infer ──
 
+
 class TestQuickInfer:
     def test_quick_infer(self):
         result = quick_infer(["if (x > 0)"])
@@ -601,6 +592,7 @@ class TestQuickInfer:
 
 
 # ── extract_symbolic_constraints ──
+
 
 class TestExtractSymbolicConstraints:
     def test_extract_from_snippet(self):
@@ -616,6 +608,7 @@ class TestExtractSymbolicConstraints:
 
 # ── ExtractionConfidence ──
 
+
 class TestExtractionConfidence:
     def test_confidence_values(self):
         assert ExtractionConfidence.HIGH.value == "high"
@@ -626,14 +619,11 @@ class TestExtractionConfidence:
 
 # ── InferredConstraint ──
 
+
 class TestInferredConstraint:
     def test_constraint_creation(self):
         c = InferredConstraint(
-            expression="x > 0",
-            constraint_type="inequality",
-            variables=["x"],
-            confidence=0.9,
-            source="test"
+            expression="x > 0", constraint_type="inequality", variables=["x"], confidence=0.9, source="test"
         )
         assert c.expression == "x > 0"
         assert c.physical_meaning is None
@@ -645,12 +635,13 @@ class TestInferredConstraint:
             variables=["dt"],
             confidence=0.9,
             source="test",
-            physical_meaning="Timestep must be positive"
+            physical_meaning="Timestep must be positive",
         )
         assert c.physical_meaning == "Timestep must be positive"
 
 
 # ── safe_eval integration ──
+
 
 class TestSafeEvalIntegration:
     def test_safe_eval_basic_comparison(self):
@@ -681,9 +672,9 @@ class TestSafeEvalIntegration:
 # ── HarnessAutoGenerator ──
 
 from math_anything.codegen.harness_generator import (
+    JINJA2_AVAILABLE,
     HarnessAutoGenerator,
     HarnessTemplate,
-    JINJA2_AVAILABLE,
 )
 
 
@@ -948,8 +939,8 @@ class TestHarnessTemplate:
 # ── DocumentationAnalyzer ──
 
 from math_anything.codegen.doc_analyzer import (
-    DocumentationAnalyzer,
     DocCommand,
+    DocumentationAnalyzer,
     quick_analyze_docs,
 )
 
@@ -1126,8 +1117,8 @@ class TestQuickAnalyzeDocs:
 # ── SemanticMapper ──
 
 from math_anything.codegen.semantic_mapper import (
-    SemanticMapper,
     MathMapping,
+    SemanticMapper,
     quick_map,
 )
 
@@ -1249,9 +1240,7 @@ class TestSemanticMapperGraph:
 
     def test_build_graph_multiple_commands(self):
         m = SemanticMapper()
-        graph = m.build_computational_graph(
-            [{"name": "nvt"}, {"name": "minimize"}, {"name": "run"}]
-        )
+        graph = m.build_computational_graph([{"name": "nvt"}, {"name": "minimize"}, {"name": "run"}])
         assert len(graph["nodes"]) == 3
         assert len(graph["edges"]) == 2  # sequential links
 

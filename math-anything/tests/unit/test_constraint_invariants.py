@@ -2,6 +2,17 @@
 
 import pytest
 
+from math_anything.constraints.boundary import (
+    BoundaryEvolution,
+    BoundaryState,
+    ExecutionRecord,
+    RiskItem,
+)
+from math_anything.constraints.domain import (
+    DomainHypothesis,
+    DomainLearner,
+    TrainingExample,
+)
 from math_anything.constraints.invariant import (
     DomainCondition,
     InvariantStatus,
@@ -15,24 +26,12 @@ from math_anything.constraints.propagation import (
     PropagationChain,
     PropagationResult,
 )
-from math_anything.constraints.boundary import (
-    BoundaryEvolution,
-    BoundaryState,
-    ExecutionRecord,
-    RiskItem,
-)
-from math_anything.constraints.domain import (
-    DomainHypothesis,
-    DomainLearner,
-    TrainingExample,
-)
 from math_anything.structures._core import StructuralInvariant
-
 
 # ── LearnedInvariant ──
 
-class TestLearnedInvariant:
 
+class TestLearnedInvariant:
     def test_creation(self):
         inv = LearnedInvariant(
             name="energy_negative",
@@ -59,14 +58,16 @@ class TestLearnedInvariant:
 
     def test_is_active_with_satisfied_condition(self):
         inv = LearnedInvariant(
-            name="test", expression="x > 0",
+            name="test",
+            expression="x > 0",
             domain_conditions=[DomainCondition("is_bound", "==", True)],
         )
         assert inv.is_active({"is_bound": True}) is True
 
     def test_is_active_with_unsatisfied_condition(self):
         inv = LearnedInvariant(
-            name="test", expression="x > 0",
+            name="test",
+            expression="x > 0",
             domain_conditions=[DomainCondition("is_bound", "==", True)],
         )
         assert inv.is_active({"is_bound": False}) is False
@@ -85,7 +86,8 @@ class TestLearnedInvariant:
 
     def test_evaluate_inactive(self):
         inv = LearnedInvariant(
-            name="test", expression="x > 0",
+            name="test",
+            expression="x > 0",
             domain_conditions=[DomainCondition("is_bound", "==", True)],
         )
         status = inv.evaluate({"is_bound": False})
@@ -124,7 +126,8 @@ class TestLearnedInvariant:
 
     def test_restore(self):
         inv = LearnedInvariant(
-            name="test", expression="x > 0",
+            name="test",
+            expression="x > 0",
             weakening_rules=[
                 WeakeningRule("w1", "x > -1", "always", "relaxed"),
             ],
@@ -151,7 +154,8 @@ class TestLearnedInvariant:
 
     def test_to_dict_weakened(self):
         inv = LearnedInvariant(
-            name="test", expression="x > 0",
+            name="test",
+            expression="x > 0",
             weakening_rules=[WeakeningRule("w1", "x > -1", "always", "relaxed")],
         )
         inv.weaken(0)
@@ -160,7 +164,8 @@ class TestLearnedInvariant:
 
     def test_evaluate_weakened_returns_weakened_status(self):
         inv = LearnedInvariant(
-            name="test", expression="x > 10",
+            name="test",
+            expression="x > 10",
             weakening_rules=[WeakeningRule("w1", "x > 0", "always", "relaxed")],
         )
         inv.weaken(0)
@@ -170,7 +175,6 @@ class TestLearnedInvariant:
 
 
 class TestFromStructuralInvariant:
-
     def test_creates_learned_invariant(self):
         si = StructuralInvariant(
             name="real_eigenvalues",
@@ -188,7 +192,6 @@ class TestFromStructuralInvariant:
 
 
 class TestDomainCondition:
-
     def test_equality_operator(self):
         dc = DomainCondition(feature="is_bound", operator="==", threshold=True)
         assert dc.feature == "is_bound"
@@ -204,7 +207,6 @@ class TestDomainCondition:
 
 
 class TestWeakeningRule:
-
     def test_creation(self):
         wr = WeakeningRule(
             name="relax",
@@ -218,17 +220,19 @@ class TestWeakeningRule:
 
 # ── ConstraintPropagation ──
 
-class TestConstraintPropagation:
 
+class TestConstraintPropagation:
     @pytest.fixture
     def simple_morphism(self):
         """Create a minimal morphism-like object for testing."""
+
         class FakeMorphism:
             name = "test_morph"
             invariants_kept = ["energy_negative"]
             invariants_lost = ["exact_solution"]
             invariants_introduced = ["discrete_approximation"]
             kernel_description = ""
+
         return FakeMorphism()
 
     @pytest.fixture
@@ -261,8 +265,10 @@ class TestConstraintPropagation:
             invariants_lost = []
             invariants_introduced = []
             kernel_description = "is_bound"
+
         inv = LearnedInvariant(
-            name="energy_negative", expression="E < 0",
+            name="energy_negative",
+            expression="E < 0",
             domain_conditions=[DomainCondition("is_bound", "==", True)],
         )
         cp = ConstraintPropagation()
@@ -293,12 +299,16 @@ class TestConstraintPropagation:
         r1 = PropagationResult(
             invariant=LearnedInvariant(name="t", expression="x"),
             outcome=PropagationOutcome.PRESERVED,
-            morphism_name="f", source_structure="A", target_structure="B",
+            morphism_name="f",
+            source_structure="A",
+            target_structure="B",
         )
         r2 = PropagationResult(
             invariant=LearnedInvariant(name="t", expression="x"),
             outcome=PropagationOutcome.LOST,
-            morphism_name="g", source_structure="B", target_structure="C",
+            morphism_name="g",
+            source_structure="B",
+            target_structure="C",
         )
         assert cp.compose_propagation(r1, r2) == PropagationOutcome.LOST
 
@@ -307,18 +317,21 @@ class TestConstraintPropagation:
         r1 = PropagationResult(
             invariant=LearnedInvariant(name="t", expression="x"),
             outcome=PropagationOutcome.PRESERVED,
-            morphism_name="f", source_structure="A", target_structure="B",
+            morphism_name="f",
+            source_structure="A",
+            target_structure="B",
         )
         r2 = PropagationResult(
             invariant=LearnedInvariant(name="t", expression="x"),
             outcome=PropagationOutcome.PRESERVED,
-            morphism_name="g", source_structure="B", target_structure="C",
+            morphism_name="g",
+            source_structure="B",
+            target_structure="C",
         )
         assert cp.compose_propagation(r1, r2) == PropagationOutcome.PRESERVED
 
 
 class TestPropagationChain:
-
     def test_final_state_empty(self):
         inv = LearnedInvariant(name="test", expression="x > 0")
         chain = PropagationChain(invariants=[inv], chain=["f"])
@@ -339,8 +352,8 @@ class TestPropagationChain:
 
 # ── BoundaryState & BoundaryEvolution ──
 
-class TestBoundaryState:
 
+class TestBoundaryState:
     def test_default_state(self):
         bs = BoundaryState()
         assert len(bs.interior_invariants) == 0
@@ -378,7 +391,6 @@ class TestBoundaryState:
 
 
 class TestBoundaryEvolution:
-
     def test_evolve_success(self):
         be = BoundaryEvolution()
         record = ExecutionRecord(success=True, params={"x": 1})
@@ -415,16 +427,17 @@ class TestBoundaryEvolution:
         )
         be = BoundaryEvolution(state=bs)
         for _ in range(2):
-            be.evolve(ExecutionRecord(
-                success=False,
-                params={"x": -1},
-                invariant_results=[("test", InvariantStatus.VIOLATED)],
-            ))
+            be.evolve(
+                ExecutionRecord(
+                    success=False,
+                    params={"x": -1},
+                    invariant_results=[("test", InvariantStatus.VIOLATED)],
+                )
+            )
         assert len(be.state.boundary_invariants) > 0
 
 
 class TestExecutionRecord:
-
     def test_creation(self):
         rec = ExecutionRecord(success=True, params={"x": 1})
         assert rec.success is True
@@ -433,7 +446,6 @@ class TestExecutionRecord:
 
 
 class TestRiskItem:
-
     def test_creation(self):
         inv = LearnedInvariant(name="test", expression="x > 0")
         ri = RiskItem(invariant=inv, risk_score=0.8, status=InvariantStatus.VIOLATED)
@@ -443,8 +455,8 @@ class TestRiskItem:
 
 # ── DomainLearner ──
 
-class TestDomainLearner:
 
+class TestDomainLearner:
     def test_creation(self):
         dl = DomainLearner()
         assert len(dl.examples) == 0
@@ -462,11 +474,13 @@ class TestDomainLearner:
     def test_learn_insufficient_data(self):
         dl = DomainLearner()
         for i in range(3):
-            dl.add_example(TrainingExample(
-                params={"encut": 520},
-                invariant_name="energy_negative",
-                status=InvariantStatus.SATISFIED,
-            ))
+            dl.add_example(
+                TrainingExample(
+                    params={"encut": 520},
+                    invariant_name="energy_negative",
+                    status=InvariantStatus.SATISFIED,
+                )
+            )
         result = dl.learn("energy_negative")
         assert result is None
 
@@ -474,18 +488,22 @@ class TestDomainLearner:
         dl = DomainLearner()
         # positive examples
         for _ in range(10):
-            dl.add_example(TrainingExample(
-                params={"encut": 520, "is_bound": True},
-                invariant_name="energy_negative",
-                status=InvariantStatus.SATISFIED,
-            ))
+            dl.add_example(
+                TrainingExample(
+                    params={"encut": 520, "is_bound": True},
+                    invariant_name="energy_negative",
+                    status=InvariantStatus.SATISFIED,
+                )
+            )
         # negative examples
         for _ in range(10):
-            dl.add_example(TrainingExample(
-                params={"encut": 100, "is_bound": False},
-                invariant_name="energy_negative",
-                status=InvariantStatus.VIOLATED,
-            ))
+            dl.add_example(
+                TrainingExample(
+                    params={"encut": 100, "is_bound": False},
+                    invariant_name="energy_negative",
+                    status=InvariantStatus.VIOLATED,
+                )
+            )
         hyp = dl.learn("energy_negative")
         assert hyp is not None
         assert isinstance(hyp, DomainHypothesis)
@@ -495,17 +513,21 @@ class TestDomainLearner:
     def test_apply_to_invariant(self):
         dl = DomainLearner()
         for _ in range(10):
-            dl.add_example(TrainingExample(
-                params={"encut": 520, "is_bound": True},
-                invariant_name="energy_negative",
-                status=InvariantStatus.SATISFIED,
-            ))
+            dl.add_example(
+                TrainingExample(
+                    params={"encut": 520, "is_bound": True},
+                    invariant_name="energy_negative",
+                    status=InvariantStatus.SATISFIED,
+                )
+            )
         for _ in range(10):
-            dl.add_example(TrainingExample(
-                params={"encut": 100, "is_bound": False},
-                invariant_name="energy_negative",
-                status=InvariantStatus.VIOLATED,
-            ))
+            dl.add_example(
+                TrainingExample(
+                    params={"encut": 100, "is_bound": False},
+                    invariant_name="energy_negative",
+                    status=InvariantStatus.VIOLATED,
+                )
+            )
         inv = LearnedInvariant(name="energy_negative", expression="E < 0")
         result = dl.apply_to_invariant(inv)
         assert result is inv
@@ -514,9 +536,13 @@ class TestDomainLearner:
 
     def test_stats(self):
         dl = DomainLearner()
-        dl.add_example(TrainingExample(
-            params={"x": 1}, invariant_name="t", status=InvariantStatus.SATISFIED,
-        ))
+        dl.add_example(
+            TrainingExample(
+                params={"x": 1},
+                invariant_name="t",
+                status=InvariantStatus.SATISFIED,
+            )
+        )
         stats = dl.stats()
         assert stats["total_examples"] == 1
         assert stats["unique_invariants"] == 1
@@ -524,14 +550,17 @@ class TestDomainLearner:
     def test_example_cap(self):
         dl = DomainLearner()
         for i in range(11000):
-            dl.add_example(TrainingExample(
-                params={"x": i}, invariant_name="t", status=InvariantStatus.SATISFIED,
-            ))
+            dl.add_example(
+                TrainingExample(
+                    params={"x": i},
+                    invariant_name="t",
+                    status=InvariantStatus.SATISFIED,
+                )
+            )
         assert len(dl.examples) <= 10000
 
 
 class TestDomainHypothesis:
-
     def test_creation(self):
         dh = DomainHypothesis(
             invariant_name="test",
@@ -546,7 +575,6 @@ class TestDomainHypothesis:
 
 
 class TestTrainingExample:
-
     def test_creation(self):
         te = TrainingExample(
             params={"encut": 520},
@@ -559,6 +587,8 @@ class TestTrainingExample:
 
     def test_default_source(self):
         te = TrainingExample(
-            params={}, invariant_name="t", status=InvariantStatus.UNKNOWN,
+            params={},
+            invariant_name="t",
+            status=InvariantStatus.UNKNOWN,
         )
         assert te.source == ""

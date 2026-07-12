@@ -15,6 +15,11 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+from math_anything.dimensional.equation_checker import (
+    EquationChecker,
+    EquationDimensionalCheck,
+    TermDimension,
+)
 from math_anything.dimensional.scaling_group import (
     BASE_DIMENSIONS,
     BUILTIN_QUANTITIES,
@@ -25,12 +30,6 @@ from math_anything.dimensional.scaling_group import (
     PhysicalQuantity,
     QMDimensionAnalyzer,
 )
-from math_anything.dimensional.equation_checker import (
-    EquationChecker,
-    EquationDimensionalCheck,
-    TermDimension,
-)
-
 
 # ── PhysicalQuantity ──
 
@@ -93,7 +92,10 @@ class TestBuckinghamPiGroup:
 
     def test_to_dict(self):
         pg = BuckinghamPiGroup(
-            1, "Re", "ρUL/μ", {"ρ": 1, "U": 1, "L": 1, "μ": -1},
+            1,
+            "Re",
+            "ρUL/μ",
+            {"ρ": 1, "U": 1, "L": 1, "μ": -1},
             physical_meaning="惯性力/黏性力",
         )
         d = pg.to_dict()
@@ -226,8 +228,7 @@ class TestBuiltinQuantities:
     """内建物理量数据库测试."""
 
     def test_key_quantities_exist(self):
-        for key in ["length", "mass", "time", "velocity", "force", "energy",
-                     "density", "pressure", "temperature"]:
+        for key in ["length", "mass", "time", "velocity", "force", "energy", "density", "pressure", "temperature"]:
             assert key in BUILTIN_QUANTITIES
 
     def test_all_have_dim_vector(self):
@@ -368,7 +369,8 @@ class TestRustFallback:
     def test_buckingham_pi_python_fallback(self):
         """确保 Python 回退路径能正确计算."""
         from math_anything.rust_bridge import EMLAccelerator, _EMLPyFallback
-        engine = BuckinghamPiEngine()
+
+        BuckinghamPiEngine()
         quantities = [
             BUILTIN_QUANTITIES["density"],
             BUILTIN_QUANTITIES["velocity"],
@@ -386,6 +388,7 @@ class TestRustFallback:
     def test_rust_bridge_buckingham_pi(self):
         """EMLAccelerator.buckingham_pi 应返回列表."""
         from math_anything.rust_bridge import EMLAccelerator
+
         accel = EMLAccelerator()
         D = np.array([[1, 1, 1, 0], [-3, 0, 1, -1], [0, -1, 0, -1]], dtype=float)
         result = accel.buckingham_pi(D)
@@ -393,6 +396,7 @@ class TestRustFallback:
 
     def test_rust_availability_check(self):
         from math_anything.rust_bridge import EMLAccelerator
+
         accel = EMLAccelerator()
         # using_rust 是 bool，不应抛异常
         assert isinstance(accel.using_rust, bool)

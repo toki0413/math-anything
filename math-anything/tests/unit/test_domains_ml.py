@@ -6,11 +6,13 @@ def test_supervised_learning_domain_registered():
 
 
 def test_supervised_learning_analysis():
-    domain = DOMAIN_REGISTRY["supervised_learning"]({
-        "input_dim": 2,
-        "output_dim": 1,
-        "architecture": "mlp",
-    })
+    domain = DOMAIN_REGISTRY["supervised_learning"](
+        {
+            "input_dim": 2,
+            "output_dim": 1,
+            "architecture": "mlp",
+        }
+    )
     analysis = domain.analyze()
     assert analysis.domain_name == "supervised_learning"
     assert "function_approximation" in analysis.conservation_field.get("equation_type", "")

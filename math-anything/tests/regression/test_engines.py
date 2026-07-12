@@ -18,9 +18,7 @@ _engines_abs = str(_engines.resolve())
 def _import_module_direct(package_path_parts):
     """Import a module directly by file path, bypassing __init__.py of parent packages."""
     module_path = Path(_engines_abs, *package_path_parts)
-    spec = importlib.util.spec_from_file_location(
-        ".".join(package_path_parts), module_path
-    )
+    spec = importlib.util.spec_from_file_location(".".join(package_path_parts), module_path)
     mod = importlib.util.module_from_spec(spec)
     sys.modules[".".join(package_path_parts)] = mod
     spec.loader.exec_module(mod)
@@ -30,62 +28,73 @@ def _import_module_direct(package_path_parts):
 class TestVaspExtractor:
     def test_instantiate(self):
         from vasp.core.extractor_v2 import VaspExtractor
+
         extractor = VaspExtractor()
         assert extractor is not None
         assert hasattr(extractor, "extract")
 
     def test_extract_minimal_empty(self):
         from vasp.core.extractor_v2 import VaspExtractor
+
         extractor = VaspExtractor()
         schema = extractor.extract({})
         assert schema.schema_version == "1.0.0"
         assert schema.meta.extracted_by.startswith("math-anything-vasp")
 
     def test_extract_returns_math_schema(self):
-        from math_anything.schemas import MathSchema
         from vasp.core.extractor_v2 import VaspExtractor
+
+        from math_anything.schemas import MathSchema
+
         extractor = VaspExtractor()
         schema = extractor.extract({})
         assert isinstance(schema, MathSchema)
 
     def test_has_mathematical_model(self):
         from vasp.core.extractor_v2 import VaspExtractor
+
         extractor = VaspExtractor()
         schema = extractor.extract({})
         assert schema.mathematical_model is not None
 
     def test_has_numerical_method(self):
         from vasp.core.extractor_v2 import VaspExtractor
+
         extractor = VaspExtractor()
         schema = extractor.extract({})
         assert schema.numerical_method is not None
 
     def test_has_computational_graph(self):
         from vasp.core.extractor_v2 import VaspExtractor
+
         extractor = VaspExtractor()
         schema = extractor.extract({})
         assert schema.computational_graph is not None
 
     def test_has_conservation_properties(self):
         from vasp.core.extractor_v2 import VaspExtractor
+
         extractor = VaspExtractor()
         schema = extractor.extract({})
         assert schema.conservation_properties is not None
 
     def test_has_raw_symbols(self):
         from vasp.core.extractor_v2 import VaspExtractor
+
         extractor = VaspExtractor()
         schema = extractor.extract({})
         assert isinstance(schema.raw_symbols, dict)
 
     def test_has_symbolic_constraints(self):
         from vasp.core.extractor_v2 import VaspExtractor
+
         extractor = VaspExtractor()
         schema = extractor.extract({})
         assert schema.symbolic_constraints is not None
 
     def test_extract_with_incar(self, tmp_path):
         from vasp.core.extractor_v2 import VaspExtractor
+
         incar = tmp_path / "INCAR"
         incar.write_text("ENCUT = 520\nISMEAR = 1\nSIGMA = 0.05\n")
         extractor = VaspExtractor()
@@ -97,24 +106,19 @@ class TestLammpsExtractor:
     @pytest.fixture
     def lammps_input(self, tmp_path):
         p = tmp_path / "input.lammps"
-        p.write_text(
-            "units metal\n"
-            "boundary p p p\n"
-            "timestep 0.001\n"
-            "pair_style lj/cut 2.5\n"
-            "fix 1 all nve\n"
-            "run 100\n"
-        )
+        p.write_text("units metal\nboundary p p p\ntimestep 0.001\npair_style lj/cut 2.5\nfix 1 all nve\nrun 100\n")
         return str(p)
 
     def test_instantiate(self):
         from lammps.core.extractor import LammpsExtractor
+
         extractor = LammpsExtractor()
         assert extractor is not None
         assert hasattr(extractor, "extract")
 
     def test_extract_minimal(self, lammps_input):
         from lammps.core.extractor import LammpsExtractor
+
         extractor = LammpsExtractor()
         schema = extractor.extract({"input": lammps_input})
         assert schema.schema_version == "1.0.0"
@@ -122,6 +126,7 @@ class TestLammpsExtractor:
 
     def test_extract_with_log(self, lammps_input, tmp_path):
         from lammps.core.extractor import LammpsExtractor
+
         log = tmp_path / "log.lammps"
         log.write_text("Step Temp E_pair E_mol TotEng Press\n")
         extractor = LammpsExtractor()
@@ -130,55 +135,65 @@ class TestLammpsExtractor:
 
     def test_extract_with_options(self, lammps_input):
         from lammps.core.extractor import LammpsExtractor
+
         extractor = LammpsExtractor()
         schema = extractor.extract({"input": lammps_input}, {"verbose": True})
         assert schema is not None
 
     def test_returns_math_schema(self, lammps_input):
-        from math_anything.schemas import MathSchema
         from lammps.core.extractor import LammpsExtractor
+
+        from math_anything.schemas import MathSchema
+
         extractor = LammpsExtractor()
         schema = extractor.extract({"input": lammps_input})
         assert isinstance(schema, MathSchema)
 
     def test_has_mathematical_model(self, lammps_input):
         from lammps.core.extractor import LammpsExtractor
+
         extractor = LammpsExtractor()
         schema = extractor.extract({"input": lammps_input})
         assert schema.mathematical_model is not None
 
     def test_has_numerical_method(self, lammps_input):
         from lammps.core.extractor import LammpsExtractor
+
         extractor = LammpsExtractor()
         schema = extractor.extract({"input": lammps_input})
         assert schema.numerical_method is not None
 
     def test_has_computational_graph(self, lammps_input):
         from lammps.core.extractor import LammpsExtractor
+
         extractor = LammpsExtractor()
         schema = extractor.extract({"input": lammps_input})
         assert schema.computational_graph is not None
 
     def test_has_conservation_properties(self, lammps_input):
         from lammps.core.extractor import LammpsExtractor
+
         extractor = LammpsExtractor()
         schema = extractor.extract({"input": lammps_input})
         assert schema.conservation_properties is not None
 
     def test_has_raw_symbols(self, lammps_input):
         from lammps.core.extractor import LammpsExtractor
+
         extractor = LammpsExtractor()
         schema = extractor.extract({"input": lammps_input})
         assert isinstance(schema.raw_symbols, dict)
 
     def test_has_symbolic_constraints(self, lammps_input):
         from lammps.core.extractor import LammpsExtractor
+
         extractor = LammpsExtractor()
         schema = extractor.extract({"input": lammps_input})
         assert schema.symbolic_constraints is not None
 
     def test_input_required(self):
         from lammps.core.extractor import LammpsExtractor
+
         extractor = LammpsExtractor()
         with pytest.raises(ValueError, match="Input file required"):
             extractor.extract({})
@@ -187,18 +202,21 @@ class TestLammpsExtractor:
 class TestAbaqusExtractor:
     def test_instantiate(self):
         from abaqus.core.extractor import AbaqusExtractor
+
         extractor = AbaqusExtractor()
         assert extractor is not None
         assert hasattr(extractor, "extract")
 
     def test_extract_minimal_requires_input(self):
         from abaqus.core.extractor import AbaqusExtractor
+
         extractor = AbaqusExtractor()
         with pytest.raises(ValueError, match="Input file required"):
             extractor.extract({})
 
     def test_extract_with_file(self, tmp_path):
         from abaqus.core.extractor import AbaqusExtractor
+
         inp = tmp_path / "test.inp"
         inp.write_text(
             "*HEADING\n"
@@ -229,18 +247,21 @@ class TestAbaqusExtractor:
 class TestAnsysExtractor:
     def test_instantiate(self):
         from ansys.core.input_extractor import AnsysInputExtractor
+
         extractor = AnsysInputExtractor()
         assert extractor is not None
         assert hasattr(extractor, "extract")
 
     def test_extract_minimal_requires_input(self):
         from ansys.core.input_extractor import AnsysInputExtractor
+
         extractor = AnsysInputExtractor()
         with pytest.raises(ValueError, match="Input file required"):
             extractor.extract({})
 
     def test_extract_with_file(self, tmp_path):
         from ansys.core.input_extractor import AnsysInputExtractor
+
         apdl = tmp_path / "test.dat"
         apdl.write_text(
             "/PREP7\n"
@@ -268,18 +289,21 @@ class TestAnsysExtractor:
 class TestComsolExtractor:
     def test_instantiate(self):
         from comsol.core.extractor import ComsolExtractor
+
         extractor = ComsolExtractor()
         assert extractor is not None
         assert hasattr(extractor, "extract")
 
     def test_extract_minimal_requires_input(self):
         from comsol.core.extractor import ComsolExtractor
+
         extractor = ComsolExtractor()
         with pytest.raises(ValueError, match="Input file required"):
             extractor.extract({})
 
     def test_extract_with_file(self, tmp_path):
         from comsol.core.extractor import ComsolExtractor
+
         params = tmp_path / "params.txt"
         params.write_text(
             "PHYSICS\n"
@@ -343,9 +367,7 @@ class TestMultiwfnExtractor:
         mod = _import_module_direct(["multiwfn", "core", "extractor.py"])
         extractor = mod.MultiwfnExtractor()
         cube = np.random.rand(10, 10, 10).astype(np.float64) * 0.1
-        result = extractor.extract_density_field(
-            cube, (0.0, 0.0, 0.0), (0.1, 0.1, 0.1)
-        )
+        result = extractor.extract_density_field(cube, (0.0, 0.0, 0.0), (0.1, 0.1, 0.1))
         assert "total_electrons" in result
         assert "max_density" in result
 
@@ -363,12 +385,14 @@ class TestMultiwfnExtractor:
 class TestQEExtractor:
     def test_instantiate(self):
         from qe.core.extractor import QuantumEspressoExtractor
+
         extractor = QuantumEspressoExtractor()
         assert extractor is not None
         assert hasattr(extractor, "extract")
 
     def test_extract_minimal_requires_input(self):
         from qe.core.extractor import QuantumEspressoExtractor
+
         extractor = QuantumEspressoExtractor()
         # BaseEngineExtractor 允许无输入调用（使用默认参数）
         result = extractor.extract({})
@@ -376,6 +400,7 @@ class TestQEExtractor:
 
     def test_extract_with_file(self, tmp_path):
         from qe.core.extractor import QuantumEspressoExtractor
+
         pwi = tmp_path / "qe.in"
         pwi.write_text(
             "&CONTROL\n"
@@ -432,6 +457,7 @@ class TestSolidworksExtractor:
 class TestVoxelExtractor:
     def test_instantiate(self):
         from voxel.core.harness import VoxelHarness
+
         harness = VoxelHarness()
         assert harness is not None
         assert hasattr(harness, "extract")
@@ -439,12 +465,14 @@ class TestVoxelExtractor:
 
     def test_extract(self):
         from voxel.core.harness import VoxelHarness
+
         harness = VoxelHarness()
         schema = harness.extract({}, {"simulation_type": "generic"})
         assert schema.schema_version == "1.0.0"
 
     def test_lattice_boltzmann(self):
         from voxel.core.harness import VoxelHarness
+
         harness = VoxelHarness()
         schema = harness.extract({}, {"simulation_type": "lattice_boltzmann"})
         eqs = schema.mathematical_model.governing_equations

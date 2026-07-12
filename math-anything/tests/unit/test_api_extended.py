@@ -20,14 +20,17 @@ import pytest
 from math_anything.api import (
     ExtractionResult,
     MathAnything,
+)
+from math_anything.api import (
     extract as module_extract,
+)
+from math_anything.api import (
     extract_file as module_extract_file,
 )
 from math_anything.exceptions import (
     ExtractionFileNotFoundError,
     MathAnythingError,
 )
-
 
 # ── Fixtures ──
 
@@ -297,6 +300,7 @@ class TestParseFiles:
         incar = tmp_path / "INCAR"
         incar.write_text("ENCUT = 520\n")
         import builtins
+
         real_import = builtins.__import__
 
         def fail_vasp_import(name, *args, **kwargs):
@@ -305,7 +309,7 @@ class TestParseFiles:
             return real_import(name, *args, **kwargs)
 
         with patch.object(builtins, "__import__", side_effect=fail_vasp_import):
-            params = api._parse_files("vasp", {"incar": str(incar)})
+            api._parse_files("vasp", {"incar": str(incar)})
         assert len(api._warnings) >= 1
         assert any("INCAR" in w for w in api._warnings)
 

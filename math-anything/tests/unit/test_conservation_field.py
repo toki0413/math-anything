@@ -2,16 +2,15 @@
 
 import pytest
 
+from math_anything.structures._core import StructuralInvariant
 from math_anything.structures.conservation_field import (
+    NOETHER_CORRESPONDENCE,
+    TIME_TRANSLATION_CONSERVATION,
     ConservationMatrixField,
     FieldConservedQuantity,
     NoetherCurrent,
-    NOETHER_CORRESPONDENCE,
-    TIME_TRANSLATION_CONSERVATION,
 )
 from math_anything.structures.enums import SymmetryGroup
-from math_anything.structures._core import StructuralInvariant
-
 
 # ── Build method names for parametrized tests ──
 
@@ -38,7 +37,6 @@ BUILD_METHODS = [
 
 
 class TestConservationMatrixField:
-
     @pytest.mark.parametrize("method_name", BUILD_METHODS)
     def test_build_method_returns_self(self, method_name):
         field = ConservationMatrixField()
@@ -158,7 +156,6 @@ class TestConservationMatrixField:
 
 
 class TestFieldConservedQuantity:
-
     def test_creation(self):
         q = FieldConservedQuantity(
             name="mass",
@@ -186,7 +183,6 @@ class TestFieldConservedQuantity:
 
 
 class TestNoetherCurrent:
-
     def test_creation(self):
         nc = NoetherCurrent(
             name="mass_current",
@@ -209,7 +205,6 @@ class TestNoetherCurrent:
 
 
 class TestNoetherCorrespondence:
-
     def test_mapping_exists(self):
         assert isinstance(NOETHER_CORRESPONDENCE, dict)
         assert len(NOETHER_CORRESPONDENCE) > 0

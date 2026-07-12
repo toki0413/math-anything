@@ -8,8 +8,8 @@ import pytest
 
 from math_anything.exceptions import (
     ConfigurationError,
-    ConstraintViolationError,
     ConservationLawViolationError,
+    ConstraintViolationError,
     ContradictoryInvariantsError,
     DimensionalAnalysisError,
     DimensionalInconsistencyError,
@@ -32,11 +32,10 @@ from math_anything.exceptions import (
     PluginLoadError,
     PluginNotFoundError,
     StructureError,
-    UnsupportedEngineError,
     UnknownUnitError,
+    UnsupportedEngineError,
     ValidationError,
 )
-
 
 # ── Base class ──
 
@@ -355,9 +354,7 @@ class TestCrossHierarchyCatch:
             PluginLoadError,
         ]
         for cls in subclasses:
-            assert issubclass(cls, MathAnythingError), (
-                f"{cls.__name__} is not a subclass of MathAnythingError"
-            )
+            assert issubclass(cls, MathAnythingError), f"{cls.__name__} is not a subclass of MathAnythingError"
 
     def test_catch_extraction_subtree(self):
         """All extraction-related errors should be catchable as ExtractionError."""
@@ -368,9 +365,7 @@ class TestCrossHierarchyCatch:
             ExtractionFileNotFoundError,
         ]
         for cls in extraction_subclasses:
-            assert issubclass(cls, ExtractionError), (
-                f"{cls.__name__} is not a subclass of ExtractionError"
-            )
+            assert issubclass(cls, ExtractionError), f"{cls.__name__} is not a subclass of ExtractionError"
 
     def test_catch_validation_subtree(self):
         """All validation-related errors should be catchable as ValidationError."""
@@ -380,6 +375,4 @@ class TestCrossHierarchyCatch:
             ConservationLawViolationError,
         ]
         for cls in validation_subclasses:
-            assert issubclass(cls, ValidationError), (
-                f"{cls.__name__} is not a subclass of ValidationError"
-            )
+            assert issubclass(cls, ValidationError), f"{cls.__name__} is not a subclass of ValidationError"

@@ -19,22 +19,26 @@ class TestMorphisms:
 
     def test_cfl_morphism(self):
         from math_anything.morphisms.convergence import CFLConditionMorphism
+
         m = CFLConditionMorphism()
         assert m.scheme_type == "explicit"
         assert len(m.invariants_kept) > 0
 
     def test_convergence_morphism(self):
         from math_anything.morphisms.convergence import ConvergenceMorphism
+
         m = ConvergenceMorphism()
         assert len(m.invariants_kept) > 0
 
     def test_symmetry_reduction(self):
         from math_anything.morphisms.symmetry import SymmetryReductionMorphism
+
         m = SymmetryReductionMorphism()
         assert len(m.invariants_kept) > 0
 
     def test_bloch_theorem(self):
         from math_anything.morphisms.symmetry import BlochTheoremMorphism
+
         m = BlochTheoremMorphism()
         assert len(m.invariants_kept) > 0
 
@@ -52,8 +56,7 @@ class TestCategoryEngine:
 
     def test_invariant_under(self, category_engine):
         assert category_engine.invariant_under(
-            "self_adjointness (orthogonal projection preserves it)",
-            "plane_wave_truncation"
+            "self_adjointness (orthogonal projection preserves it)", "plane_wave_truncation"
         )
 
     def test_kernel_of(self, category_engine):
@@ -64,6 +67,7 @@ class TestCategoryEngine:
 class TestDimensional:
     def test_buckingham_basic(self, buckingham_engine):
         from math_anything.dimensional.scaling_group import BUILTIN_QUANTITIES
+
         quantities = [
             BUILTIN_QUANTITIES["density"],
             BUILTIN_QUANTITIES["velocity"],
@@ -81,6 +85,7 @@ class TestDimensional:
 class TestEquationChecker:
     def test_ode_check(self):
         from math_anything.dimensional.equation_checker import EquationChecker
+
         checker = EquationChecker()
         result = checker.check_schema("m_i d²r_i/dt² = F_i")
         assert result.consistent

@@ -2,18 +2,18 @@
 
 import pytest
 
-from math_anything.schemas import MathSchema
+from math_anything.insight.abaqus_insight import AbaqusInsightEngine
 from math_anything.insight.base import (
+    GenericInsightEngine,
     InsightBlock,
     InsightEngine,
-    GenericInsightEngine,
-    register_insight_engine,
-    get_insight_engine,
     explain_schema,
+    get_insight_engine,
+    register_insight_engine,
 )
-from math_anything.insight.vasp_insight import VaspInsightEngine
 from math_anything.insight.lammps_insight import LammpsInsightEngine
-from math_anything.insight.abaqus_insight import AbaqusInsightEngine
+from math_anything.insight.vasp_insight import VaspInsightEngine
+from math_anything.schemas import MathSchema
 
 
 def _make_schema(raw: dict) -> MathSchema:
@@ -24,8 +24,8 @@ def _make_schema(raw: dict) -> MathSchema:
 
 # ── InsightBlock ──
 
-class TestInsightBlock:
 
+class TestInsightBlock:
     def test_to_text_info(self):
         b = InsightBlock(title="Test", content="hello", level="info")
         text = b.to_text()
@@ -60,8 +60,8 @@ class TestInsightBlock:
 
 # ── GenericInsightEngine ──
 
-class TestGenericInsightEngine:
 
+class TestGenericInsightEngine:
     def test_engine_name(self):
         e = GenericInsightEngine()
         assert e.engine_name == "generic"
@@ -73,10 +73,13 @@ class TestGenericInsightEngine:
 
     def test_generate_with_equations(self):
         from math_anything.schemas import GoverningEquation
+
         s = MathSchema()
         s.mathematical_model.governing_equations.append(
             GoverningEquation(
-                id="eq1", type="PDE", name="Laplace",
+                id="eq1",
+                type="PDE",
+                name="Laplace",
                 mathematical_form="nabla^2 u = 0",
             )
         )
@@ -97,8 +100,8 @@ class TestGenericInsightEngine:
 
 # ── Registry ──
 
-class TestInsightRegistry:
 
+class TestInsightRegistry:
     def test_get_unknown_returns_generic(self):
         e = get_insight_engine("nonexistent")
         assert isinstance(e, GenericInsightEngine)
@@ -116,8 +119,8 @@ class TestInsightRegistry:
 
 # ── VaspInsightEngine ──
 
-class TestVaspInsightEngine:
 
+class TestVaspInsightEngine:
     def test_engine_name(self):
         assert VaspInsightEngine().engine_name == "vasp"
 
@@ -155,9 +158,11 @@ class TestVaspInsightEngine:
         assert len(warns) > 0
 
     def test_sampling_insight_with_kpoints(self):
-        schema = _make_schema({
-            "kpoints": {"mesh": {"subdivisions": [4, 4, 4], "mode": "Gamma"}},
-        })
+        schema = _make_schema(
+            {
+                "kpoints": {"mesh": {"subdivisions": [4, 4, 4], "mode": "Gamma"}},
+            }
+        )
         blocks = VaspInsightEngine().generate(schema)
         assert any("k-Point" in b.title or "Sampling" in b.title for b in blocks)
 
@@ -178,8 +183,8 @@ class TestVaspInsightEngine:
 
 # ── LammpsInsightEngine ──
 
-class TestLammpsInsightEngine:
 
+class TestLammpsInsightEngine:
     def test_engine_name(self):
         assert LammpsInsightEngine().engine_name == "lammps"
 
@@ -188,66 +193,74 @@ class TestLammpsInsightEngine:
         assert len(blocks) > 0
 
     def test_generate_with_nve(self):
-        schema = _make_schema({
-            "fixes": {"f1": {"style": "nve"}},
-            "timestep": 1.0,
-            "units": "metal",
-            "pair_style": "eam/alloy",
-            "boundary": "p p p",
-        })
+        schema = _make_schema(
+            {
+                "fixes": {"f1": {"style": "nve"}},
+                "timestep": 1.0,
+                "units": "metal",
+                "pair_style": "eam/alloy",
+                "boundary": "p p p",
+            }
+        )
         blocks = LammpsInsightEngine().generate(schema)
         ensemble = [b for b in blocks if "Ensemble" in b.title or "Hamiltonian" in b.title]
         assert len(ensemble) > 0
         assert "NVE" in ensemble[0].content
 
     def test_generate_with_nvt(self):
-        schema = _make_schema({
-            "fixes": {"f1": {"style": "nvt"}},
-            "timestep": 1.0,
-            "units": "metal",
-            "pair_style": "lj/cut",
-            "boundary": "p p p",
-        })
+        schema = _make_schema(
+            {
+                "fixes": {"f1": {"style": "nvt"}},
+                "timestep": 1.0,
+                "units": "metal",
+                "pair_style": "lj/cut",
+                "boundary": "p p p",
+            }
+        )
         blocks = LammpsInsightEngine().generate(schema)
         ensemble = [b for b in blocks if "Ensemble" in b.title]
         assert "NVT" in ensemble[0].content
 
     def test_stability_insight_large_timestep(self):
-        schema = _make_schema({
-            "timestep": 5.0,
-            "units": "metal",
-            "pair_style": "eam/alloy",
-        })
+        schema = _make_schema(
+            {
+                "timestep": 5.0,
+                "units": "metal",
+                "pair_style": "eam/alloy",
+            }
+        )
         blocks = LammpsInsightEngine().generate(schema)
         stability = [b for b in blocks if "Stability" in b.title]
         assert len(stability) > 0
 
     def test_boundary_insight(self):
-        schema = _make_schema({"boundary": "p f s"})
-        blocks = LammpsInsightEngine().generate(MathSchema())
+        _make_schema({"boundary": "p f s"})
+        LammpsInsightEngine().generate(MathSchema())
         # Even empty schema should produce boundary insight
-        blocks2 = LammpsInsightEngine().generate(
-            _make_schema({"boundary": "p p p"})
-        )
+        blocks2 = LammpsInsightEngine().generate(_make_schema({"boundary": "p p p"}))
         assert any("Boundary" in b.title for b in blocks2)
 
     def test_potential_warnings_lj(self):
-        schema = _make_schema({
-            "pair_style": "lj/cut",
-            "timestep": 1.0,
-            "units": "metal",
-        })
+        schema = _make_schema(
+            {
+                "pair_style": "lj/cut",
+                "timestep": 1.0,
+                "units": "metal",
+            }
+        )
         blocks = LammpsInsightEngine().generate(schema)
         tips = [b for b in blocks if "Potential" in b.title]
         assert len(tips) > 0
 
     def test_langevin_ensemble(self):
-        schema = _make_schema({
-            "fixes": {"f1": {"style": "langevin"}},
-            "timestep": 0.5,
-            "units": "real",
-            "pair_style": "lj/cut",
-        })
+        schema = _make_schema(
+            {
+                "fixes": {"f1": {"style": "langevin"}},
+                "timestep": 0.5,
+                "units": "real",
+                "pair_style": "lj/cut",
+            }
+        )
         blocks = LammpsInsightEngine().generate(schema)
         ensemble = [b for b in blocks if "Ensemble" in b.title]
         assert "Langevin" in ensemble[0].content
@@ -255,8 +268,8 @@ class TestLammpsInsightEngine:
 
 # ── AbaqusInsightEngine ──
 
-class TestAbaqusInsightEngine:
 
+class TestAbaqusInsightEngine:
     def test_engine_name(self):
         assert AbaqusInsightEngine().engine_name == "abaqus"
 

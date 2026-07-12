@@ -2,21 +2,20 @@
 
 import pytest
 
+from math_anything.tiered.tier_recommender import TierRecommender, analyze_file_properties
 from math_anything.tiered.tiered_schema import (
     AnalysisTier,
     ComplexityScore,
-    ResourceRequirements,
     FileAnalysis,
-    TierRecommendation,
+    ResourceRequirements,
     TieredAnalysisResult,
+    TierRecommendation,
 )
-from math_anything.tiered.tier_recommender import TierRecommender, analyze_file_properties
-
 
 # ── AnalysisTier ──
 
-class TestAnalysisTier:
 
+class TestAnalysisTier:
     def test_values(self):
         assert AnalysisTier.BASIC.value == 1
         assert AnalysisTier.ENHANCED.value == 2
@@ -31,8 +30,8 @@ class TestAnalysisTier:
 
 # ── ComplexityScore ──
 
-class TestComplexityScore:
 
+class TestComplexityScore:
     def test_defaults(self):
         cs = ComplexityScore()
         assert cs.total == 0.0
@@ -47,8 +46,8 @@ class TestComplexityScore:
 
 # ── ResourceRequirements ──
 
-class TestResourceRequirements:
 
+class TestResourceRequirements:
     def test_defaults(self):
         r = ResourceRequirements()
         assert r.cpu_time_seconds == 1.0
@@ -68,8 +67,8 @@ class TestResourceRequirements:
 
 # ── FileAnalysis ──
 
-class TestFileAnalysis:
 
+class TestFileAnalysis:
     def test_defaults(self):
         fa = FileAnalysis()
         assert fa.file_path == ""
@@ -84,8 +83,8 @@ class TestFileAnalysis:
 
 # ── TierRecommendation ──
 
-class TestTierRecommendation:
 
+class TestTierRecommendation:
     def test_to_dict(self):
         rec = TierRecommendation(
             recommended_tier=AnalysisTier.ENHANCED,
@@ -103,8 +102,8 @@ class TestTierRecommendation:
 
 # ── TieredAnalysisResult ──
 
-class TestTieredAnalysisResult:
 
+class TestTieredAnalysisResult:
     def test_to_dict_minimal(self):
         r = TieredAnalysisResult(
             tier=AnalysisTier.BASIC,
@@ -130,8 +129,8 @@ class TestTieredAnalysisResult:
 
 # ── TierRecommender ──
 
-class TestTierRecommender:
 
+class TestTierRecommender:
     def test_small_system_basic(self):
         rec = TierRecommender()
         fa = FileAnalysis(num_atoms=10, simulation_time=1000)
@@ -185,8 +184,8 @@ class TestTierRecommender:
 
 # ── analyze_file_properties ──
 
-class TestAnalyzeFileProperties:
 
+class TestAnalyzeFileProperties:
     def test_nonexistent_file(self):
         fa = analyze_file_properties("/nonexistent/path/INCAR")
         assert isinstance(fa, FileAnalysis)

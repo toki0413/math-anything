@@ -9,12 +9,12 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from math_anything.knowledge.arxiv_client import ArxivClient, ArxivPaper
 from math_anything.knowledge.local_cache import LocalKnowledgeCache
 from math_anything.knowledge.wikidata_client import WikidataClient, WikidataEntity
-from math_anything.knowledge.arxiv_client import ArxivClient, ArxivPaper
-
 
 # ── LocalKnowledgeCache fixtures ──
+
 
 @pytest.fixture
 def cache(tmp_path):
@@ -30,10 +30,11 @@ def cache_no_ttl(tmp_path):
 
 # ── LocalKnowledgeCache: creation ──
 
+
 class TestLocalCacheCreation:
     def test_creates_cache_dir(self, tmp_path):
         cache_dir = tmp_path / "new_cache"
-        c = LocalKnowledgeCache(cache_dir=str(cache_dir))
+        LocalKnowledgeCache(cache_dir=str(cache_dir))
         assert cache_dir.exists()
 
     def test_default_cache_dir(self):
@@ -50,6 +51,7 @@ class TestLocalCacheCreation:
 
 
 # ── LocalKnowledgeCache: set/get ──
+
 
 class TestLocalCacheSetGet:
     def test_set_and_get(self, cache):
@@ -84,6 +86,7 @@ class TestLocalCacheSetGet:
 
 # ── LocalKnowledgeCache: expiration ──
 
+
 class TestLocalCacheExpiration:
     def test_expired_entry_returns_none(self, cache_no_ttl):
         cache_no_ttl.set("expire_me", "data", ttl=0)
@@ -103,6 +106,7 @@ class TestLocalCacheExpiration:
 
 
 # ── LocalKnowledgeCache: delete/clear ──
+
 
 class TestLocalCacheDeleteClear:
     def test_delete_key(self, cache):
@@ -127,6 +131,7 @@ class TestLocalCacheDeleteClear:
 
 # ── LocalKnowledgeCache: offline mode ──
 
+
 class TestLocalCacheOfflineMode:
     def test_set_offline_mode(self, cache):
         cache.set_offline_mode(True)
@@ -139,6 +144,7 @@ class TestLocalCacheOfflineMode:
 
 
 # ── LocalKnowledgeCache: stats ──
+
 
 class TestLocalCacheStats:
     def test_stats_empty(self, cache):
@@ -160,6 +166,7 @@ class TestLocalCacheStats:
 
 # ── LocalKnowledgeCache: cleanup ──
 
+
 class TestLocalCacheCleanup:
     def test_cleanup_expired(self, cache):
         cache.set("valid", "data", ttl=3600)
@@ -176,6 +183,7 @@ class TestLocalCacheCleanup:
 
 
 # ── LocalKnowledgeCache: get_cache_keys ──
+
 
 class TestLocalCacheKeys:
     def test_get_all_keys(self, cache):
@@ -200,6 +208,7 @@ class TestLocalCacheKeys:
 
 # ── LocalKnowledgeCache: file corruption ──
 
+
 class TestLocalCacheCorruption:
     def test_corrupted_cache_file_returns_none(self, cache):
         cache.set("key1", "good_data")
@@ -220,6 +229,7 @@ class TestLocalCacheCorruption:
 
 # ── LocalKnowledgeCache: internal methods ──
 
+
 class TestLocalCacheInternals:
     def test_get_cache_file_deterministic(self, cache):
         f1 = cache._get_cache_file("test_key")
@@ -236,6 +246,7 @@ class TestLocalCacheInternals:
 
 
 # ── WikidataClient: creation ──
+
 
 class TestWikidataClientCreation:
     def test_creates_without_cache(self):
@@ -262,6 +273,7 @@ class TestWikidataClientCreation:
 
 
 # ── WikidataClient: get_concept (mocked network) ──
+
 
 class TestWikidataClientConcept:
     def test_get_concept_from_cache(self, cache):
@@ -296,6 +308,7 @@ class TestWikidataClientConcept:
 
 # ── WikidataClient: get_unit ──
 
+
 class TestWikidataClientUnit:
     def test_get_unit_from_cache(self, cache):
         entity_data = {
@@ -314,14 +327,17 @@ class TestWikidataClientUnit:
 
 # ── WikidataClient: get_constant ──
 
+
 class TestWikidataClientConstant:
     def test_get_constant_known(self):
         client = WikidataClient()
         with patch.object(client, "_get_entity_by_id") as mock:
             mock.return_value = WikidataEntity(
-                id="Q2111", label="speed of light",
+                id="Q2111",
+                label="speed of light",
                 description="physical constant",
-                properties={}, uri="http://www.wikidata.org/entity/Q2111"
+                properties={},
+                uri="http://www.wikidata.org/entity/Q2111",
             )
             result = client.get_constant("speed_of_light")
             assert result is not None
@@ -330,14 +346,17 @@ class TestWikidataClientConstant:
 
 # ── WikidataClient: get_equation_info ──
 
+
 class TestWikidataClientEquation:
     def test_get_equation_info_known(self):
         client = WikidataClient()
         with patch.object(client, "_get_entity_by_id") as mock:
             mock.return_value = WikidataEntity(
-                id="Q2000011", label="Navier-Stokes",
+                id="Q2000011",
+                label="Navier-Stokes",
                 description="equations",
-                properties={}, uri="http://www.wikidata.org/entity/Q2000011"
+                properties={},
+                uri="http://www.wikidata.org/entity/Q2000011",
             )
             result = client.get_equation_info("navier-stokes")
             assert "name" in result
@@ -352,14 +371,17 @@ class TestWikidataClientEquation:
 
 # ── WikidataClient: get_numerical_method_info ──
 
+
 class TestWikidataClientMethod:
     def test_get_numerical_method_fem(self):
         client = WikidataClient()
         with patch.object(client, "_get_entity_by_id") as mock:
             mock.return_value = WikidataEntity(
-                id="Q236425", label="FEM",
+                id="Q236425",
+                label="FEM",
                 description="numerical method",
-                properties={}, uri="http://www.wikidata.org/entity/Q236425"
+                properties={},
+                uri="http://www.wikidata.org/entity/Q236425",
             )
             result = client.get_numerical_method_info("finite element")
             assert result["wikidata_id"] == "Q236425"
@@ -373,23 +395,26 @@ class TestWikidataClientMethod:
 
 # ── WikidataClient: query_by_fingerprint ──
 
+
 class TestWikidataClientFingerprint:
     def test_query_by_fingerprint(self):
         client = WikidataClient()
-        with patch.object(client, "get_concept") as mock_concept, \
-             patch.object(client, "get_numerical_method_info") as mock_method:
+        with (
+            patch.object(client, "get_concept") as mock_concept,
+            patch.object(client, "get_numerical_method_info") as mock_method,
+        ):
             mock_concept.return_value = WikidataEntity(
-                id="Q1", label="Test", description="test",
-                properties={}, uri="http://www.wikidata.org/entity/Q1"
+                id="Q1", label="Test", description="test", properties={}, uri="http://www.wikidata.org/entity/Q1"
             )
             mock_method.return_value = {
-                "name": "FEM", "description": "method",
-                "wikidata_id": "Q236425", "uri": "http://test"
+                "name": "FEM",
+                "description": "method",
+                "wikidata_id": "Q236425",
+                "uri": "http://test",
             }
-            result = client.query_by_fingerprint({
-                "mathematical_concepts": ["laplacian"],
-                "tensor_operations": ["finite element"]
-            })
+            result = client.query_by_fingerprint(
+                {"mathematical_concepts": ["laplacian"], "tensor_operations": ["finite element"]}
+            )
             assert len(result) == 2
 
     def test_query_by_fingerprint_empty(self):
@@ -399,6 +424,7 @@ class TestWikidataClientFingerprint:
 
 
 # ── WikidataClient: network error handling ──
+
 
 class TestWikidataClientNetworkErrors:
     def test_get_entity_by_id_network_error(self):
@@ -422,17 +448,22 @@ class TestWikidataClientNetworkErrors:
 
 # ── WikidataEntity ──
 
+
 class TestWikidataEntity:
     def test_entity_creation(self):
         entity = WikidataEntity(
-            id="Q123", label="Test", description="A test entity",
-            properties={"p1": "v1"}, uri="http://www.wikidata.org/entity/Q123"
+            id="Q123",
+            label="Test",
+            description="A test entity",
+            properties={"p1": "v1"},
+            uri="http://www.wikidata.org/entity/Q123",
         )
         assert entity.id == "Q123"
         assert entity.label == "Test"
 
 
 # ── ArxivClient: creation ──
+
 
 class TestArxivClientCreation:
     def test_creates_without_cache(self):
@@ -451,6 +482,7 @@ class TestArxivClientCreation:
 
 
 # ── ArxivClient: search (mocked network) ──
+
 
 class TestArxivClientSearch:
     def test_search_with_mock_response(self):
@@ -491,18 +523,20 @@ class TestArxivClientSearch:
 
     def test_search_with_cache_hit(self, cache):
         # Pre-populate cache
-        cached_data = [{
-            "id": "2301.00001",
-            "title": "Cached Paper",
-            "authors": ["Author"],
-            "abstract": "Abstract",
-            "categories": ["math.NA"],
-            "published": "2023-01-01",
-            "updated": "2023-01-01",
-            "pdf_url": "http://arxiv.org/pdf/2301.00001",
-            "relevance_score": 0.0,
-            "matched_concepts": [],
-        }]
+        cached_data = [
+            {
+                "id": "2301.00001",
+                "title": "Cached Paper",
+                "authors": ["Author"],
+                "abstract": "Abstract",
+                "categories": ["math.NA"],
+                "published": "2023-01-01",
+                "updated": "2023-01-01",
+                "pdf_url": "http://arxiv.org/pdf/2301.00001",
+                "relevance_score": 0.0,
+                "matched_concepts": [],
+            }
+        ]
         cache.set("arxiv:test query:1:relevance", cached_data)
         client = ArxivClient(cache=cache)
         papers = client.search("test query", max_results=1)
@@ -511,6 +545,7 @@ class TestArxivClientSearch:
 
 
 # ── ArxivClient: query_by_fingerprint ──
+
 
 class TestArxivClientFingerprint:
     def test_query_by_fingerprint(self):
@@ -530,12 +565,11 @@ class TestArxivClientFingerprint:
 
 # ── ArxivClient: _build_query_from_fingerprint ──
 
+
 class TestArxivClientBuildQuery:
     def test_build_query_with_methods(self):
         client = ArxivClient()
-        query = client._build_query_from_fingerprint({
-            "numerical_methods": ["Finite Element Method"]
-        })
+        query = client._build_query_from_fingerprint({"numerical_methods": ["Finite Element Method"]})
         assert "FEM" in query
 
     def test_build_query_empty_fingerprint(self):
@@ -545,6 +579,7 @@ class TestArxivClientBuildQuery:
 
 
 # ── ArxivClient: _extract_math_terms ──
+
 
 class TestArxivClientMathTerms:
     def test_extract_laplacian_terms(self):
@@ -570,16 +605,21 @@ class TestArxivClientMathTerms:
 
 # ── ArxivClient: get_paper_by_id ──
 
+
 class TestArxivClientGetById:
     def test_get_paper_by_id(self):
         client = ArxivClient()
         with patch.object(client, "search") as mock_search:
             mock_search.return_value = [
                 ArxivPaper(
-                    id="2301.00001", title="Test", authors=["A"],
-                    abstract="abs", categories=["math.NA"],
-                    published="2023-01-01", updated="2023-01-01",
-                    pdf_url="http://test"
+                    id="2301.00001",
+                    title="Test",
+                    authors=["A"],
+                    abstract="abs",
+                    categories=["math.NA"],
+                    published="2023-01-01",
+                    updated="2023-01-01",
+                    pdf_url="http://test",
                 )
             ]
             paper = client.get_paper_by_id("2301.00001")
@@ -595,13 +635,18 @@ class TestArxivClientGetById:
 
 # ── ArxivPaper ──
 
+
 class TestArxivPaper:
     def test_paper_creation(self):
         paper = ArxivPaper(
-            id="2301.00001", title="Test", authors=["A"],
-            abstract="abs", categories=["math.NA"],
-            published="2023-01-01", updated="2023-01-01",
-            pdf_url="http://test"
+            id="2301.00001",
+            title="Test",
+            authors=["A"],
+            abstract="abs",
+            categories=["math.NA"],
+            published="2023-01-01",
+            updated="2023-01-01",
+            pdf_url="http://test",
         )
         assert paper.id == "2301.00001"
         assert paper.matched_concepts == []  # default from __post_init__
@@ -609,11 +654,16 @@ class TestArxivPaper:
     def test_paper_to_dict(self):
         client = ArxivClient()
         paper = ArxivPaper(
-            id="2301.00001", title="Test", authors=["A"],
-            abstract="abs", categories=["math.NA"],
-            published="2023-01-01", updated="2023-01-01",
-            pdf_url="http://test", relevance_score=0.8,
-            matched_concepts=["FEM"]
+            id="2301.00001",
+            title="Test",
+            authors=["A"],
+            abstract="abs",
+            categories=["math.NA"],
+            published="2023-01-01",
+            updated="2023-01-01",
+            pdf_url="http://test",
+            relevance_score=0.8,
+            matched_concepts=["FEM"],
         )
         d = client._paper_to_dict(paper)
         assert d["id"] == "2301.00001"
@@ -622,6 +672,7 @@ class TestArxivPaper:
 
 
 # ── ArxivClient: parse_response ──
+
 
 class TestArxivClientParse:
     def test_parse_invalid_xml(self):

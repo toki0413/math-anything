@@ -52,23 +52,26 @@ def test_loss_mae():
     assert pytest.approx(loss) == ((0.5 + 0.5 + 0.5) / 3)
 
 
-
 def test_sequential_network_forward_shape():
-    net = SequentialNetwork([
-        LinearMorphism(name="linear_1", input_dim=2, output_dim=3),
-        ActivationMorphism(name="relu_1", activation="relu"),
-        LinearMorphism(name="linear_2", input_dim=3, output_dim=1),
-    ])
+    net = SequentialNetwork(
+        [
+            LinearMorphism(name="linear_1", input_dim=2, output_dim=3),
+            ActivationMorphism(name="relu_1", activation="relu"),
+            LinearMorphism(name="linear_2", input_dim=3, output_dim=1),
+        ]
+    )
     out = net.forward(np.array([1.0, -1.0]))
     assert out.shape == (1,)
 
 
 def test_sequential_network_training_reduces_loss():
-    net = SequentialNetwork([
-        LinearMorphism(name="linear_1", input_dim=1, output_dim=4),
-        ActivationMorphism(name="relu_1", activation="relu"),
-        LinearMorphism(name="linear_2", input_dim=4, output_dim=1),
-    ])
+    net = SequentialNetwork(
+        [
+            LinearMorphism(name="linear_1", input_dim=1, output_dim=4),
+            ActivationMorphism(name="relu_1", activation="relu"),
+            LinearMorphism(name="linear_2", input_dim=4, output_dim=1),
+        ]
+    )
     loss_fn = LossMorphism(name="mse", loss="mse")
 
     xs = [np.array([x]) for x in [-1.0, 0.0, 1.0]]
@@ -96,11 +99,13 @@ def test_sequential_network_training_reduces_loss_tanh():
         SequentialNetwork,
     )
 
-    net = SequentialNetwork([
-        LinearMorphism(name="linear_1", input_dim=1, output_dim=4),
-        ActivationMorphism(name="tanh_1", activation="tanh"),
-        LinearMorphism(name="linear_2", input_dim=4, output_dim=1),
-    ])
+    net = SequentialNetwork(
+        [
+            LinearMorphism(name="linear_1", input_dim=1, output_dim=4),
+            ActivationMorphism(name="tanh_1", activation="tanh"),
+            LinearMorphism(name="linear_2", input_dim=4, output_dim=1),
+        ]
+    )
     loss_fn = LossMorphism(name="mse", loss="mse")
 
     xs = [np.array([x]) for x in [-1.0, 0.0, 1.0]]
@@ -128,11 +133,13 @@ def test_sequential_network_training_reduces_loss_sigmoid():
         SequentialNetwork,
     )
 
-    net = SequentialNetwork([
-        LinearMorphism(name="linear_1", input_dim=1, output_dim=4),
-        ActivationMorphism(name="sigmoid_1", activation="sigmoid"),
-        LinearMorphism(name="linear_2", input_dim=4, output_dim=1),
-    ])
+    net = SequentialNetwork(
+        [
+            LinearMorphism(name="linear_1", input_dim=1, output_dim=4),
+            ActivationMorphism(name="sigmoid_1", activation="sigmoid"),
+            LinearMorphism(name="linear_2", input_dim=4, output_dim=1),
+        ]
+    )
     loss_fn = LossMorphism(name="mse", loss="mse")
 
     xs = [np.array([x]) for x in [-1.0, 0.0, 1.0]]

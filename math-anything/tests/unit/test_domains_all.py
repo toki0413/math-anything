@@ -7,7 +7,6 @@ from math_anything.domains.base import Domain, DomainAnalysis
 
 
 class TestDomainRegistry:
-
     def test_eight_domains_registered(self):
         domains = list_domains()
         assert len(domains) == 8
@@ -24,7 +23,6 @@ class TestDomainRegistry:
 
 
 class TestAllDomainsAnalysis:
-
     @pytest.mark.parametrize("name", list_domains())
     def test_each_domain_analyzable(self, name):
         cls = DOMAIN_REGISTRY[name]
@@ -71,7 +69,6 @@ class TestAllDomainsAnalysis:
 
 
 class TestDomainComparison:
-
     def test_dft_vs_md(self):
         dft = DOMAIN_REGISTRY["dft"]()
         md = DOMAIN_REGISTRY["md"]()
@@ -98,7 +95,6 @@ class TestDomainComparison:
 
 
 class TestEMDomain:
-
     def test_fdtd_method(self):
         em = DOMAIN_REGISTRY["em"]({"method": "FDTD", "n_cells": 100})
         chain = em.build_morphism_chain()
@@ -127,7 +123,6 @@ class TestEMDomain:
 
 
 class TestQCDomain:
-
     def test_default_hf_method(self):
         qc = DOMAIN_REGISTRY["qc"]()
         chain = qc.build_morphism_chain()
@@ -154,7 +149,6 @@ class TestQCDomain:
 
 
 class TestPhaseFieldDomain:
-
     def test_cahn_hilliard(self):
         pf = DOMAIN_REGISTRY["phase_field"]({"model": "Cahn-Hilliard"})
         cf = pf.build_conservation_field()
@@ -191,7 +185,6 @@ class TestPhaseFieldDomain:
 
 
 class TestDomainWhatIsLost:
-
     @pytest.mark.parametrize("name", list_domains())
     def test_what_is_lost_returns_list(self, name):
         cls = DOMAIN_REGISTRY[name]

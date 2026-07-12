@@ -3,15 +3,15 @@
 import pytest
 
 from math_anything.ai.nlp_interface import (
-    NaturalLanguageInterface,
-    NLParseResult,
     _ANALYSIS_KEYWORDS,
     _ENGINE_KEYWORDS,
     _MATERIAL_KEYWORDS,
+    NaturalLanguageInterface,
+    NLParseResult,
 )
 
-
 # ── NLParseResult ──
+
 
 class TestNLParseResult:
     def test_result_defaults(self):
@@ -39,6 +39,7 @@ class TestNLParseResult:
 
 
 # ── Keyword mappings ──
+
 
 class TestKeywordMappings:
     def test_engine_keywords_has_vasp(self):
@@ -76,6 +77,7 @@ class TestKeywordMappings:
 
 # ── NaturalLanguageInterface creation ──
 
+
 class TestNaturalLanguageInterfaceCreation:
     def test_creates_with_keywords(self):
         nlp = NaturalLanguageInterface()
@@ -93,6 +95,7 @@ class TestNaturalLanguageInterfaceCreation:
 
 
 # ── parse() — engine detection ──
+
 
 class TestParseEngineDetection:
     def test_parse_vasp_keyword(self):
@@ -140,6 +143,7 @@ class TestParseEngineDetection:
 
 # ── parse() — material detection ──
 
+
 class TestParseMaterialDetection:
     def test_parse_steel_material(self):
         nlp = NaturalLanguageInterface()
@@ -172,6 +176,7 @@ class TestParseMaterialDetection:
 
 # ── parse() — analysis type detection ──
 
+
 class TestParseAnalysisDetection:
     def test_parse_stress_analysis(self):
         nlp = NaturalLanguageInterface()
@@ -195,6 +200,7 @@ class TestParseAnalysisDetection:
 
 
 # ── parse() — number extraction ──
+
 
 class TestParseNumberExtraction:
     def test_extract_load_newton(self):
@@ -238,6 +244,7 @@ class TestParseNumberExtraction:
 
 # ── parse() — clarification questions ──
 
+
 class TestParseClarification:
     def test_no_engine_adds_clarification(self):
         nlp = NaturalLanguageInterface()
@@ -264,6 +271,7 @@ class TestParseClarification:
 
 
 # ── generate_prompt() ──
+
 
 class TestGeneratePrompt:
     def test_generate_prompt_basic(self):
@@ -301,6 +309,7 @@ class TestGeneratePrompt:
 
 
 # ── _extract_numbers() ──
+
 
 class TestExtractNumbers:
     def test_extract_load_with_space(self):

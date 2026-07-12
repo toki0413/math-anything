@@ -23,9 +23,7 @@ def test_natural_transformation_identity_is_valid():
     eta = NaturalTransformation({d: np.eye(d)})
 
     M = np.array([[1.0, 1.0], [0.0, 1.0]])
-    valid, reason = is_natural_transformation(
-        F, G, eta, test_morphisms=[(d, d, M)]
-    )
+    valid, reason = is_natural_transformation(F, G, eta, test_morphisms=[(d, d, M)])
     assert valid, reason
 
 
@@ -40,7 +38,5 @@ def test_non_natural_transformation_is_invalid():
     eta = NaturalTransformation({d: np.eye(d)})
 
     M = np.array([[1.0, 1.0], [0.0, 1.0]])
-    valid, reason = is_natural_transformation(
-        F, G, eta, test_morphisms=[(d, d, M)]
-    )
+    valid, reason = is_natural_transformation(F, G, eta, test_morphisms=[(d, d, M)])
     assert not valid

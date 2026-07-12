@@ -25,10 +25,12 @@ def test_transfer_weights_shape():
 
 
 def test_flatten_and_set_network_weights_roundtrip():
-    net = SequentialNetwork([
-        LinearMorphism(name="linear_1", input_dim=1, output_dim=2),
-        ActivationMorphism(name="relu_1", activation="relu"),
-    ])
+    net = SequentialNetwork(
+        [
+            LinearMorphism(name="linear_1", input_dim=1, output_dim=2),
+            ActivationMorphism(name="relu_1", activation="relu"),
+        ]
+    )
     original = flatten_network_weights(net)
     set_network_weights(net, [w + 0.1 for w in original])
     restored = flatten_network_weights(net)
@@ -36,9 +38,11 @@ def test_flatten_and_set_network_weights_roundtrip():
 
 
 def test_set_network_weights_rejects_wrong_length():
-    net = SequentialNetwork([
-        LinearMorphism(name="linear_1", input_dim=1, output_dim=2),
-    ])
+    net = SequentialNetwork(
+        [
+            LinearMorphism(name="linear_1", input_dim=1, output_dim=2),
+        ]
+    )
     with pytest.raises(ValueError):
         set_network_weights(net, [0.0, 0.0])  # needs 4 values (2 weights + 2 biases)
 
@@ -49,16 +53,20 @@ def test_weight_space_transfer_rejects_bad_shape():
 
 
 def test_transfer_learn_trains_target():
-    source = SequentialNetwork([
-        LinearMorphism(name="linear_1", input_dim=1, output_dim=2),
-        ActivationMorphism(name="relu_1", activation="relu"),
-        LinearMorphism(name="linear_2", input_dim=2, output_dim=1),
-    ])
-    target = SequentialNetwork([
-        LinearMorphism(name="linear_1", input_dim=1, output_dim=2),
-        ActivationMorphism(name="relu_1", activation="relu"),
-        LinearMorphism(name="linear_2", input_dim=2, output_dim=1),
-    ])
+    source = SequentialNetwork(
+        [
+            LinearMorphism(name="linear_1", input_dim=1, output_dim=2),
+            ActivationMorphism(name="relu_1", activation="relu"),
+            LinearMorphism(name="linear_2", input_dim=2, output_dim=1),
+        ]
+    )
+    target = SequentialNetwork(
+        [
+            LinearMorphism(name="linear_1", input_dim=1, output_dim=2),
+            ActivationMorphism(name="relu_1", activation="relu"),
+            LinearMorphism(name="linear_2", input_dim=2, output_dim=1),
+        ]
+    )
     loss_fn = LossMorphism(name="mse", loss="mse")
     dataset = [(np.array([x]), np.array([2 * x + 1])) for x in [-1.0, 0.0, 1.0]]
 

@@ -1,13 +1,12 @@
 """Tests for evolution numerical solvers — SymplecticIntegrator and ConservationLawSolver."""
 
-import pytest
 import numpy as np
+import pytest
 
-from math_anything.structures.evolution import SymplecticIntegrator, ConservationLawSolver
+from math_anything.structures.evolution import ConservationLawSolver, SymplecticIntegrator
 
 
 class TestSymplecticIntegrator:
-
     @pytest.fixture
     def harmonic_oscillator(self):
         """1D harmonic oscillator: H = p^2/2 + q^2/2."""
@@ -51,11 +50,13 @@ class TestSymplecticIntegrator:
             p0=np.array([0.0]),
             dt=0.01,
         )
-        assert result["is_symplectic"] == True
+        assert result["is_symplectic"]
         assert abs(result["det_J"] - 1.0) < 1e-3
 
     def test_2d_harmonic_oscillator(self):
-        H = lambda q, p: 0.5 * np.sum(p**2) + 0.5 * np.sum(q**2)
+        def H(q, p):
+            return 0.5 * np.sum(p**2) + 0.5 * np.sum(q**2)
+
         integrator = SymplecticIntegrator(H, dim=2)
         result = integrator.integrate(
             q0=np.array([1.0, 0.0]),
@@ -79,7 +80,6 @@ class TestSymplecticIntegrator:
 
 
 class TestConservationLawSolver:
-
     @pytest.fixture
     def linear_advection(self):
         """Linear advection: F(U) = U, characteristic speed = 1."""
@@ -116,7 +116,7 @@ class TestConservationLawSolver:
         """Zero wave speed should return inf."""
         solver = ConservationLawSolver(lambda U: np.zeros_like(U), n_vars=1)
         dt = solver.cfl_condition(np.array([1.0]), dx=0.1, cfl_number=0.5)
-        assert dt == float('inf')
+        assert dt == float("inf")
 
     def test_lax_friedrichs_step(self, linear_advection):
         """Lax-Friedrichs step should not blow up for smooth data."""

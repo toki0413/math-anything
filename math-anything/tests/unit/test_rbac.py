@@ -8,17 +8,17 @@ from pathlib import Path
 import pytest
 
 from math_anything.auth.rbac import (
+    ROLE_PERMISSIONS,
     AuditEntry,
     AuditLogger,
     Permission,
     RBACManager,
     Role,
-    ROLE_PERMISSIONS,
     User,
 )
 
-
 # ── Role / Permission enums ──
+
 
 class TestRoleEnum:
     def test_role_values(self):
@@ -76,6 +76,7 @@ class TestRolePermissions:
 
 # ── User ──
 
+
 class TestUser:
     def test_user_creation_minimal(self):
         u = User(user_id="u1", username="alice", role=Role.ADMIN)
@@ -120,13 +121,16 @@ class TestUser:
 
     def test_user_metadata_custom(self):
         u = User(
-            user_id="u", username="x", role=Role.VIEWER,
+            user_id="u",
+            username="x",
+            role=Role.VIEWER,
             metadata={"team": "research"},
         )
         assert u.metadata["team"] == "research"
 
 
 # ── AuditEntry ──
+
 
 class TestAuditEntry:
     def test_entry_defaults(self):
@@ -152,6 +156,7 @@ class TestAuditEntry:
 
 
 # ── AuditLogger ──
+
 
 class TestAuditLogger:
     def test_creates_empty(self):
@@ -230,7 +235,7 @@ class TestAuditLoggerFlush:
         assert len(files) >= 1
         # File should contain JSON lines
         content = files[0].read_text()
-        lines = [l for l in content.strip().split("\n") if l]
+        lines = [line for line in content.strip().split("\n") if line]
         assert len(lines) >= 1
         parsed = json.loads(lines[0])
         assert "user_id" in parsed
@@ -238,6 +243,7 @@ class TestAuditLoggerFlush:
 
 
 # ── RBACManager ──
+
 
 class TestRBACManagerCreation:
     def test_creates_empty(self):
@@ -401,20 +407,20 @@ class TestRBACAccessControl:
 
     def test_viewer_cannot_extract(self):
         mgr = RBACManager()
-        u = mgr.create_user("v", Role.VIEWER, api_key="vkey")
+        mgr.create_user("v", Role.VIEWER, api_key="vkey")
         authenticated = mgr.authenticate("vkey")
         assert authenticated is not None
         assert mgr.authorize(authenticated, Permission.EXTRACT) is False
 
     def test_admin_can_extract(self):
         mgr = RBACManager()
-        u = mgr.create_user("a", Role.ADMIN, api_key="akey")
+        mgr.create_user("a", Role.ADMIN, api_key="akey")
         authenticated = mgr.authenticate("akey")
         assert mgr.authorize(authenticated, Permission.EXTRACT) is True
 
     def test_analyst_can_verify_but_not_admin(self):
         mgr = RBACManager()
-        u = mgr.create_user("an", Role.ANALYST, api_key="ankey")
+        mgr.create_user("an", Role.ANALYST, api_key="ankey")
         authenticated = mgr.authenticate("ankey")
         assert mgr.authorize(authenticated, Permission.VERIFY) is True
         assert mgr.authorize(authenticated, Permission.ADMIN) is False

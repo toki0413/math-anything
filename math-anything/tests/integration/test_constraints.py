@@ -23,12 +23,13 @@ from math_anything.constraints import (
 )
 from math_anything.structures.properties import StructuralInvariant
 
-
 # ── helpers ──
+
 
 @dataclass
 class SimpleMorphism:
     """A minimal morphism-like object for propagation testing."""
+
     name: str
     invariants_kept: list[str] = field(default_factory=list)
     invariants_lost: list[str] = field(default_factory=list)
@@ -37,6 +38,7 @@ class SimpleMorphism:
 
 
 # ── Test LearnedInvariant ──
+
 
 class TestLearnedInvariant:
     def test_create_with_weakening_rules(self):
@@ -184,6 +186,7 @@ class TestLearnedInvariant:
 
 # ── Test ConstraintPropagation ──
 
+
 class TestConstraintPropagation:
     def test_propagate_single_preserved(self):
         morph = SimpleMorphism(
@@ -311,9 +314,7 @@ class TestConstraintPropagation:
             outcome: PropagationOutcome
 
         prop = ConstraintPropagation()
-        combined = prop.compose_propagation(
-            MockResult(r1_result), MockResult(r2_result)
-        )
+        combined = prop.compose_propagation(MockResult(r1_result), MockResult(r2_result))
         assert combined == PropagationOutcome.WEAKENED
 
     def test_compose_lost_dominates(self):
@@ -332,6 +333,7 @@ class TestConstraintPropagation:
 
 
 # ── Test BoundaryEvolution ──
+
 
 class TestBoundaryEvolution:
     def test_create_boundary_state(self):
@@ -372,11 +374,13 @@ class TestBoundaryEvolution:
         )
         evolution = BoundaryEvolution(state)
         for _ in range(3):
-            evolution.evolve(ExecutionRecord(
-                success=True,
-                params={},
-                invariant_results=[("E_conv", InvariantStatus.SATISFIED)],
-            ))
+            evolution.evolve(
+                ExecutionRecord(
+                    success=True,
+                    params={},
+                    invariant_results=[("E_conv", InvariantStatus.SATISFIED)],
+                )
+            )
         assert state.expansion_count == 3
         assert state.total_experiences == 3
 
@@ -395,11 +399,13 @@ class TestBoundaryEvolution:
         )
         evolution = BoundaryEvolution(state)
         for _ in range(3):
-            evolution.evolve(ExecutionRecord(
-                success=False,
-                params={},
-                invariant_results=[("E_conv", InvariantStatus.VIOLATED)],
-            ))
+            evolution.evolve(
+                ExecutionRecord(
+                    success=False,
+                    params={},
+                    invariant_results=[("E_conv", InvariantStatus.VIOLATED)],
+                )
+            )
         assert state.contraction_count == 3
         # After 3 failures with violations, invariant should be demoted or weakened
         assert inv.violation_count >= 3
@@ -412,11 +418,13 @@ class TestBoundaryEvolution:
         )
         evolution = BoundaryEvolution(state)
         for _ in range(2):
-            evolution.evolve(ExecutionRecord(
-                success=True,
-                params={},
-                invariant_results=[("E_conv", InvariantStatus.SATISFIED)],
-            ))
+            evolution.evolve(
+                ExecutionRecord(
+                    success=True,
+                    params={},
+                    invariant_results=[("E_conv", InvariantStatus.SATISFIED)],
+                )
+            )
         # Should be promoted: boundary risk < 0.3 and violation_count == 0
         assert len(state.interior_invariants) == 1
         assert len(state.boundary_invariants) == 0
@@ -434,21 +442,26 @@ class TestBoundaryEvolution:
 
 # ── Test DomainLearner ──
 
+
 class TestDomainLearner:
     def test_add_examples_and_learn(self):
         learner = DomainLearner()
         for _ in range(10):
-            learner.add_example(TrainingExample(
-                params={"is_bound": True, "density": 8.0},
-                invariant_name="high_density",
-                status=InvariantStatus.SATISFIED,
-            ))
+            learner.add_example(
+                TrainingExample(
+                    params={"is_bound": True, "density": 8.0},
+                    invariant_name="high_density",
+                    status=InvariantStatus.SATISFIED,
+                )
+            )
         for _ in range(10):
-            learner.add_example(TrainingExample(
-                params={"is_bound": False, "density": 2.0},
-                invariant_name="high_density",
-                status=InvariantStatus.VIOLATED,
-            ))
+            learner.add_example(
+                TrainingExample(
+                    params={"is_bound": False, "density": 2.0},
+                    invariant_name="high_density",
+                    status=InvariantStatus.VIOLATED,
+                )
+            )
         hypothesis = learner.learn("high_density", min_support=5)
         assert hypothesis is not None
         assert hypothesis.invariant_name == "high_density"
@@ -458,28 +471,34 @@ class TestDomainLearner:
     def test_learn_insufficient_data(self):
         learner = DomainLearner()
         for _ in range(2):
-            learner.add_example(TrainingExample(
-                params={"x": 1.0},
-                invariant_name="test",
-                status=InvariantStatus.SATISFIED,
-            ))
+            learner.add_example(
+                TrainingExample(
+                    params={"x": 1.0},
+                    invariant_name="test",
+                    status=InvariantStatus.SATISFIED,
+                )
+            )
         hypothesis = learner.learn("test", min_support=5)
         assert hypothesis is None
 
     def test_apply_to_invariant(self):
         learner = DomainLearner()
         for _ in range(10):
-            learner.add_example(TrainingExample(
-                params={"density": 8.0},
-                invariant_name="high_density",
-                status=InvariantStatus.SATISFIED,
-            ))
+            learner.add_example(
+                TrainingExample(
+                    params={"density": 8.0},
+                    invariant_name="high_density",
+                    status=InvariantStatus.SATISFIED,
+                )
+            )
         for _ in range(10):
-            learner.add_example(TrainingExample(
-                params={"density": 2.0},
-                invariant_name="high_density",
-                status=InvariantStatus.VIOLATED,
-            ))
+            learner.add_example(
+                TrainingExample(
+                    params={"density": 2.0},
+                    invariant_name="high_density",
+                    status=InvariantStatus.VIOLATED,
+                )
+            )
         inv = LearnedInvariant(
             name="high_density",
             expression="density > 5.0",
@@ -491,11 +510,13 @@ class TestDomainLearner:
     def test_stats(self):
         learner = DomainLearner()
         for _ in range(5):
-            learner.add_example(TrainingExample(
-                params={"E": -1.0},
-                invariant_name="energy_negative",
-                status=InvariantStatus.SATISFIED,
-            ))
+            learner.add_example(
+                TrainingExample(
+                    params={"E": -1.0},
+                    invariant_name="energy_negative",
+                    status=InvariantStatus.SATISFIED,
+                )
+            )
         stats = learner.stats()
         assert stats["total_examples"] == 5
         assert stats["unique_invariants"] == 1
@@ -503,22 +524,27 @@ class TestDomainLearner:
     def test_numeric_feature_separation(self):
         learner = DomainLearner()
         for i in range(10):
-            learner.add_example(TrainingExample(
-                params={"density": 5.0 + i * 0.1},
-                invariant_name="high_density",
-                status=InvariantStatus.SATISFIED,
-            ))
-            learner.add_example(TrainingExample(
-                params={"density": 0.1 + i * 0.1},
-                invariant_name="high_density",
-                status=InvariantStatus.VIOLATED,
-            ))
+            learner.add_example(
+                TrainingExample(
+                    params={"density": 5.0 + i * 0.1},
+                    invariant_name="high_density",
+                    status=InvariantStatus.SATISFIED,
+                )
+            )
+            learner.add_example(
+                TrainingExample(
+                    params={"density": 0.1 + i * 0.1},
+                    invariant_name="high_density",
+                    status=InvariantStatus.VIOLATED,
+                )
+            )
         hypothesis = learner.learn("high_density", min_support=5)
         assert hypothesis is not None
         assert any(c.feature == "density" for c in hypothesis.conditions)
 
 
 # ── Test from_structural_invariant ──
+
 
 class TestFromStructuralInvariant:
     def test_conversion(self):

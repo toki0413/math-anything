@@ -33,10 +33,8 @@ def test_to_graphviz_contains_digraph():
 
 def test_visualization_escapes_special_characters():
     ce = CategoryEngine()
-    ce.register_morphism(
-        type("Special", (), {"name": 'edge"|[]:()'})()
-    )
-    ce.link('edge"|[]:()', 'Node A', 'Node-B')
+    ce.register_morphism(type("Special", (), {"name": 'edge"|[]:()'})())
+    ce.link('edge"|[]:()', "Node A", "Node-B")
     text = to_mermaid(ce, loops=[], curvature_map={})
     assert "edge" in text
     assert 'edge"|[]:()' not in text

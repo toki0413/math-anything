@@ -8,8 +8,8 @@ from math_anything.codegen.doc_analyzer import (
     quick_analyze_docs,
 )
 
-
 # ── DocCommand dataclass ──
+
 
 class TestDocCommand:
     def test_required_fields(self):
@@ -41,6 +41,7 @@ class TestDocCommand:
 
 # ── DocumentationAnalyzer: creation ──
 
+
 class TestAnalyzerCreation:
     def test_creates_with_empty_commands(self):
         a = DocumentationAnalyzer()
@@ -60,6 +61,7 @@ class TestAnalyzerCreation:
 
 
 # ── DocumentationAnalyzer: analyze markdown ──
+
 
 class TestAnalyzeMarkdown:
     def test_analyze_markdown_returns_dict(self, tmp_path):
@@ -147,6 +149,7 @@ class TestAnalyzeMarkdown:
 
 # ── DocumentationAnalyzer: analyze HTML ──
 
+
 class TestAnalyzeHtml:
     def test_analyze_html_returns_dict(self, tmp_path):
         html = tmp_path / "test.html"
@@ -183,6 +186,7 @@ class TestAnalyzeHtml:
 
 
 # ── DocumentationAnalyzer: analyze text ──
+
 
 class TestAnalyzeText:
     def test_analyze_text_returns_dict(self, tmp_path):
@@ -246,6 +250,7 @@ class TestAnalyzeText:
 
 # ── DocumentationAnalyzer: analyze PDF ──
 
+
 class TestAnalyzePdf:
     def test_analyze_pdf_returns_dict(self, tmp_path):
         pdf = tmp_path / "test.pdf"
@@ -266,6 +271,7 @@ class TestAnalyzePdf:
 
 # ── DocumentationAnalyzer: error cases ──
 
+
 class TestAnalyzeErrors:
     def test_nonexistent_file_raises(self):
         a = DocumentationAnalyzer()
@@ -279,6 +285,7 @@ class TestAnalyzeErrors:
 
 
 # ── DocumentationAnalyzer: _read_file ──
+
 
 class TestReadFile:
     def test_read_text_file(self, tmp_path):
@@ -297,6 +304,7 @@ class TestReadFile:
 
 
 # ── DocumentationAnalyzer: _parse_text ──
+
 
 class TestParseText:
     def test_parse_text_returns_structure(self):
@@ -322,6 +330,7 @@ class TestParseText:
 
 # ── DocumentationAnalyzer: _parse_markdown ──
 
+
 class TestParseMarkdown:
     def test_parse_markdown_returns_structure(self):
         a = DocumentationAnalyzer()
@@ -344,6 +353,7 @@ class TestParseMarkdown:
 
 
 # ── DocumentationAnalyzer: _find_syntax ──
+
 
 class TestFindSyntax:
     def test_find_syntax_in_code_block(self):
@@ -375,6 +385,7 @@ class TestFindSyntax:
 
 # ── DocumentationAnalyzer: infer_from_examples ──
 
+
 class TestInferFromExamples:
     def test_infer_single_example(self):
         a = DocumentationAnalyzer()
@@ -387,10 +398,12 @@ class TestInferFromExamples:
 
     def test_infer_multiple_examples(self):
         a = DocumentationAnalyzer()
-        result = a.infer_from_examples([
-            "fix 1 all nvt temp 300",
-            "fix 1 all npt pressure 1.0",
-        ])
+        result = a.infer_from_examples(
+            [
+                "fix 1 all nvt temp 300",
+                "fix 1 all npt pressure 1.0",
+            ]
+        )
         assert len(result) >= 2
 
     def test_infer_empty_list(self):
@@ -420,6 +433,7 @@ class TestInferFromExamples:
 
 
 # ── quick_analyze_docs ──
+
 
 class TestQuickAnalyzeDocs:
     def test_quick_analyze_markdown(self, tmp_path):

@@ -20,9 +20,7 @@ class TestDeformationGradient:
 
     def test_incompressible(self):
         # Simple shear: volume-preserving
-        F = np.array([[1.0, 0.5, 0.0],
-                       [0.0, 1.0, 0.0],
-                       [0.0, 0.0, 1.0]])
+        F = np.array([[1.0, 0.5, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
         dg = DeformationGradient(F)
         assert dg.is_incompressible()
 

@@ -58,6 +58,7 @@ class TestEigenvalueSolver:
 class TestSelfConsistentSolver:
     def test_convergence(self):
         """SCF convergence on a simple model Hamiltonian."""
+
         def hamiltonian_builder(density):
             H0 = np.array([[-1.0, 0.5], [0.5, 1.0]])
             V = 0.5 * density
@@ -77,6 +78,7 @@ class TestSelfConsistentSolver:
 
     def test_max_iter_reached(self):
         """Solver returns converged=False when max_iter is reached."""
+
         def stubborn_hamiltonian(density):
             H0 = np.array([[0.0, 1.0], [1.0, 0.0]])
             return H0 + 10.0 * (density - 0.5 * np.eye(2))

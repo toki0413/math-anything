@@ -3,13 +3,13 @@
 import pytest
 
 from math_anything.codegen.harness_generator import (
+    JINJA2_AVAILABLE,
     HarnessAutoGenerator,
     HarnessTemplate,
-    JINJA2_AVAILABLE,
 )
 
-
 # ── Fixtures ──
+
 
 @pytest.fixture
 def generator():
@@ -49,6 +49,7 @@ def markdown_doc(tmp_path):
 
 
 # ── HarnessTemplate dataclass ──
+
 
 class TestHarnessTemplate:
     def test_creation_with_defaults(self):
@@ -93,6 +94,7 @@ class TestHarnessTemplate:
 
 # ── HarnessAutoGenerator: creation ──
 
+
 class TestGeneratorCreation:
     def test_creates_with_analyzers(self, generator):
         assert generator.source_analyzer is not None
@@ -110,6 +112,7 @@ class TestGeneratorCreation:
 
 
 # ── HarnessAutoGenerator: _calculate_confidence ──
+
 
 class TestCalculateConfidence:
     def test_empty_analysis(self, generator):
@@ -190,6 +193,7 @@ class TestCalculateConfidence:
 
 # ── HarnessAutoGenerator: _to_class_name ──
 
+
 class TestToClassName:
     def test_single_word(self, generator):
         assert generator._to_class_name("lammps") == "Lammps"
@@ -206,6 +210,7 @@ class TestToClassName:
 
 
 # ── HarnessAutoGenerator: _extract_variables ──
+
 
 class TestExtractVariables:
     def test_extracts_variables(self, generator):
@@ -236,6 +241,7 @@ class TestExtractVariables:
 
 
 # ── HarnessAutoGenerator: generate_from_source ──
+
 
 class TestGenerateFromSource:
     def test_returns_template(self, generator, cpp_source_dir):
@@ -354,6 +360,7 @@ class TestGenerateFromSource:
 
 # ── HarnessAutoGenerator: generate_from_docs ──
 
+
 class TestGenerateFromDocs:
     def test_returns_template(self, generator, markdown_doc):
         template = generator.generate_from_docs(
@@ -419,6 +426,7 @@ class TestGenerateFromDocs:
 
 
 # ── HarnessAutoGenerator: save_harness ──
+
 
 class TestSaveHarness:
     def test_creates_directory_structure(self, generator, cpp_source_dir, tmp_path):
@@ -502,6 +510,7 @@ class TestSaveHarness:
 
 # ── HarnessAutoGenerator: _create_review_checklist ──
 
+
 class TestCreateReviewChecklist:
     def test_returns_list(self, generator):
         checklist = generator._create_review_checklist({}, {}, {})
@@ -529,6 +538,7 @@ class TestCreateReviewChecklist:
 
 
 # ── HarnessAutoGenerator: _generate_summary ──
+
 
 class TestGenerateSummary:
     def test_summary_contains_engine_name(self, generator):
@@ -599,6 +609,7 @@ class TestGenerateSummary:
 
 # ── HarnessAutoGenerator: _generate_harness_code ──
 
+
 class TestGenerateHarnessCode:
     def test_generates_string(self, generator):
         analysis = {"commands": [], "parameters": [], "source_path": "/tmp"}
@@ -627,6 +638,7 @@ class TestGenerateHarnessCode:
 
 
 # ── Integration: full workflow ──
+
 
 class TestIntegrationWorkflow:
     def test_generate_and_save(self, generator, cpp_source_dir, tmp_path):

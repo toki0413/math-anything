@@ -258,9 +258,7 @@ class TestAbaqusExtractor:
         ext = AbaqusExtractor()
         schema = ext.build_schema(source_files={"input": ["beam.inp"]})
         # Default settings have no materials, so relationships may be empty
-        assert isinstance(
-            schema.mathematical_model.parameter_relationships, list
-        )
+        assert isinstance(schema.mathematical_model.parameter_relationships, list)
 
 
 # ── Ansys ──

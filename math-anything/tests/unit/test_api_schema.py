@@ -4,8 +4,8 @@ import pytest
 
 from math_anything.api_schema import get_openapi_schema
 
-
 # ── get_openapi_schema ──
+
 
 class TestGetOpenAPISchema:
     def test_returns_dict(self):
@@ -154,6 +154,7 @@ class TestMetricsEndpoint:
 
 # ── Components / schemas ──
 
+
 class TestComponentsSchemas:
     def test_has_components(self):
         schema = get_openapi_schema()
@@ -216,23 +217,17 @@ class TestComponentsSchemas:
 class TestSchemaReferences:
     def test_extract_request_ref(self):
         schema = get_openapi_schema()
-        ref = schema["paths"]["/extract"]["post"]["requestBody"]["content"][
-            "application/json"
-        ]["schema"]["$ref"]
+        ref = schema["paths"]["/extract"]["post"]["requestBody"]["content"]["application/json"]["schema"]["$ref"]
         assert ref == "#/components/schemas/ExtractRequest"
 
     def test_extract_response_ref(self):
         schema = get_openapi_schema()
-        ref = schema["paths"]["/extract"]["post"]["responses"]["200"]["content"][
-            "application/json"
-        ]["schema"]["$ref"]
+        ref = schema["paths"]["/extract"]["post"]["responses"]["200"]["content"]["application/json"]["schema"]["$ref"]
         assert ref == "#/components/schemas/ExtractionResult"
 
     def test_verify_request_ref(self):
         schema = get_openapi_schema()
-        ref = schema["paths"]["/verify"]["post"]["requestBody"]["content"][
-            "application/json"
-        ]["schema"]["$ref"]
+        ref = schema["paths"]["/verify"]["post"]["requestBody"]["content"]["application/json"]["schema"]["$ref"]
         assert ref == "#/components/schemas/VerifyRequest"
 
 

@@ -1,13 +1,12 @@
 """Tests for equilibrium numerical solver — VariationalSolver."""
 
-import pytest
 import numpy as np
+import pytest
 
 from math_anything.structures.equilibrium import VariationalSolver
 
 
 class TestVariationalSolver:
-
     @pytest.fixture
     def solver(self):
         return VariationalSolver()

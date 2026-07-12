@@ -9,8 +9,8 @@ from math_anything.ai.inference import (
     PhysicsKnowledgeBase,
 )
 
-
 # ── InferenceConfidence enum ──
+
 
 class TestInferenceConfidence:
     def test_confidence_values(self):
@@ -24,6 +24,7 @@ class TestInferenceConfidence:
 
 
 # ── InferenceResult ──
+
 
 class TestInferenceResult:
     def test_result_creation_minimal(self):
@@ -53,6 +54,7 @@ class TestInferenceResult:
 
 
 # ── PhysicsKnowledgeBase ──
+
 
 class TestPhysicsKnowledgeBaseParameterRanges:
     def test_has_vasp_params(self):
@@ -123,18 +125,14 @@ class TestPhysicsKnowledgeBaseCrossEngineMap:
 
 class TestPhysicsKnowledgeBaseInferParameter:
     def test_infer_typical_value(self):
-        result = PhysicsKnowledgeBase.infer_parameter(
-            "encut", {}, "vasp"
-        )
+        result = PhysicsKnowledgeBase.infer_parameter("encut", {}, "vasp")
         assert result is not None
         assert result.inferred_value == 520
         assert result.confidence == InferenceConfidence.MEDIUM
         assert result.source == "经验规律"
 
     def test_infer_timestep_typical(self):
-        result = PhysicsKnowledgeBase.infer_parameter(
-            "timestep", {}, "lammps"
-        )
+        result = PhysicsKnowledgeBase.infer_parameter("timestep", {}, "lammps")
         assert result is not None
         assert result.inferred_value == 1.0
 
@@ -142,9 +140,7 @@ class TestPhysicsKnowledgeBaseInferParameter:
         # timestep has a typical value in PARAMETER_RANGES, so strategy 1
         # (typical value) is applied before strategy 2 (CFL condition).
         # Verify the typical value is returned.
-        result = PhysicsKnowledgeBase.infer_parameter(
-            "timestep", {"reynolds_number": 1000}, "openfoam"
-        )
+        result = PhysicsKnowledgeBase.infer_parameter("timestep", {"reynolds_number": 1000}, "openfoam")
         assert result is not None
         assert result.confidence == InferenceConfidence.MEDIUM
         assert result.inferred_value == 1.0  # typical value
@@ -161,30 +157,25 @@ class TestPhysicsKnowledgeBaseInferParameter:
 
     def test_infer_cross_engine_migration(self):
         # VASP encut -> QE ecutwfc
-        result = PhysicsKnowledgeBase.infer_parameter(
-            "ecutwfc", {"encut": 520}, "quantum_espresso"
-        )
+        result = PhysicsKnowledgeBase.infer_parameter("ecutwfc", {"encut": 520}, "quantum_espresso")
         assert result is not None
         assert result.confidence == InferenceConfidence.LOW
         assert result.inferred_value == 520
         assert result.source == "跨引擎迁移"
 
     def test_infer_unknown_parameter_returns_none(self):
-        result = PhysicsKnowledgeBase.infer_parameter(
-            "totally_unknown_param", {}, "vasp"
-        )
+        result = PhysicsKnowledgeBase.infer_parameter("totally_unknown_param", {}, "vasp")
         assert result is None
 
     def test_infer_no_typical_value(self):
         # basis_set_quality has 'values' but no 'typical'
-        result = PhysicsKnowledgeBase.infer_parameter(
-            "basis_set_quality", {}, "gaussian"
-        )
+        result = PhysicsKnowledgeBase.infer_parameter("basis_set_quality", {}, "gaussian")
         # No 'typical' key, so strategy 1 fails; no other strategy applies
         assert result is None
 
 
 # ── IntelligentInferenceEngine ──
+
 
 class TestIntelligentInferenceEngineCreation:
     def test_creates_with_kb(self):
@@ -233,9 +224,7 @@ class TestInferMissingParameters:
 
     def test_infer_unknown_param_skipped(self):
         engine = IntelligentInferenceEngine()
-        results = engine.infer_missing_parameters(
-            "vasp", {}, ["totally_unknown"]
-        )
+        results = engine.infer_missing_parameters("vasp", {}, ["totally_unknown"])
         assert results == {}
 
     def test_inference_history_returns_copy(self):
@@ -250,12 +239,14 @@ class TestInferMissingParameters:
 class TestCheckPhysicsConsistency:
     def test_no_issues_with_valid_params(self):
         engine = IntelligentInferenceEngine()
-        issues = engine.check_physics_consistency({
-            "poisson_ratio": 0.3,
-            "youngs_modulus": 200,
-            "density": 7.8,
-            "temperature": 300,
-        })
+        issues = engine.check_physics_consistency(
+            {
+                "poisson_ratio": 0.3,
+                "youngs_modulus": 200,
+                "density": 7.8,
+                "temperature": 300,
+            }
+        )
         assert issues == []
 
     def test_poisson_ratio_too_high(self):
@@ -294,11 +285,13 @@ class TestCheckPhysicsConsistency:
 
     def test_cfl_violation(self):
         engine = IntelligentInferenceEngine()
-        issues = engine.check_physics_consistency({
-            "timestep": 10.0,
-            "mesh_size": 0.1,
-            "speed_of_sound": 1.0,
-        })
+        issues = engine.check_physics_consistency(
+            {
+                "timestep": 10.0,
+                "mesh_size": 0.1,
+                "speed_of_sound": 1.0,
+            }
+        )
         assert len(issues) >= 1
         assert any("CFL" in i for i in issues)
 
@@ -311,9 +304,7 @@ class TestCheckPhysicsConsistency:
 class TestSuggestImprovements:
     def test_no_suggestions_for_good_params(self):
         engine = IntelligentInferenceEngine()
-        suggestions = engine.suggest_improvements(
-            "vasp", {"encut": 520, "timestep": 1.0}
-        )
+        suggestions = engine.suggest_improvements("vasp", {"encut": 520, "timestep": 1.0})
         assert suggestions == []
 
     def test_low_encut_suggestion(self):
@@ -330,17 +321,13 @@ class TestSuggestImprovements:
 
     def test_high_reynolds_suggestion(self):
         engine = IntelligentInferenceEngine()
-        suggestions = engine.suggest_improvements(
-            "openfoam", {"reynolds_number": 1e7}
-        )
+        suggestions = engine.suggest_improvements("openfoam", {"reynolds_number": 1e7})
         assert len(suggestions) == 1
         assert "Re" in suggestions[0]
 
     def test_low_basis_set_suggestion(self):
         engine = IntelligentInferenceEngine()
-        suggestions = engine.suggest_improvements(
-            "gaussian", {"basis": "sto-3g"}
-        )
+        suggestions = engine.suggest_improvements("gaussian", {"basis": "sto-3g"})
         assert len(suggestions) == 1
         assert "基组" in suggestions[0]
 
@@ -353,9 +340,7 @@ class TestSuggestImprovements:
 class TestCrossEngineTranslate:
     def test_translate_vasp_to_qe(self):
         engine = IntelligentInferenceEngine()
-        results = engine.cross_engine_translate(
-            "vasp", "quantum_espresso", {"encut": 520, "ediff": 1e-6}
-        )
+        results = engine.cross_engine_translate("vasp", "quantum_espresso", {"encut": 520, "ediff": 1e-6})
         assert "ecutwfc" in results
         assert "conv_thr" in results
         assert results["ecutwfc"].inferred_value == 520
@@ -363,9 +348,7 @@ class TestCrossEngineTranslate:
 
     def test_translate_lammps_to_openfoam(self):
         engine = IntelligentInferenceEngine()
-        results = engine.cross_engine_translate(
-            "lammps", "openfoam", {"timestep": 1.0, "temperature": 300}
-        )
+        results = engine.cross_engine_translate("lammps", "openfoam", {"timestep": 1.0, "temperature": 300})
         assert "deltaT" in results
         assert "T" in results
 
@@ -380,16 +363,12 @@ class TestCrossEngineTranslate:
 
     def test_translate_unknown_pair(self):
         engine = IntelligentInferenceEngine()
-        results = engine.cross_engine_translate(
-            "unknown1", "unknown2", {"x": 1}
-        )
+        results = engine.cross_engine_translate("unknown1", "unknown2", {"x": 1})
         assert results == {}
 
     def test_translate_partial_params(self):
         engine = IntelligentInferenceEngine()
         # Only encut provided, ediff missing
-        results = engine.cross_engine_translate(
-            "vasp", "quantum_espresso", {"encut": 520}
-        )
+        results = engine.cross_engine_translate("vasp", "quantum_espresso", {"encut": 520})
         assert "ecutwfc" in results
         assert "conv_thr" not in results

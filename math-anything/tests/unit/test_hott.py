@@ -64,11 +64,13 @@ class TestUnivalenceChecker:
 
     def test_h_level_computation(self, checker):
         """Compute h-levels for simple types."""
-        result = checker.h_level_computation({
-            "Unit": [()],
-            "Bool": [True, False],
-            "Empty": [],
-        })
-        assert result["Unit"] == 0   # contractible
-        assert result["Bool"] == 2   # set
+        result = checker.h_level_computation(
+            {
+                "Unit": [()],
+                "Bool": [True, False],
+                "Empty": [],
+            }
+        )
+        assert result["Unit"] == 0  # contractible
+        assert result["Bool"] == 2  # set
         assert result["Empty"] == -1  # empty

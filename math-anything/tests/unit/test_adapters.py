@@ -3,15 +3,14 @@
 import pytest
 
 from math_anything.adapters import (
-    translate_params,
-    list_supported_engines,
-    list_all_engines,
     ENGINE_DOMAIN_MAP,
+    list_all_engines,
+    list_supported_engines,
+    translate_params,
 )
 
 
 class TestVaspTranslation:
-
     def test_basic_translation(self):
         result = translate_params("vasp", {"ENCUT": 500, "EDIFF": 1e-6, "ISPIN": 2})
         assert result["domain"] == "dft"
@@ -39,7 +38,6 @@ class TestVaspTranslation:
 
 
 class TestQETranslation:
-
     def test_basic_translation(self):
         result = translate_params("qe", {"ecutwfc": 60, "conv_thr": 1e-8})
         assert result["domain"] == "dft"
@@ -52,7 +50,6 @@ class TestQETranslation:
 
 
 class TestLammpsTranslation:
-
     def test_basic_translation(self):
         result = translate_params("lammps", {"timestep": 0.001, "pair_style": "lj/cut"})
         assert result["domain"] == "md"
@@ -69,7 +66,6 @@ class TestLammpsTranslation:
 
 
 class TestGromacsTranslation:
-
     def test_basic_translation(self):
         result = translate_params("gromacs", {"dt": 0.002, "nsteps": 100000})
         assert result["domain"] == "md"
@@ -83,7 +79,6 @@ class TestGromacsTranslation:
 
 
 class TestAbaqusTranslation:
-
     def test_nlgeom(self):
         result = translate_params("abaqus", {"NLGEOM": True})
         assert result["domain"] == "fem"
@@ -95,7 +90,6 @@ class TestAbaqusTranslation:
 
 
 class TestOpenFOAMTranslation:
-
     def test_basic_translation(self):
         result = translate_params("openfoam", {"deltaT": 0.001, "endTime": 10.0})
         assert result["domain"] == "cfd"
@@ -108,7 +102,6 @@ class TestOpenFOAMTranslation:
 
 
 class TestUnknownEngine:
-
     def test_unknown_engine_returns_unknown_domain(self):
         result = translate_params("unknown_engine", {"param": 1})
         assert result["domain"] == "unknown"
@@ -123,7 +116,6 @@ class TestUnknownEngine:
 
 
 class TestEngineRegistry:
-
     def test_list_supported(self):
         engines = list_supported_engines()
         assert "vasp" in engines

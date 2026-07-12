@@ -10,17 +10,22 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent / "engines"))
 
 # ── PSRN ──
 
+
 def test_psrn_imports():
-    from math_anything.psrn import PSRN, PSRNConfig, PSEEngine, SymbolLayer
     from math_anything.psrn import (
-        TokenGenerator,
-        RandomTokenGenerator,
+        PSRN,
         FastTokenGenerator,
         GPTokenGenerator,
+        GPUEvaluator,
         MCTSTokenGenerator,
+        PSEEngine,
+        PSRNConfig,
+        PSRNSymbolicRegression,
+        RandomTokenGenerator,
+        SymbolLayer,
+        TokenGenerator,
+        has_gpu_support,
     )
-    from math_anything.psrn import GPUEvaluator, has_gpu_support
-    from math_anything.psrn import PSRNSymbolicRegression
 
     assert PSRN is not None
     assert PSRNConfig is not None
@@ -37,7 +42,7 @@ def test_psrn_config():
 
 
 def test_psrn_symbol_layer():
-    from math_anything.psrn import SymbolLayer, SymbolConfig
+    from math_anything.psrn import SymbolConfig, SymbolLayer
 
     cfg = SymbolConfig()
     assert cfg is not None
@@ -46,6 +51,7 @@ def test_psrn_symbol_layer():
 
 
 # ── Simplifier ──
+
 
 def test_simplifier_imports():
     from math_anything.simplifier import ExpressionSimplifier, simplify
@@ -71,8 +77,7 @@ def test_simplifier_const_folding():
     from math_anything.simplifier import ExpressionSimplifier
 
     s = ExpressionSimplifier()
-    tree = Node(NodeType.ADD, left=Node(NodeType.CONST, value=2),
-                right=Node(NodeType.CONST, value=3))
+    tree = Node(NodeType.ADD, left=Node(NodeType.CONST, value=2), right=Node(NodeType.CONST, value=3))
     result = s.simplify(tree)
     assert result.node_type == NodeType.CONST
     assert abs(result.value - 5.0) < 1e-10
@@ -82,13 +87,13 @@ def test_simplify_convenience():
     from math_anything.eml_v2 import Node, NodeType
     from math_anything.simplifier import simplify
 
-    tree = Node(NodeType.MUL, left=Node(NodeType.VAR, name="x"),
-                right=Node(NodeType.CONST, value=1))
+    tree = Node(NodeType.MUL, left=Node(NodeType.VAR, name="x"), right=Node(NodeType.CONST, value=1))
     result = simplify(tree)
     assert result.node_type == NodeType.VAR
 
 
 # ── MultiVar ──
+
 
 def test_multivar_imports():
     from math_anything.multivar import MultiVariableDiscovery, analyze_interactions, discover_multivar
@@ -101,6 +106,7 @@ def test_multivar_imports():
 
 def test_multivar_quick_analyze():
     import numpy as np
+
     from math_anything.multivar import analyze_interactions
 
     X = np.array([[1.0, 2.0], [2.0, 4.0], [3.0, 6.0], [4.0, 8.0], [5.0, 10.0]])
@@ -111,6 +117,7 @@ def test_multivar_quick_analyze():
 
 
 # ── Schemas ──
+
 
 def test_schemas_validation():
     from math_anything.schemas import SchemaValidator
@@ -146,13 +153,13 @@ def test_schemas_extended():
 
 def test_schemas_precision_extractors():
     from math_anything.schemas import (
-        VaspMathematicalPrecisionExtractor,
-        LammpsMathematicalPrecisionExtractor,
         AbaqusMathematicalPrecisionExtractor,
         AnsysMathematicalPrecisionExtractor,
         ComsolMathematicalPrecisionExtractor,
         GromacsMathematicalPrecisionExtractor,
+        LammpsMathematicalPrecisionExtractor,
         MultiwfnMathematicalPrecisionExtractor,
+        VaspMathematicalPrecisionExtractor,
     )
 
     for ex_cls in [
@@ -169,8 +176,9 @@ def test_schemas_precision_extractors():
 
 # ── EML v2 ──
 
+
 def test_eml_v2_imports():
-    from math_anything.eml_v2 import ImprovedSymbolicRegression, eml, NodeType, Node, ExprBuilder
+    from math_anything.eml_v2 import ExprBuilder, ImprovedSymbolicRegression, Node, NodeType, eml
 
     sr = ImprovedSymbolicRegression(population_size=10, max_depth=2, generations=2)
     assert sr is not None
@@ -189,15 +197,14 @@ def test_eml_v2_node_create():
 def test_eml_v2_evaluate():
     from math_anything.eml_v2 import Node, NodeType
 
-    tree = Node(NodeType.ADD,
-                left=Node(NodeType.CONST, value=2),
-                right=Node(NodeType.VAR, name="x"))
+    tree = Node(NodeType.ADD, left=Node(NodeType.CONST, value=2), right=Node(NodeType.VAR, name="x"))
     val = tree.evaluate({"x": 3.0})
     assert val == pytest.approx(5.0)
 
 
 def test_eml_v2_discover_equation():
     import numpy as np
+
     from math_anything.eml_v2 import discover_equation
 
     X = np.array([[1.0], [2.0], [3.0], [4.0], [5.0]])
@@ -215,8 +222,9 @@ def test_eml_v2_backward_compat():
 
 # ── Visualization ──
 
+
 def test_visualization_imports():
-    from math_anything.visualization import Visualizer, VisualizationConfig
+    from math_anything.visualization import VisualizationConfig, Visualizer
 
     viz = Visualizer()
     assert viz is not None
@@ -237,7 +245,7 @@ def test_visualization_render():
 
 
 def test_visualization_convenience():
-    from math_anything.visualization import to_mermaid, to_graphviz
+    from math_anything.visualization import to_graphviz, to_mermaid
 
     schema = {"engine": "demo"}
     m = to_mermaid(schema)
@@ -248,11 +256,19 @@ def test_visualization_convenience():
 
 # ── Utils ──
 
+
 def test_utils_imports():
-    from math_anything.utils import MathDiffer, DiffReport, DiffType
-    from math_anything.utils import StreamingParser, SemanticValidator
-    from math_anything.utils import LammpsDumpExtractor, SamplingConfig, SamplingStrategy
-    from math_anything.utils import LLMContextProtocol
+    from math_anything.utils import (
+        DiffReport,
+        DiffType,
+        LammpsDumpExtractor,
+        LLMContextProtocol,
+        MathDiffer,
+        SamplingConfig,
+        SamplingStrategy,
+        SemanticValidator,
+        StreamingParser,
+    )
 
     assert MathDiffer is not None
     assert DiffReport is not None
@@ -278,13 +294,19 @@ def test_utils_sampling_config():
 
 # ── Tiered ──
 
+
 def test_tiered_imports():
     from math_anything.tiered import (
-        TieredAnalyzer, AnalysisTier, TierRecommender, TierRecommendation,
-        TieredAnalysisResult, FileAnalysis, ComplexityScore, ResourceRequirements,
-    )
-    from math_anything.tiered import (
-        TieredSymbolicRegressionAnalyzer, IntegratedTieredAnalyzer,
+        AnalysisTier,
+        ComplexityScore,
+        FileAnalysis,
+        IntegratedTieredAnalyzer,
+        ResourceRequirements,
+        TieredAnalysisResult,
+        TieredAnalyzer,
+        TieredSymbolicRegressionAnalyzer,
+        TierRecommendation,
+        TierRecommender,
         tiered_symbolic_regression_analysis,
     )
 
@@ -310,12 +332,22 @@ def test_tier_recommender():
 
 # ── Templates ──
 
+
 def test_templates_imports():
     from math_anything.templates import (
-        DFTCheckTemplate, DFTDraftTemplate, DFTInsightTemplate,
-        FEMCheckTemplate, FEMDraftTemplate, FEMInsightTemplate,
-        MDCheckTemplate, MDDraftTemplate, MDInsightTemplate,
-        MathNarrativeTemplate, InsightTemplate, DraftTemplate, CheckTemplate,
+        CheckTemplate,
+        DFTCheckTemplate,
+        DFTDraftTemplate,
+        DFTInsightTemplate,
+        DraftTemplate,
+        FEMCheckTemplate,
+        FEMDraftTemplate,
+        FEMInsightTemplate,
+        InsightTemplate,
+        MathNarrativeTemplate,
+        MDCheckTemplate,
+        MDDraftTemplate,
+        MDInsightTemplate,
     )
 
     assert DFTCheckTemplate is not None
@@ -347,9 +379,15 @@ def test_templates_md():
 
 # ── Cross Engine ──
 
+
 def test_cross_engine_imports():
     from math_anything.core.cross_engine import (
-        CrossEngineSession, ModelScale, CoupledSchema, CouplingInterface, CouplingType, ScaleModel,
+        CoupledSchema,
+        CouplingInterface,
+        CouplingType,
+        CrossEngineSession,
+        ModelScale,
+        ScaleModel,
     )
 
     session = CrossEngineSession()
@@ -374,6 +412,7 @@ def test_cross_engine_coupling_type():
 
 # ── LLM Client ──
 
+
 def test_llm_client_imports():
     """Just verify module imports (no API call)."""
     from math_anything.llm_client import LLMClient, LLMError, quick_chat
@@ -386,8 +425,9 @@ def test_llm_client_imports():
 
 # ── EML Conjugacy Depth ──
 
+
 def test_conjugacy_depth_eml_expr_create():
-    from math_anything.conjugacy import EMLExpr, eml_expr, const_expr, var_expr, E_EXPR, PI_EXPR, ZERO, ONE
+    from math_anything.conjugacy import E_EXPR, ONE, PI_EXPR, ZERO, EMLExpr, const_expr, eml_expr, var_expr
 
     assert E_EXPR.op == "CONST"
     assert PI_EXPR.op == "CONST"
@@ -397,7 +437,8 @@ def test_conjugacy_depth_eml_expr_create():
 
 def test_conjugacy_depth_evaluate():
     import math as m
-    from math_anything.conjugacy import eml_expr, E_EXPR, ONE
+
+    from math_anything.conjugacy import E_EXPR, ONE, eml_expr
 
     tree = eml_expr(E_EXPR, ONE)
     val = tree.evaluate(0.0)
@@ -405,7 +446,7 @@ def test_conjugacy_depth_evaluate():
 
 
 def test_conjugacy_depth_to_standard_form():
-    from math_anything.conjugacy import eml_expr, E_EXPR, ONE, const_expr, ZERO
+    from math_anything.conjugacy import E_EXPR, ONE, ZERO, const_expr, eml_expr
 
     tree = eml_expr(E_EXPR, ONE)
     sf = tree.to_standard_form()
@@ -428,8 +469,7 @@ def test_conjugacy_depth_make_exp_ln():
 
 
 def test_conjugacy_engine():
-    from math_anything.conjugacy import EMLConjugacyEngine, EMLExpr
-    from math_anything.conjugacy import eml_expr, const_expr, var_expr
+    from math_anything.conjugacy import EMLConjugacyEngine, EMLExpr, const_expr, eml_expr, var_expr
 
     engine = EMLConjugacyEngine()
     a = eml_expr(const_expr(1.0), const_expr(1.0))
@@ -452,7 +492,7 @@ def test_conjugacy_verify_all():
 
 
 def test_conjugacy_expr_depth():
-    from math_anything.conjugacy import eml_expr, const_expr, var_expr
+    from math_anything.conjugacy import const_expr, eml_expr, var_expr
 
     x = var_expr("x")
     tree = eml_expr(x, const_expr(1.0))
@@ -464,6 +504,7 @@ def test_conjugacy_expr_depth():
 
 # ── Constants Depth ──
 
+
 def test_constants_depth_classify():
     from math_anything.constants import classify_constant
 
@@ -474,6 +515,7 @@ def test_constants_depth_classify():
 
 def test_constants_depth_find_eml_form():
     import math as m
+
     from math_anything.constants import find_eml_form
 
     result = find_eml_form(m.e, max_depth=3)
@@ -532,6 +574,7 @@ def test_constants_is_eml_elementary():
 
 def test_constants_search_depth():
     import math as m
+
     from math_anything.constants import find_eml_form
 
     result = find_eml_form(2.0, max_depth=2)

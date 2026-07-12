@@ -17,7 +17,6 @@ import pytest
 
 from math_anything.bridge import StructureBridge
 
-
 # ── Fixtures ──
 
 
@@ -67,20 +66,24 @@ class TestBuildFromCfdCompressible:
     def test_compressible_regime_skips_incompressibility(self, bridge):
         # When regime contains "compressible", the incompressibility morphism
         # branch is skipped (line 189 condition is False)
-        r = bridge.build_from_cfd({
-            "engine": "OpenFOAM",
-            "regime": "compressible",
-            "Re": 1e5,
-        })
+        r = bridge.build_from_cfd(
+            {
+                "engine": "OpenFOAM",
+                "regime": "compressible",
+                "Re": 1e5,
+            }
+        )
         assert "structure" in r
         assert "Navier" in r["structure"]["name"]
 
     def test_compressible_with_mach_number(self, bridge):
-        r = bridge.build_from_cfd({
-            "regime": "compressible",
-            "Ma": 0.8,
-            "Re": 1e6,
-        })
+        r = bridge.build_from_cfd(
+            {
+                "regime": "compressible",
+                "Ma": 0.8,
+                "Re": 1e6,
+            }
+        )
         assert "Navier" in r["structure"]["name"]
 
     def test_incompressible_applies_morphism(self, bridge):
@@ -89,12 +92,14 @@ class TestBuildFromCfdCompressible:
         assert "Navier" in r["structure"]["name"]
 
     def test_cfd_with_energy_and_gravity(self, bridge):
-        r = bridge.build_from_cfd({
-            "regime": "incompressible",
-            "include_energy": True,
-            "include_gravity": True,
-            "include_surface_tension": True,
-        })
+        r = bridge.build_from_cfd(
+            {
+                "regime": "incompressible",
+                "include_energy": True,
+                "include_gravity": True,
+                "include_surface_tension": True,
+            }
+        )
         struct = r["structure"]
         assert struct is not None
 
@@ -177,6 +182,7 @@ class TestBuildFromVaspExtended:
 class TestKnowledgeGraphProperty:
     def test_returns_graph_object(self, bridge):
         from math_anything.categories.graph import MathKnowledgeGraph
+
         kg = bridge.knowledge_graph
         assert isinstance(kg, MathKnowledgeGraph)
 
@@ -266,6 +272,7 @@ class TestAnalyzeConstraints:
     @pytest.fixture(autouse=True)
     def _mock_evaluate(self):
         from math_anything.constraints.invariant import InvariantStatus
+
         with patch(
             "math_anything.constraints.invariant.LearnedInvariant.evaluate",
             return_value=InvariantStatus.SATISFIED,
@@ -359,6 +366,7 @@ class TestAnalyzeConstraintsViolated:
     @pytest.fixture(autouse=True)
     def _mock_evaluate_violated(self):
         from math_anything.constraints.invariant import InvariantStatus
+
         with patch(
             "math_anything.constraints.invariant.LearnedInvariant.evaluate",
             return_value=InvariantStatus.VIOLATED,
@@ -388,6 +396,7 @@ class TestAnalyzeConstraintsWeakened:
     @pytest.fixture(autouse=True)
     def _mock_evaluate_weakened(self):
         from math_anything.constraints.invariant import InvariantStatus
+
         with patch(
             "math_anything.constraints.invariant.LearnedInvariant.evaluate",
             return_value=InvariantStatus.WEAKENED,

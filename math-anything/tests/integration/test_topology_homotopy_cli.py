@@ -58,9 +58,7 @@ def test_cli_homotopy_writes_relative_output():
 
 
 def test_cli_homotopy_rejects_absolute_output():
-    absolute_path = (
-        "/tmp/homotopy_report.json" if sys.platform != "win32" else "C:\\homotopy_report.json"
-    )
+    absolute_path = "/tmp/homotopy_report.json" if sys.platform != "win32" else "C:\\homotopy_report.json"
     result = _run_homotopy("vasp", "qe", "--output", absolute_path)
     assert result.returncode == 1
     assert "working directory" in result.stdout

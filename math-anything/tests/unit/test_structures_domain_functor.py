@@ -19,17 +19,13 @@ def _build_identity_object_map(engine: object, prefix: str) -> dict[str, str]:
     return object_map
 
 
-def _build_cross_object_map(
-    engine: object, source_prefix: str, target_prefix: str
-) -> dict[str, str]:
+def _build_cross_object_map(engine: object, source_prefix: str, target_prefix: str) -> dict[str, str]:
     """Map every {source_prefix} structure to its {target_prefix} counterpart."""
     object_map: dict[str, str] = {}
     for link in engine.morphism_links:
         for struct in (link.source_structure, link.target_structure):
             if struct.startswith(f"{source_prefix}_"):
-                object_map[struct] = struct.replace(
-                    f"{source_prefix}_", f"{target_prefix}_", 1
-                )
+                object_map[struct] = struct.replace(f"{source_prefix}_", f"{target_prefix}_", 1)
     return object_map
 
 
@@ -82,9 +78,7 @@ def test_identity_domain_functor_is_natural():
         bridge_invariants_lost=[],
     )
 
-    valid, reason = is_domain_natural_transformation(
-        F, G, eta, engine, test_morphisms=path_a
-    )
+    valid, reason = is_domain_natural_transformation(F, G, eta, engine, test_morphisms=path_a)
     assert valid, reason
 
 
@@ -113,9 +107,7 @@ def test_mismatched_functor_is_not_natural():
         bridge_invariants_lost=[],
     )
 
-    valid, reason = is_domain_natural_transformation(
-        F, G, eta, engine, test_morphisms=path_a
-    )
+    valid, reason = is_domain_natural_transformation(F, G, eta, engine, test_morphisms=path_a)
     assert not valid
 
 
@@ -140,18 +132,12 @@ def test_cross_domain_functor_is_natural():
 
     # G maps the a chain to the parallel b chain (same domain, different params).
     object_map_g = _build_cross_object_map(engine, "a", "b")
-    morphism_map_g = {
-        a_name: b_name for a_name, b_name in zip(path_a, path_b)
-    }
+    morphism_map_g = {a_name: b_name for a_name, b_name in zip(path_a, path_b)}
     G = DomainFunctor(object_map_g, morphism_map_g)
 
     # Preserve every invariant kept by the target chain so the bridge does not
     # change the cumulative invariant count on either side of the square.
-    target_kept = {
-        inv
-        for name in path_b
-        for inv in getattr(engine.morphisms[name], "invariants_kept", [])
-    }
+    target_kept = {inv for name in path_b for inv in getattr(engine.morphisms[name], "invariants_kept", [])}
     eta = build_bridge_natural_transformation(
         engine,
         source_prefix="a",
@@ -160,9 +146,7 @@ def test_cross_domain_functor_is_natural():
         bridge_invariants_lost=[],
     )
 
-    valid, reason = is_domain_natural_transformation(
-        F, G, eta, engine, test_morphisms=path_a
-    )
+    valid, reason = is_domain_natural_transformation(F, G, eta, engine, test_morphisms=path_a)
     assert valid, reason
 
 
@@ -192,9 +176,7 @@ def test_missing_functor_morphism_mapping_returns_false_not_keyerror():
         bridge_invariants_lost=[],
     )
 
-    valid, reason = is_domain_natural_transformation(
-        F, G, eta, engine, test_morphisms=path_a
-    )
+    valid, reason = is_domain_natural_transformation(F, G, eta, engine, test_morphisms=path_a)
     assert not valid
     assert path_a[0] in reason
 
@@ -225,9 +207,7 @@ def test_bad_morphism_mapping_returns_false_not_keyerror():
         bridge_invariants_lost=[],
     )
 
-    valid, reason = is_domain_natural_transformation(
-        F, G, eta, engine, test_morphisms=path_a
-    )
+    valid, reason = is_domain_natural_transformation(F, G, eta, engine, test_morphisms=path_a)
     assert not valid
     assert "not_a_registered_morphism" in reason
 
@@ -286,8 +266,6 @@ def test_missing_bridge_component_is_not_natural():
     del partial_components["a_start"]
     eta = NaturalTransformation(partial_components)
 
-    valid, reason = is_domain_natural_transformation(
-        F, G, eta, engine, test_morphisms=path_a
-    )
+    valid, reason = is_domain_natural_transformation(F, G, eta, engine, test_morphisms=path_a)
     assert not valid
     assert "a_start" in reason

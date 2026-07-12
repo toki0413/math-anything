@@ -23,9 +23,11 @@ def _preload_schemas():
 
 # ── Structure fixtures ──
 
+
 @pytest.fixture
 def self_consistent_structure():
     from math_anything.structures import SelfConsistentProblem
+
     return SelfConsistentProblem(
         operator_type="self_adjoint",
         variational=True,
@@ -37,6 +39,7 @@ def self_consistent_structure():
 @pytest.fixture
 def navier_stokes_structure():
     from math_anything.structures import NavierStokesProblem
+
     return NavierStokesProblem(
         regime="incompressible",
         reynolds_number=1000.0,
@@ -47,6 +50,7 @@ def navier_stokes_structure():
 @pytest.fixture
 def hamiltonian_structure():
     from math_anything.structures import HamiltonianSystem
+
     return HamiltonianSystem(
         phase_space_dim=3000,
         symplectic=True,
@@ -57,6 +61,7 @@ def hamiltonian_structure():
 @pytest.fixture
 def variational_structure():
     from math_anything.structures import VariationalMinimizationProblem
+
     return VariationalMinimizationProblem(
         convex=True,
     )
@@ -64,25 +69,30 @@ def variational_structure():
 
 # ── Morphism fixtures ──
 
+
 @pytest.fixture
 def born_oppenheimer():
     from math_anything.morphisms.approximations import BornOppenheimerApproximation
+
     return BornOppenheimerApproximation()
 
 
 @pytest.fixture
 def plane_wave_truncation():
     from math_anything.morphisms.approximations import PlaneWaveTruncation
+
     return PlaneWaveTruncation(encut=520)
 
 
 @pytest.fixture
 def kohn_sham_mapping():
     from math_anything.morphisms.approximations import KohnShamMapping
+
     return KohnShamMapping()
 
 
 # ── Category engine fixture ──
+
 
 @pytest.fixture
 def category_engine():
@@ -92,6 +102,7 @@ def category_engine():
         KohnShamMapping,
         PlaneWaveTruncation,
     )
+
     ce = CategoryEngine()
     ce.register_morphism(BornOppenheimerApproximation())
     ce.register_morphism(KohnShamMapping())
@@ -104,37 +115,45 @@ def category_engine():
 
 # ── Dimensional fixtures ──
 
+
 @pytest.fixture
 def buckingham_engine():
     from math_anything.dimensional.scaling_group import BuckinghamPiEngine
+
     return BuckinghamPiEngine()
 
 
 @pytest.fixture
 def fluid_analyzer():
     from math_anything.dimensional.scaling_group import FluidDimensionAnalyzer
+
     return FluidDimensionAnalyzer()
 
 
 # ── EML fixtures ──
 
+
 @pytest.fixture
 def eml_conjugacy_engine():
     from math_anything.conjugacy import EMLConjugacyEngine
+
     return EMLConjugacyEngine()
 
 
 @pytest.fixture
 def eml_constant_engine():
     from math_anything.constants import EMLConstantEngine
+
     return EMLConstantEngine()
 
 
 # ── Knowledge graph fixture ──
 
+
 @pytest.fixture
 def temp_kg(tmp_path):
     from math_anything.categories.graph import MathKnowledgeGraph
+
     kg = MathKnowledgeGraph(tmp_path)
     yield kg
     # cleanup
@@ -144,7 +163,9 @@ def temp_kg(tmp_path):
 
 # ── Plugin fixture ──
 
+
 @pytest.fixture
 def plugin_registry():
     from math_anything.plugin import PluginRegistry
+
     return PluginRegistry()

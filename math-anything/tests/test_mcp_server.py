@@ -15,6 +15,7 @@ class TestMCPToolRegistration(unittest.TestCase):
 
     def setUp(self):
         from math_anything.mcp_server import mcp
+
         self.mcp = mcp
 
     def test_server_name(self):
@@ -59,6 +60,7 @@ class TestConservationField(unittest.TestCase):
 
     def test_navier_stokes(self):
         from math_anything.mcp_server import build_conservation_field
+
         result = json.loads(build_conservation_field("navier_stokes"))
         self.assertIsInstance(result, dict)
         self.assertEqual(result["equation_type"], "navier_stokes")
@@ -66,16 +68,27 @@ class TestConservationField(unittest.TestCase):
 
     def test_unknown_equation(self):
         from math_anything.mcp_server import build_conservation_field
+
         result = json.loads(build_conservation_field("unknown_equation"))
         self.assertIn("error", result)
         self.assertIn("supported_types", result)
 
     def test_supported_equation_types(self):
         from math_anything.mcp_server import build_conservation_field
+
         result = json.loads(build_conservation_field("unknown"))
         supported = result.get("supported_types", [])
-        expected = ["navier_stokes", "euler", "schrodinger", "maxwell", "elasticity",
-                    "mhd", "heat", "dirac", "einstein_field"]
+        expected = [
+            "navier_stokes",
+            "euler",
+            "schrodinger",
+            "maxwell",
+            "elasticity",
+            "mhd",
+            "heat",
+            "dirac",
+            "einstein_field",
+        ]
         for eq in expected:
             self.assertIn(eq, supported)
 
@@ -85,19 +98,23 @@ class TestDimensionalAnalysis(unittest.TestCase):
 
     def test_basic_analysis(self):
         from math_anything.mcp_server import dimensional_analyze
+
         result = json.loads(dimensional_analyze(schema={"canonical_form": "F = ma"}))
         self.assertIsInstance(result, dict)
 
     def test_with_quantities(self):
         from math_anything.mcp_server import dimensional_analyze
-        result = json.loads(dimensional_analyze(
-            schema={"canonical_form": "F = ma"},
-            quantities=[
-                {"name": "force", "symbol": "F", "dimension": [1, 1, -2]},
-                {"name": "mass", "symbol": "m", "dimension": [0, 1, 0]},
-                {"name": "acceleration", "symbol": "a", "dimension": [1, 0, -2]},
-            ],
-        ))
+
+        result = json.loads(
+            dimensional_analyze(
+                schema={"canonical_form": "F = ma"},
+                quantities=[
+                    {"name": "force", "symbol": "F", "dimension": [1, 1, -2]},
+                    {"name": "mass", "symbol": "m", "dimension": [0, 1, 0]},
+                    {"name": "acceleration", "symbol": "a", "dimension": [1, 0, -2]},
+                ],
+            )
+        )
         self.assertIsInstance(result, dict)
 
 
@@ -106,11 +123,13 @@ class TestVerifyStructure(unittest.TestCase):
 
     def test_verify_basic(self):
         from math_anything.mcp_server import verify_structure
+
         result = json.loads(verify_structure({"problem_type": "test"}))
         self.assertIn("passed", result)
 
     def test_verify_complete_schema(self):
         from math_anything.mcp_server import verify_structure
+
         schema = {
             "governing_equations": [{"id": "eq1"}],
             "boundary_conditions": [{"id": "bc1"}],
@@ -126,6 +145,7 @@ class TestTranslateEngineParams(unittest.TestCase):
 
     def test_translate_vasp(self):
         from math_anything.mcp_server import translate_engine_params
+
         result = json.loads(translate_engine_params("vasp", {"ENCUT": 500, "EDIFF": 1e-6, "ISPIN": 2}))
         self.assertEqual(result["engine"], "vasp")
         self.assertEqual(result["domain"], "dft")
@@ -135,6 +155,7 @@ class TestTranslateEngineParams(unittest.TestCase):
 
     def test_translate_lammps(self):
         from math_anything.mcp_server import translate_engine_params
+
         result = json.loads(translate_engine_params("lammps", {"timestep": 0.001, "temperature": 300}))
         self.assertEqual(result["engine"], "lammps")
         self.assertEqual(result["domain"], "md")
@@ -142,6 +163,7 @@ class TestTranslateEngineParams(unittest.TestCase):
 
     def test_translate_unknown_engine(self):
         from math_anything.mcp_server import translate_engine_params
+
         result = json.loads(translate_engine_params("unknown_engine", {"param": 1}))
         self.assertEqual(result["engine"], "unknown_engine")
         self.assertEqual(result["domain"], "unknown")
@@ -152,6 +174,7 @@ class TestMCPResources(unittest.TestCase):
 
     def test_version_resource(self):
         from math_anything.mcp_server import get_version
+
         result = json.loads(get_version())
         self.assertEqual(result["name"], "bourbaki-mcp")
         self.assertIn("domains", result)
@@ -159,12 +182,14 @@ class TestMCPResources(unittest.TestCase):
 
     def test_domain_details_resource(self):
         from math_anything.mcp_server import get_domain_details
+
         result = json.loads(get_domain_details("dft"))
         self.assertIn("name", result)
         self.assertIn("equation_type", result)
 
     def test_conservation_laws_resource(self):
         from math_anything.mcp_server import get_conservation_laws
+
         result = json.loads(get_conservation_laws("navier_stokes"))
         self.assertIn("equation_type", result)
 
@@ -174,18 +199,21 @@ class TestMCPPrompts(unittest.TestCase):
 
     def test_analyze_simulation_prompt(self):
         from math_anything.mcp_server import analyze_simulation
+
         prompt = analyze_simulation("dft", "DFT calculation of silicon")
         self.assertIn("dft", prompt)
         self.assertIn("analyze_domain", prompt)
 
     def test_compare_approaches_prompt(self):
         from math_anything.mcp_server import compare_approaches
+
         prompt = compare_approaches("dft", "md")
         self.assertIn("dft", prompt)
         self.assertIn("md", prompt)
 
     def test_discover_from_data_prompt(self):
         from math_anything.mcp_server import discover_from_data
+
         prompt = discover_from_data("x, y, z")
         self.assertIn("discover_equations", prompt)
 
@@ -195,12 +223,14 @@ class TestDiscoverEquations(unittest.TestCase):
 
     def test_basic_discovery(self):
         from math_anything.mcp_server import discover_equations
+
         result = json.loads(discover_equations("x, y, dx/dt"))
         self.assertIn("method", result)
         self.assertIn("variables", result)
 
     def test_custom_method(self):
         from math_anything.mcp_server import discover_equations
+
         result = json.loads(discover_equations("x, y", method="genetic"))
         self.assertIn("method", result)
 
@@ -210,6 +240,7 @@ class TestComputeRiemannGeometry(unittest.TestCase):
 
     def test_euclidean(self):
         from math_anything.mcp_server import compute_riemann_geometry
+
         # Euclidean metric in 3D: identity matrix, zero Christoffel symbols
         dim = 3
         metric = [[1.0 if i == j else 0.0 for j in range(dim)] for i in range(dim)]
@@ -221,6 +252,7 @@ class TestComputeRiemannGeometry(unittest.TestCase):
 
     def test_schwarzschild(self):
         from math_anything.mcp_server import compute_riemann_geometry
+
         # Simplified test: 2D with non-trivial metric
         dim = 2
         metric = [[2.0, 0.0], [0.0, 3.0]]
@@ -234,6 +266,7 @@ class TestAnalyzeMorphismChain(unittest.TestCase):
 
     def test_dft_chain(self):
         from math_anything.mcp_server import analyze_morphism_chain
+
         result = json.loads(analyze_morphism_chain("dft"))
         self.assertIn("domain", result)
         self.assertIn("steps", result)
@@ -241,6 +274,7 @@ class TestAnalyzeMorphismChain(unittest.TestCase):
 
     def test_unknown_domain(self):
         from math_anything.mcp_server import analyze_morphism_chain
+
         result = json.loads(analyze_morphism_chain("nonexistent"))
         self.assertIn("error", result)
 
@@ -250,6 +284,7 @@ class TestDomainTools(unittest.TestCase):
 
     def test_list_domains(self):
         from math_anything.mcp_server import list_domains
+
         result = json.loads(list_domains())
         self.assertIn("domains", result)
         self.assertGreaterEqual(result["total"], 7)
@@ -264,6 +299,7 @@ class TestDomainTools(unittest.TestCase):
 
     def test_analyze_dft_domain(self):
         from math_anything.mcp_server import analyze_domain
+
         result = json.loads(analyze_domain("dft", {"n_electrons": 10}))
         self.assertIn("domain_name", result)
         self.assertIn("preserved", result)
@@ -272,28 +308,33 @@ class TestDomainTools(unittest.TestCase):
 
     def test_analyze_cfd_domain(self):
         from math_anything.mcp_server import analyze_domain
+
         result = json.loads(analyze_domain("cfd", {"regime": "incompressible"}))
         self.assertIn("domain_name", result)
         self.assertEqual(result["domain_name"], "cfd")
 
     def test_analyze_md_domain(self):
         from math_anything.mcp_server import analyze_domain
+
         result = json.loads(analyze_domain("md", {"n_atoms": 1000}))
         self.assertIn("domain_name", result)
         self.assertIn("preserved", result)
 
     def test_analyze_fem_domain(self):
         from math_anything.mcp_server import analyze_domain
+
         result = json.loads(analyze_domain("fem", {"basis_degree": 2}))
         self.assertIn("domain_name", result)
 
     def test_analyze_unknown_domain(self):
         from math_anything.mcp_server import analyze_domain
+
         result = json.loads(analyze_domain("nonexistent"))
         self.assertIn("error", result)
 
     def test_compare_domains(self):
         from math_anything.mcp_server import compare_domains
+
         result = json.loads(compare_domains("dft", None, "md", None))
         self.assertIn("domain_a", result)
         self.assertIn("domain_b", result)
@@ -307,12 +348,14 @@ class TestSolveNumerical(unittest.TestCase):
 
     def test_eigenvalue_solver(self):
         from math_anything.mcp_server import solve_numerical
+
         result = json.loads(solve_numerical("eigenvalue", {"matrix": [[2, 1], [1, 2]]}))
         self.assertIn("eigenvalues", result)
         self.assertEqual(result["solver_type"], "eigenvalue")
 
     def test_unknown_solver(self):
         from math_anything.mcp_server import solve_numerical
+
         result = json.loads(solve_numerical("nonexistent", {}))
         self.assertIn("error", result)
         self.assertIn("available", result)
@@ -323,12 +366,14 @@ class TestAdaptersModule(unittest.TestCase):
 
     def test_translate_vasp(self):
         from math_anything.adapters import translate_params
+
         result = translate_params("vasp", {"ENCUT": 500, "EDIFF": 1e-6, "ISPIN": 2})
         self.assertEqual(result["domain"], "dft")
         self.assertEqual(result["domain_params"]["ecutwfc"], 500)
 
     def test_translate_qe(self):
         from math_anything.adapters import translate_params
+
         result = translate_params("qe", {"ecutwfc": 60, "conv_thr": 1e-8})
         self.assertEqual(result["domain"], "dft")
         self.assertEqual(result["domain_params"]["ecutwfc"], 60)
@@ -336,6 +381,7 @@ class TestAdaptersModule(unittest.TestCase):
 
     def test_translate_lammps(self):
         from math_anything.adapters import translate_params
+
         result = translate_params("lammps", {"timestep": 0.001, "run": 10000})
         self.assertEqual(result["domain"], "md")
         self.assertEqual(result["domain_params"]["dt"], 0.001)
@@ -343,30 +389,35 @@ class TestAdaptersModule(unittest.TestCase):
 
     def test_translate_gromacs(self):
         from math_anything.adapters import translate_params
+
         result = translate_params("gromacs", {"dt": 0.002, "nsteps": 50000})
         self.assertEqual(result["domain"], "md")
         self.assertEqual(result["domain_params"]["n_steps"], 50000)
 
     def test_translate_abaqus(self):
         from math_anything.adapters import translate_params
+
         result = translate_params("abaqus", {"NLGEOM": 1, "ELEMENT_TYPE": "C3D8R"})
         self.assertEqual(result["domain"], "fem")
         self.assertTrue(result["domain_params"]["geometric_nonlinear"])
 
     def test_translate_openfoam(self):
         from math_anything.adapters import translate_params
+
         result = translate_params("openfoam", {"deltaT": 0.001, "endTime": 10.0})
         self.assertEqual(result["domain"], "cfd")
         self.assertEqual(result["domain_params"]["dt"], 0.001)
 
     def test_translate_unknown(self):
         from math_anything.adapters import translate_params
+
         result = translate_params("some_unknown_engine", {"param": 42})
         self.assertEqual(result["domain"], "unknown")
         self.assertEqual(result["domain_params"]["param"], 42)
 
     def test_list_supported_engines(self):
         from math_anything.adapters import list_supported_engines
+
         engines = list_supported_engines()
         self.assertIn("vasp", engines)
         self.assertIn("lammps", engines)
@@ -375,6 +426,7 @@ class TestAdaptersModule(unittest.TestCase):
 
     def test_list_all_engines(self):
         from math_anything.adapters import list_all_engines
+
         engines = list_all_engines()
         self.assertGreater(len(engines), 6)
 

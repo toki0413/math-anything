@@ -7,42 +7,42 @@ and propagation behavior for every morphism in the dft/md/cfd/quantum/surrogate 
 import pytest
 
 from math_anything.morphisms import (
+    CompositeMorphism,
+    ContinuumToDiscrete,
+    DimensionReductionMorphism,
     Morphism,
     MorphismCategory,
     StructuralChange,
-    ContinuumToDiscrete,
-    DimensionReductionMorphism,
     TimeSteppingMorphism,
-    CompositeMorphism,
+)
+from math_anything.morphisms.cfd import (
+    IncompressibilityMorphism,
+    LESFilteringMorphism,
+    ReynoldsDecompositionMorphism,
+    TurbulenceModelClosureMorphism,
 )
 from math_anything.morphisms.dft import (
     BornOppenheimerApproximation,
+    ExchangeCorrelationApproximation,
     KohnShamMapping,
     PlaneWaveTruncation,
     SCFIterationMorphism,
-    ExchangeCorrelationApproximation,
 )
 from math_anything.morphisms.md import (
     ClassicalLimitMorphism,
     ForceFieldMorphism,
-)
-from math_anything.morphisms.cfd import (
-    IncompressibilityMorphism,
-    ReynoldsDecompositionMorphism,
-    TurbulenceModelClosureMorphism,
-    LESFilteringMorphism,
 )
 from math_anything.morphisms.quantum import (
     HartreeFockMorphism,
     PostHartreeFockMorphism,
 )
 from math_anything.morphisms.surrogate import (
-    MLSurrogateMorphism,
     DiffuseInterfaceMorphism,
+    MLSurrogateMorphism,
 )
 
-
 # ── Fixtures ──
+
 
 @pytest.fixture
 def bo():
@@ -121,6 +121,7 @@ def diffuse():
 
 # ── DFT morphisms ──
 
+
 class TestBornOppenheimer:
     def test_default_name(self, bo):
         assert bo.name == "born_oppenheimer"
@@ -185,10 +186,21 @@ class TestKohnShamMapping:
 
     def test_to_dict_keys(self, ks):
         d = ks.to_dict()
-        for key in ("name", "source_type", "target_type", "category",
-                     "mathematical_form", "invariants_kept", "invariants_lost",
-                     "invariants_introduced", "kernel", "is_injective",
-                     "is_surjective", "is_isomorphism", "condition"):
+        for key in (
+            "name",
+            "source_type",
+            "target_type",
+            "category",
+            "mathematical_form",
+            "invariants_kept",
+            "invariants_lost",
+            "invariants_introduced",
+            "kernel",
+            "is_injective",
+            "is_surjective",
+            "is_isomorphism",
+            "condition",
+        ):
             assert key in d
 
 
@@ -211,11 +223,11 @@ class TestPlaneWaveTruncation:
     def test_low_encut_extra_loss(self):
         pw_low = PlaneWaveTruncation(encut=300)
         lost = pw_low.get_invariants_lost()
-        assert any("Pulay" in l for l in lost)
+        assert any("Pulay" in item for item in lost)
 
     def test_high_encut_no_extra_loss(self, pw):
         lost = pw.get_invariants_lost()
-        assert not any("Pulay" in l for l in lost)
+        assert not any("Pulay" in item for item in lost)
 
     def test_mathematical_form_contains_encut(self, pw):
         assert "520" in pw.mathematical_form
@@ -269,6 +281,7 @@ class TestExchangeCorrelationApproximation:
 
 # ── MD morphisms ──
 
+
 class TestClassicalLimitMorphism:
     def test_default_name(self, classical):
         assert classical.name == "classical_limit"
@@ -321,6 +334,7 @@ class TestForceFieldMorphism:
 
 
 # ── CFD morphisms ──
+
 
 class TestIncompressibilityMorphism:
     def test_default_name(self, incomp):
@@ -407,6 +421,7 @@ class TestLESFilteringMorphism:
 
 # ── Quantum chemistry morphisms ──
 
+
 class TestHartreeFockMorphism:
     def test_default_name(self, hf):
         assert hf.name == "hartree_fock"
@@ -465,6 +480,7 @@ class TestPostHartreeFockMorphism:
 
 # ── Surrogate morphisms ──
 
+
 class TestMLSurrogateMorphism:
     def test_default_name(self, ml_sur):
         assert ml_sur.name == "ml_surrogate"
@@ -521,6 +537,7 @@ class TestDiffuseInterfaceMorphism:
 
 
 # ── Base morphism classes ──
+
 
 class TestContinuumToDiscrete:
     def test_default_name(self):
@@ -588,13 +605,14 @@ class TestTimeSteppingMorphism:
 
 # ── CompositeMorphism ──
 
+
 class TestCompositeMorphism:
     """CompositeMorphism has a known bug (kernel_description property lacks setter),
     so we test the compose method and the mathematical_form property indirectly."""
 
     def test_compose_method_exists(self, bo, ks):
         # compose() exists on Morphism base class
-        assert hasattr(bo, 'compose')
+        assert hasattr(bo, "compose")
 
     def test_composite_mathematical_form(self):
         # We can read the mathematical_form property from the class definition
@@ -609,6 +627,7 @@ class TestCompositeMorphism:
 
 
 # ── StructuralChange ──
+
 
 class TestStructuralChange:
     def test_create(self):
@@ -630,6 +649,7 @@ class TestStructuralChange:
 
 # ── MorphismCategory ──
 
+
 class TestMorphismCategory:
     def test_all_categories(self):
         cats = [c.value for c in MorphismCategory]
@@ -644,6 +664,7 @@ class TestMorphismCategory:
 
 
 # ── Propagation behavior ──
+
 
 class TestPropagationBehavior:
     """Test that invariants are correctly classified as preserved/weakened/lost."""

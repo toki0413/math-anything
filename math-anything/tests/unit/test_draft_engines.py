@@ -2,17 +2,17 @@
 
 import pytest
 
-from math_anything.schemas import MathSchema
+from math_anything.draft.abaqus_draft import AbaqusDraftEngine
 from math_anything.draft.base import (
     DraftEngine,
     GenericDraftEngine,
-    register_draft_engine,
-    get_draft_engine,
     draft_schema,
+    get_draft_engine,
+    register_draft_engine,
 )
-from math_anything.draft.vasp_draft import VaspDraftEngine
 from math_anything.draft.lammps_draft import LammpsDraftEngine
-from math_anything.draft.abaqus_draft import AbaqusDraftEngine
+from math_anything.draft.vasp_draft import VaspDraftEngine
+from math_anything.schemas import MathSchema
 
 
 def _make_schema(raw: dict) -> MathSchema:
@@ -23,18 +23,21 @@ def _make_schema(raw: dict) -> MathSchema:
 
 # ── GenericDraftEngine ──
 
-class TestGenericDraftEngine:
 
+class TestGenericDraftEngine:
     def test_engine_name(self):
         e = GenericDraftEngine()
         assert e.engine_name == "generic"
 
     def test_generate_markdown(self):
         from math_anything.schemas import GoverningEquation
+
         s = MathSchema()
         s.mathematical_model.governing_equations.append(
             GoverningEquation(
-                id="eq1", type="PDE", name="Poisson",
+                id="eq1",
+                type="PDE",
+                name="Poisson",
                 mathematical_form="nabla^2 u = f",
             )
         )
@@ -44,10 +47,13 @@ class TestGenericDraftEngine:
 
     def test_generate_latex(self):
         from math_anything.schemas import GoverningEquation
+
         s = MathSchema()
         s.mathematical_model.governing_equations.append(
             GoverningEquation(
-                id="eq1", type="PDE", name="Heat",
+                id="eq1",
+                type="PDE",
+                name="Heat",
                 mathematical_form="du/dt = alpha nabla^2 u",
             )
         )
@@ -59,8 +65,8 @@ class TestGenericDraftEngine:
 
 # ── Registry ──
 
-class TestDraftRegistry:
 
+class TestDraftRegistry:
     def test_get_unknown_returns_generic(self):
         e = get_draft_engine("nonexistent")
         assert isinstance(e, GenericDraftEngine)
@@ -78,8 +84,8 @@ class TestDraftRegistry:
 
 # ── VaspDraftEngine ──
 
-class TestVaspDraftEngine:
 
+class TestVaspDraftEngine:
     def test_engine_name(self):
         assert VaspDraftEngine().engine_name == "vasp"
 
@@ -89,18 +95,22 @@ class TestVaspDraftEngine:
         assert len(text) > 0
 
     def test_generate_markdown(self):
-        schema = _make_schema({
-            "incar": {"ENCUT": 500, "ISPIN": 2, "EDIFF": 1e-6, "NELM": 60},
-            "kpoints": {"mesh": {"subdivisions": [4, 4, 4], "mode": "Gamma"}},
-        })
+        schema = _make_schema(
+            {
+                "incar": {"ENCUT": 500, "ISPIN": 2, "EDIFF": 1e-6, "NELM": 60},
+                "kpoints": {"mesh": {"subdivisions": [4, 4, 4], "mode": "Gamma"}},
+            }
+        )
         text = VaspDraftEngine().generate(schema, fmt="markdown")
         assert "Computational Details" in text
         assert "500" in text
 
     def test_generate_latex(self):
-        schema = _make_schema({
-            "incar": {"ENCUT": 400, "ISPIN": 1},
-        })
+        schema = _make_schema(
+            {
+                "incar": {"ENCUT": 400, "ISPIN": 1},
+            }
+        )
         text = VaspDraftEngine().generate(schema, fmt="latex")
         assert "section" in text
 
@@ -110,16 +120,20 @@ class TestVaspDraftEngine:
         assert "spin-polarized" in text
 
     def test_hse06_functional(self):
-        schema = _make_schema({
-            "incar": {"LHFCALC": True, "HFSCREEN": 0.2},
-        })
+        schema = _make_schema(
+            {
+                "incar": {"LHFCALC": True, "HFSCREEN": 0.2},
+            }
+        )
         text = VaspDraftEngine().generate(schema)
         assert "HSE06" in text
 
     def test_pbe0_functional(self):
-        schema = _make_schema({
-            "incar": {"LHFCALC": True, "HFSCREEN": 0.0},
-        })
+        schema = _make_schema(
+            {
+                "incar": {"LHFCALC": True, "HFSCREEN": 0.0},
+            }
+        )
         text = VaspDraftEngine().generate(schema)
         assert "PBE0" in text
 
@@ -129,9 +143,11 @@ class TestVaspDraftEngine:
         assert "DFT+U" in text
 
     def test_relaxation_section(self):
-        schema = _make_schema({
-            "incar": {"NSW": 100, "IBRION": 2, "ISIF": 3, "EDIFFG": -0.01},
-        })
+        schema = _make_schema(
+            {
+                "incar": {"NSW": 100, "IBRION": 2, "ISIF": 3, "EDIFFG": -0.01},
+            }
+        )
         text = VaspDraftEngine().generate(schema)
         assert "Geometry" in text or "relaxation" in text.lower() or "optimization" in text.lower()
 
@@ -147,18 +163,20 @@ class TestVaspDraftEngine:
         assert isinstance(text, str)
 
     def test_kpoint_gamma_centered(self):
-        schema = _make_schema({
-            "incar": {},
-            "kpoints": {"mesh": {"subdivisions": [6, 6, 6], "mode": "Gamma"}},
-        })
+        schema = _make_schema(
+            {
+                "incar": {},
+                "kpoints": {"mesh": {"subdivisions": [6, 6, 6], "mode": "Gamma"}},
+            }
+        )
         text = VaspDraftEngine().generate(schema)
         assert "6" in text
 
 
 # ── LammpsDraftEngine ──
 
-class TestLammpsDraftEngine:
 
+class TestLammpsDraftEngine:
     def test_engine_name(self):
         assert LammpsDraftEngine().engine_name == "lammps"
 
@@ -168,12 +186,14 @@ class TestLammpsDraftEngine:
         assert len(text) > 0
 
     def test_generate_with_nvt(self):
-        schema = _make_schema({
-            "fixes": {"f1": {"style": "nvt"}},
-            "timestep": 1.0,
-            "units": "metal",
-            "pair_style": "eam/alloy",
-        })
+        schema = _make_schema(
+            {
+                "fixes": {"f1": {"style": "nvt"}},
+                "timestep": 1.0,
+                "units": "metal",
+                "pair_style": "eam/alloy",
+            }
+        )
         text = LammpsDraftEngine().generate(schema)
         assert isinstance(text, str)
 
@@ -185,8 +205,8 @@ class TestLammpsDraftEngine:
 
 # ── AbaqusDraftEngine ──
 
-class TestAbaqusDraftEngine:
 
+class TestAbaqusDraftEngine:
     def test_engine_name(self):
         assert AbaqusDraftEngine().engine_name == "abaqus"
 

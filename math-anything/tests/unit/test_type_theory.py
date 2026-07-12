@@ -1,27 +1,64 @@
 """MLTT 类型理论模块测试."""
 
 import pytest
-from math_anything.type_theory import (
-    Term, TermKind, Var, Universe, Pi, Lam, App, Sigma, Pair,
-    Proj1, Proj2, Identity, Refl, Sym, Trans, Cong, Transport,
-    Annotation, InductiveType, Constructor, Construct, IndElim,
-    Context, Judgment,
-    free_vars, substitute, whnf, term_to_str,
-    arrow, product, TYPE0, TYPE1,
-    TypeChecker, TypeCheckResult, TypeCheckError,
-    TypeTheoryBridge, MorphismType,
-    invariant_to_identity, invariant_to_prop_type,
-    morphism_to_type, propagation_to_transport, structure_to_inductive,
-    FormalSystemStrength, DecidabilityClass,
-    GodelBoundary, DecidabilityBoundary, MetamathAnalyzer,
-    UNDECIDABILITY_RESULTS, GODEL_BOUNDARIES,
-)
-from math_anything.structures.properties import StructuralInvariant
-from math_anything.structures.evolution import HamiltonianSystem
-from math_anything.morphisms import ContinuumToDiscrete
 
+from math_anything.morphisms import ContinuumToDiscrete
+from math_anything.structures.evolution import HamiltonianSystem
+from math_anything.structures.properties import StructuralInvariant
+from math_anything.type_theory import (
+    GODEL_BOUNDARIES,
+    TYPE0,
+    TYPE1,
+    UNDECIDABILITY_RESULTS,
+    Annotation,
+    App,
+    Cong,
+    Construct,
+    Constructor,
+    Context,
+    DecidabilityBoundary,
+    DecidabilityClass,
+    FormalSystemStrength,
+    GodelBoundary,
+    Identity,
+    IndElim,
+    InductiveType,
+    Judgment,
+    Lam,
+    MetamathAnalyzer,
+    MorphismType,
+    Pair,
+    Pi,
+    Proj1,
+    Proj2,
+    Refl,
+    Sigma,
+    Sym,
+    Term,
+    TermKind,
+    Trans,
+    Transport,
+    TypeChecker,
+    TypeCheckError,
+    TypeCheckResult,
+    TypeTheoryBridge,
+    Universe,
+    Var,
+    arrow,
+    free_vars,
+    invariant_to_identity,
+    invariant_to_prop_type,
+    morphism_to_type,
+    product,
+    propagation_to_transport,
+    structure_to_inductive,
+    substitute,
+    term_to_str,
+    whnf,
+)
 
 # ── 项语言测试 ──
+
 
 class TestTerms:
     def test_var_str(self):
@@ -84,6 +121,7 @@ class TestTerms:
 
 
 # ── 类型检查器测试 ──
+
 
 class TestTypeChecker:
     def setup_method(self):
@@ -184,6 +222,7 @@ class TestTypeChecker:
 
 # ── 桥接测试 ──
 
+
 class TestBridge:
     def test_invariant_to_identity(self):
         inv = StructuralInvariant(
@@ -230,13 +269,13 @@ class TestBridge:
     def test_bridge_register_structure(self):
         bridge = TypeTheoryBridge()
         hs = HamiltonianSystem(symplectic=True)
-        itype = bridge.register_structure(hs)
+        bridge.register_structure(hs)
         assert hs.name in bridge._registered_structures
 
     def test_bridge_register_morphism(self):
         bridge = TypeTheoryBridge()
         ctd = ContinuumToDiscrete(method="fdm")
-        mtype = bridge.register_morphism(ctd)
+        bridge.register_morphism(ctd)
         assert ctd.name in bridge._registered_morphisms
 
     def test_bridge_propagate_invariant(self):
@@ -253,10 +292,16 @@ class TestBridge:
 
 # ── 元数学测试 ──
 
+
 class TestMetamath:
     def test_formal_system_strength_order(self):
-        assert FormalSystemStrength.PA.consistency_strength_order() < FormalSystemStrength.ZFC.consistency_strength_order()
-        assert FormalSystemStrength.MLTT1.consistency_strength_order() > FormalSystemStrength.MLTT0.consistency_strength_order()
+        assert (
+            FormalSystemStrength.PA.consistency_strength_order() < FormalSystemStrength.ZFC.consistency_strength_order()
+        )
+        assert (
+            FormalSystemStrength.MLTT1.consistency_strength_order()
+            > FormalSystemStrength.MLTT0.consistency_strength_order()
+        )
 
     def test_can_prove_consistency(self):
         assert FormalSystemStrength.ZFC.can_prove_consistency_of(FormalSystemStrength.PA)
@@ -294,9 +339,7 @@ class TestMetamath:
 
     def test_consistency_comparison(self):
         analyzer = MetamathAnalyzer()
-        comp = analyzer.consistency_strength_comparison(
-            FormalSystemStrength.CIC, FormalSystemStrength.PA
-        )
+        comp = analyzer.consistency_strength_comparison(FormalSystemStrength.CIC, FormalSystemStrength.PA)
         assert "强于" in comp
 
     def test_invariant_state_mapping(self):
@@ -315,65 +358,77 @@ class TestMetamath:
 
 # ── CIC 测试 ──
 
+
 class TestCIC:
     def test_prop_type(self):
         from math_anything.type_theory import PROP, TYPE0_SORT, SortKind
+
         assert PROP.is_prop
         assert PROP.sort_kind == SortKind.PROP
         assert not TYPE0_SORT.is_prop
 
     def test_pi_sort_prop_prop(self):
-        from math_anything.type_theory import PropTypeRule, PROP, TYPE0_SORT
+        from math_anything.type_theory import PROP, TYPE0_SORT, PropTypeRule
+
         result = PropTypeRule.pi_sort(PROP, PROP)
         assert result.is_prop
 
     def test_pi_sort_type_prop(self):
-        from math_anything.type_theory import PropTypeRule, TYPE0_SORT, PROP
+        from math_anything.type_theory import PROP, TYPE0_SORT, PropTypeRule
+
         result = PropTypeRule.pi_sort(TYPE0_SORT, PROP)
         assert result.is_prop
 
     def test_pi_sort_type_type(self):
-        from math_anything.type_theory import PropTypeRule, TYPE0_SORT
+        from math_anything.type_theory import TYPE0_SORT, PropTypeRule
+
         result = PropTypeRule.pi_sort(TYPE0_SORT, TYPE0_SORT)
         assert not result.is_prop
         assert result.level == 1
 
     def test_cic_bridge_severity(self):
-        from math_anything.type_theory import CICBridge, PROP
+        from math_anything.type_theory import PROP, CICBridge
+
         cb = CICBridge()
         assert cb.severity_to_sort("theorem").is_prop
         assert not cb.severity_to_sort("conservation").is_prop
 
     def test_scf_coinductive(self):
         from math_anything.type_theory import CICBridge
+
         cb = CICBridge()
         stream = cb.scf_to_coinductive()
         assert stream.name == "SCFStream"
         assert len(stream.co_constructors) > 0
 
     def test_quotient_type(self):
-        from math_anything.type_theory import QuotientType, TYPE0
+        from math_anything.type_theory import TYPE0, QuotientType
+
         qt = QuotientType(base_type=TYPE0, relation=Var("R"))
         assert qt.name == "Quotient"
 
     def test_fixpoint_termination(self):
         from math_anything.type_theory import Fixpoint, check_termination
+
         fix = Fixpoint("f", arrow(TYPE0, TYPE0), Var("body"))
         result = check_termination(fix)
         assert result.terminates
 
     def test_cic_type_checker_sort(self):
-        from math_anything.type_theory import CICTypeChecker, PROP, Context
+        from math_anything.type_theory import PROP, CICTypeChecker, Context
         from math_anything.type_theory.cic import Sort
+
         cic = CICTypeChecker()
         ctx = Context()
         # 未绑定变量应抛出 TypeCheckError
         from math_anything.type_theory.checker import TypeCheckError
+
         with pytest.raises(TypeCheckError, match="Unbound variable"):
             cic.sort_of(Var("x"), ctx)
 
     def test_cumulativity(self):
-        from math_anything.type_theory import CICTypeChecker, PROP, TYPE0_SORT, TYPE1_SORT
+        from math_anything.type_theory import PROP, TYPE0_SORT, TYPE1_SORT, CICTypeChecker
+
         cic = CICTypeChecker()
         assert cic.check_cumulativity(PROP, TYPE0_SORT)
         assert cic.check_cumulativity(TYPE0_SORT, TYPE1_SORT)
@@ -382,24 +437,29 @@ class TestCIC:
 
 # ── HoTT 测试 ──
 
+
 class TestHoTT:
     def test_hlevel_from_isomorphism(self):
         from math_anything.type_theory import HLevel
+
         hlevel = HLevel.from_morphism_properties(True, True, True)
         assert hlevel == HLevel.CONTRACTIBLE
 
     def test_hlevel_from_injective(self):
         from math_anything.type_theory import HLevel
+
         hlevel = HLevel.from_morphism_properties(True, False, False)
         assert hlevel == HLevel.SET
 
     def test_hlevel_from_general(self):
         from math_anything.type_theory import HLevel
+
         hlevel = HLevel.from_morphism_properties(False, False, False)
         assert hlevel == HLevel.GROUPOID
 
     def test_interval(self):
         from math_anything.type_theory import INTERVAL
+
         assert INTERVAL.name == "Interval"
         assert len(INTERVAL.point_constructors) == 2
         assert len(INTERVAL.path_constructors) == 1
@@ -408,6 +468,7 @@ class TestHoTT:
 
     def test_circle(self):
         from math_anything.type_theory import CIRCLE
+
         assert CIRCLE.name == "S1"
         assert len(CIRCLE.point_constructors) == 1
         assert len(CIRCLE.path_constructors) == 1
@@ -415,8 +476,9 @@ class TestHoTT:
         assert CIRCLE.path_constructors[0].target == "base"
 
     def test_hott_bridge_morphism_chain(self):
-        from math_anything.type_theory import HoTTBridge
         from math_anything.morphisms import ContinuumToDiscrete, TimeSteppingMorphism
+        from math_anything.type_theory import HoTTBridge
+
         hb = HoTTBridge()
         ctd = ContinuumToDiscrete(method="fdm")
         tsm = TimeSteppingMorphism(method="euler_explicit")
@@ -426,26 +488,32 @@ class TestHoTT:
         assert len(hit.path_constructors) == 2
 
     def test_hott_checker_hlevel(self):
-        from math_anything.type_theory import HoTTTypeChecker, HLevel, Context
+        from math_anything.type_theory import Context, HLevel, HoTTTypeChecker
+
         hc = HoTTTypeChecker()
         ctx = Context()
         # Universe is n-groupoid
         assert hc.infer_h_level(Universe(0), ctx) == HLevel.N_GROUPOID
         # Identity type is proposition
-        from math_anything.type_theory import Identity, TYPE0, Var
+        from math_anything.type_theory import TYPE0, Identity, Var
+
         id_type = Identity(TYPE0, Var("a"), Var("a"))
         assert hc.infer_h_level(id_type, ctx) == HLevel.PROPOSITION
 
     def test_equivalence(self):
         from math_anything.type_theory import Equivalence, Var
+
         equiv = Equivalence(
-            forward=Var("f"), backward=Var("g"),
-            section=Var("alpha"), retraction=Var("beta"),
+            forward=Var("f"),
+            backward=Var("g"),
+            section=Var("alpha"),
+            retraction=Var("beta"),
         )
         assert equiv.forward == Var("f")
 
     def test_univalence(self):
-        from math_anything.type_theory import Univalence, Equivalence, Var, TYPE0
+        from math_anything.type_theory import TYPE0, Equivalence, Univalence, Var
+
         equiv = Equivalence(Var("f"), Var("g"), Var("alpha"), Var("beta"))
         ua = Univalence(equiv, TYPE0, TYPE0)
         assert ua.source_type == TYPE0
@@ -453,9 +521,11 @@ class TestHoTT:
 
 # ── 验证流水线测试 ──
 
+
 class TestVerificationPipeline:
     def test_symbolic_layer(self):
-        from math_anything.type_theory.verify import VerificationPipeline, VerificationLayer
+        from math_anything.type_theory.verify import VerificationLayer, VerificationPipeline
+
         vp = VerificationPipeline()
         result = vp.verify(
             statement="E = mc^2",
@@ -465,7 +535,8 @@ class TestVerificationPipeline:
         assert result.layers[0].layer == VerificationLayer.SYMBOLIC
 
     def test_type_system_layer(self):
-        from math_anything.type_theory.verify import VerificationPipeline, VerificationLayer
+        from math_anything.type_theory.verify import VerificationLayer, VerificationPipeline
+
         vp = VerificationPipeline()
         result = vp.verify(
             statement="eigenvalues are real",
@@ -475,7 +546,8 @@ class TestVerificationPipeline:
         assert result.layers[0].passed
 
     def test_logic_layer(self):
-        from math_anything.type_theory.verify import VerificationPipeline, VerificationLayer
+        from math_anything.type_theory.verify import VerificationLayer, VerificationPipeline
+
         vp = VerificationPipeline()
         result = vp.verify(
             statement="A implies B",
@@ -489,6 +561,7 @@ class TestVerificationPipeline:
 
     def test_full_pipeline(self):
         from math_anything.type_theory.verify import VerificationPipeline
+
         vp = VerificationPipeline()
         result = vp.verify(
             statement="Self-adjoint operators have real eigenvalues",
@@ -501,7 +574,8 @@ class TestVerificationPipeline:
         assert result.layers[4].confidence <= 0.5
 
     def test_overall_confidence(self):
-        from math_anything.type_theory.verify import VerificationPipeline, VerificationLayer
+        from math_anything.type_theory.verify import VerificationLayer, VerificationPipeline
+
         vp = VerificationPipeline()
         result = vp.verify(
             statement="x = x",

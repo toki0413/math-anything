@@ -2,18 +2,18 @@
 
 import pytest
 
+from math_anything.morphisms.cfd import (
+    IncompressibilityMorphism,
+    LESFilteringMorphism,
+    ReynoldsDecompositionMorphism,
+    TurbulenceModelClosureMorphism,
+)
 from math_anything.morphisms.dft import (
     BornOppenheimerApproximation,
+    ExchangeCorrelationApproximation,
     KohnShamMapping,
     PlaneWaveTruncation,
     SCFIterationMorphism,
-    ExchangeCorrelationApproximation,
-)
-from math_anything.morphisms.cfd import (
-    IncompressibilityMorphism,
-    ReynoldsDecompositionMorphism,
-    TurbulenceModelClosureMorphism,
-    LESFilteringMorphism,
 )
 from math_anything.morphisms.md import (
     ClassicalLimitMorphism,
@@ -24,17 +24,16 @@ from math_anything.morphisms.quantum import (
     PostHartreeFockMorphism,
 )
 from math_anything.morphisms.surrogate import (
-    MLSurrogateMorphism,
     DiffuseInterfaceMorphism,
+    MLSurrogateMorphism,
 )
 from math_anything.morphisms.symmetry import (
-    SymmetryReductionMorphism,
     BlochTheoremMorphism,
+    SymmetryReductionMorphism,
 )
 
 
 class TestDFTMorphismApply:
-
     def test_born_oppenheimer_apply(self):
         bo = BornOppenheimerApproximation()
         result = bo.apply({"n_electrons": 10})
@@ -84,7 +83,6 @@ class TestDFTMorphismApply:
 
 
 class TestCFDMorphismApply:
-
     def test_incompressibility_apply(self):
         m = IncompressibilityMorphism()
         result = m.apply({})
@@ -112,7 +110,6 @@ class TestCFDMorphismApply:
 
 
 class TestMDMorphismApply:
-
     def test_classical_limit_apply(self):
         m = ClassicalLimitMorphism()
         result = m.apply({})
@@ -132,7 +129,6 @@ class TestMDMorphismApply:
 
 
 class TestQuantumMorphismApply:
-
     def test_hartree_fock_apply(self):
         hf = HartreeFockMorphism()
         result = hf.apply({})
@@ -145,7 +141,6 @@ class TestQuantumMorphismApply:
 
 
 class TestSurrogateMorphismApply:
-
     def test_ml_surrogate_apply(self):
         m = MLSurrogateMorphism()
         result = m.apply({})
@@ -158,7 +153,6 @@ class TestSurrogateMorphismApply:
 
 
 class TestSymmetryMorphismApply:
-
     def test_symmetry_reduction_apply(self):
         m = SymmetryReductionMorphism()
         result = m.apply({})
@@ -171,7 +165,6 @@ class TestSymmetryMorphismApply:
 
 
 class TestMorphismChainApply:
-
     def test_dft_chain_sequential(self):
         """Apply the full DFT morphism chain sequentially."""
         state = {"n_electrons": 10}

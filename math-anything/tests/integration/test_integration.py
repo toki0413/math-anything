@@ -15,11 +15,13 @@ if str(_engines) not in sys.path:
 class TestPluginRegistry:
     def test_plugin_registry_exists(self):
         from math_anything.plugin import PluginRegistry
+
         registry = PluginRegistry()
         assert registry is not None
 
     def test_builtin_engines_registered(self):
         from math_anything.plugin import BUILTIN_ENGINES
+
         assert "vasp" in BUILTIN_ENGINES
         assert "lammps" in BUILTIN_ENGINES
         assert len(BUILTIN_ENGINES) >= 19
@@ -64,12 +66,14 @@ class TestCategoriesGraph:
 class TestKnowledgeGraphBuilder:
     def test_build_from_structure(self, temp_kg, self_consistent_structure):
         from math_anything.categories.builder import KnowledgeGraphBuilder
+
         builder = KnowledgeGraphBuilder(temp_kg)
         builder.build_from_structure(self_consistent_structure)
         assert temp_kg.stats()["nodes"] > 3
 
     def test_build_from_engine(self, temp_kg):
         from math_anything.categories.builder import KnowledgeGraphBuilder
+
         builder = KnowledgeGraphBuilder(temp_kg)
         builder.build_from_engine("VASP", "NonlinearEigenvalue", {"ENCUT": 520})
         assert temp_kg.has_entity("ENCUT", "parameter")
@@ -78,6 +82,7 @@ class TestKnowledgeGraphBuilder:
 class TestGraphQueryEngine:
     def test_impact(self, temp_kg):
         from math_anything.categories.query import GraphQueryEngine
+
         a = temp_kg.add_entity("ENCUT", "parameter")
         b = temp_kg.add_entity("truncation", "approximation")
         temp_kg.add_relation(a, "controls", b)
@@ -89,12 +94,14 @@ class TestGraphQueryEngine:
 class TestBridgeIntegration:
     def test_vasp_bridge(self):
         from math_anything.bridge import StructureBridge
+
         b = StructureBridge()
         r = b.build_from_vasp({"ENCUT": 520, "SIGMA": 0.05, "ISMEAR": 1})
         assert "Self-Consistent" in r["structure"]["name"]
 
     def test_cfd_bridge(self):
         from math_anything.bridge import StructureBridge
+
         b = StructureBridge()
         r = b.build_from_cfd({"engine": "OpenFOAM", "regime": "incompressible"})
         assert "Navier" in r["structure"]["name"]
@@ -104,6 +111,7 @@ class TestBridgeIntegration:
 class TestDimensionalDeep:
     def test_buckingham_suggest(self, buckingham_engine):
         from math_anything.dimensional.scaling_group import BUILTIN_QUANTITIES
+
         quantities = [
             BUILTIN_QUANTITIES["density"],
             BUILTIN_QUANTITIES["velocity"],
@@ -116,6 +124,7 @@ class TestDimensionalDeep:
 
     def test_qm_analyzer(self):
         from math_anything.dimensional.scaling_group import QMDimensionAnalyzer
+
         qm = QMDimensionAnalyzer()
         pi_groups = qm.analyze_dft({"ENCUT": 520})
         assert len(pi_groups) >= 1
@@ -124,11 +133,13 @@ class TestDimensionalDeep:
 class TestExceptions:
     def test_exception_code(self):
         from math_anything.exceptions import EngineNotFoundError
+
         e = EngineNotFoundError(detail="test")
         assert len(e.code) > 0
 
     def test_exception_str(self):
         from math_anything.exceptions import PluginNotFoundError
+
         e = PluginNotFoundError(detail="engine x not found")
         assert "engine x" in str(e)
 
@@ -136,6 +147,7 @@ class TestExceptions:
 class TestRustBridge:
     def test_fallback_available(self):
         from math_anything.rust_bridge import EMLAccelerator, is_rust_available
+
         acc = EMLAccelerator()
         # Fallback should always work, regardless of Rust availability
         closure = acc.eml_closure([0.0, 1.0, math.e, math.pi], 2, 50)
@@ -143,7 +155,9 @@ class TestRustBridge:
 
     def test_buckingham_fallback(self):
         import numpy as np
+
         from math_anything.rust_bridge import EMLAccelerator
+
         acc = EMLAccelerator()
         matrix = np.eye(4)[:, :2]
         result = acc.buckingham_pi(matrix)

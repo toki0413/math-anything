@@ -9,8 +9,8 @@ docx = pytest.importorskip("docx")
 
 from math_anything.draft.docx_draft import markdown_to_docx
 
-
 # ── markdown_to_docx: basic ──
+
 
 class TestMarkdownToDocxBasic:
     def test_creates_file(self, tmp_path):
@@ -42,6 +42,7 @@ class TestMarkdownToDocxBasic:
 
 
 # ── markdown_to_docx: headings ──
+
 
 class TestMarkdownToDocxHeadings:
     def test_h1_heading(self, tmp_path):
@@ -79,6 +80,7 @@ class TestMarkdownToDocxHeadings:
 
 # ── markdown_to_docx: lists ──
 
+
 class TestMarkdownToDocxLists:
     def test_bullet_list(self, tmp_path):
         out = tmp_path / "output.docx"
@@ -102,6 +104,7 @@ class TestMarkdownToDocxLists:
 
 
 # ── markdown_to_docx: paragraphs ──
+
 
 class TestMarkdownToDocxParagraphs:
     def test_simple_paragraph(self, tmp_path):
@@ -133,6 +136,7 @@ class TestMarkdownToDocxParagraphs:
 
 # ── markdown_to_docx: code blocks ──
 
+
 class TestMarkdownToDocxCodeBlocks:
     def test_code_block(self, tmp_path):
         out = tmp_path / "output.docx"
@@ -153,6 +157,7 @@ class TestMarkdownToDocxCodeBlocks:
 
 
 # ── markdown_to_docx: complex documents ──
+
 
 class TestMarkdownToDocxComplex:
     def test_full_document(self, tmp_path):

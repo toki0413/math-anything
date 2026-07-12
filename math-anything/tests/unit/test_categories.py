@@ -1,21 +1,31 @@
 """Tests for categories module — CategoryEngine, MathKnowledgeGraph, KnowledgeGraphBuilder, GraphQueryEngine."""
 
-import pytest
-from pathlib import Path
 import tempfile
+from pathlib import Path
 
-from math_anything.categories.engine import CategoryEngine, MorphismLink
-from math_anything.categories.graph import MathKnowledgeGraph, node_id, ENTITY_PREFIXES
+import pytest
+
 from math_anything.categories.builder import KnowledgeGraphBuilder
+from math_anything.categories.engine import CategoryEngine, MorphismLink
+from math_anything.categories.graph import ENTITY_PREFIXES, MathKnowledgeGraph, node_id
 from math_anything.categories.query import GraphQueryEngine
-
 
 # ── Helper: simple morphism stub ──
 
+
 class _StubMorphism:
-    def __init__(self, name, src_type="A", tgt_type="B",
-                 kept=None, lost=None, kernel="k", category="cat",
-                 math_form="f(x)", condition="true"):
+    def __init__(
+        self,
+        name,
+        src_type="A",
+        tgt_type="B",
+        kept=None,
+        lost=None,
+        kernel="k",
+        category="cat",
+        math_form="f(x)",
+        condition="true",
+    ):
         self.name = name
         self.source_type = [src_type]
         self.target_type = [tgt_type]
@@ -49,8 +59,8 @@ class _StubStructure:
 
 # ── node_id ──
 
-class TestNodeId:
 
+class TestNodeId:
     def test_structure_prefix(self):
         assert node_id("Foo", "structure") == "struct:Foo"
 
@@ -69,8 +79,8 @@ class TestNodeId:
 
 # ── CategoryEngine ──
 
-class TestCategoryEngine:
 
+class TestCategoryEngine:
     def test_register_morphism(self):
         eng = CategoryEngine()
         m = _StubMorphism("bo")
@@ -174,8 +184,8 @@ class TestCategoryEngine:
 
 # ── MathKnowledgeGraph ──
 
-class TestMathKnowledgeGraph:
 
+class TestMathKnowledgeGraph:
     def test_create_graph(self):
         with tempfile.TemporaryDirectory() as tmp:
             kg = MathKnowledgeGraph(tmp)
@@ -289,8 +299,8 @@ class TestMathKnowledgeGraph:
 
 # ── KnowledgeGraphBuilder ──
 
-class TestKnowledgeGraphBuilder:
 
+class TestKnowledgeGraphBuilder:
     def _make_kg(self):
         with tempfile.TemporaryDirectory() as tmp:
             kg = MathKnowledgeGraph(tmp)
@@ -340,17 +350,21 @@ class TestKnowledgeGraphBuilder:
         with tempfile.TemporaryDirectory() as tmp:
             kg = MathKnowledgeGraph(tmp)
             builder = KnowledgeGraphBuilder(kg)
-            builder.build_from_cross_engine("vasp", "qe", [
-                {"source": "ENCUT", "target": "ecutwfc", "meaning": "cutoff energy"},
-            ])
+            builder.build_from_cross_engine(
+                "vasp",
+                "qe",
+                [
+                    {"source": "ENCUT", "target": "ecutwfc", "meaning": "cutoff energy"},
+                ],
+            )
             assert kg.has_entity("ENCUT", "parameter")
             assert kg.has_entity("ecutwfc", "parameter")
 
 
 # ── GraphQueryEngine ──
 
-class TestGraphQueryEngine:
 
+class TestGraphQueryEngine:
     def test_query(self):
         with tempfile.TemporaryDirectory() as tmp:
             kg = MathKnowledgeGraph(tmp)

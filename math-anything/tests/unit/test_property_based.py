@@ -3,6 +3,7 @@
 These tests verify mathematical properties that should hold for ALL valid inputs,
 not just specific test cases. This catches edge cases that unit tests miss.
 """
+
 import unittest
 
 import numpy as np
@@ -18,6 +19,7 @@ class TestConservationFieldProperties(unittest.TestCase):
     def test_navier_stokes_coupling_matrix_symmetric(self, mu):
         """The coupling matrix for Navier-Stokes should be well-defined for any valid viscosity."""
         from math_anything.structures.conservation_field import ConservationMatrixField
+
         field = ConservationMatrixField()
         field.build_from_navier_stokes(mu=mu)
         self.assertIsNotNone(field.coupling_matrix)
@@ -25,12 +27,15 @@ class TestConservationFieldProperties(unittest.TestCase):
         mat = np.array(field.coupling_matrix)
         self.assertTrue(np.all(np.isfinite(mat)))
 
-    @given(hbar=st.floats(min_value=0.1, max_value=10.0, allow_nan=False),
-           mass=st.floats(min_value=0.1, max_value=100.0, allow_nan=False))
+    @given(
+        hbar=st.floats(min_value=0.1, max_value=10.0, allow_nan=False),
+        mass=st.floats(min_value=0.1, max_value=100.0, allow_nan=False),
+    )
     @settings(max_examples=20, deadline=5000)
     def test_schrodinger_field_well_defined(self, hbar, mass):
         """Schrodinger conservation field should be well-defined for any valid hbar and mass."""
         from math_anything.structures.conservation_field import ConservationMatrixField
+
         field = ConservationMatrixField()
         field.build_from_schrodinger(hbar=hbar, m=mass)
         self.assertIsNotNone(field.coupling_matrix)
@@ -158,7 +163,7 @@ class TestDeformationGradientProperties(unittest.TestCase):
     """Properties that should hold for continuum mechanics."""
 
     @given(
-        angle=st.floats(min_value=-np.pi/2 + 0.1, max_value=np.pi/2 - 0.1, allow_nan=False),
+        angle=st.floats(min_value=-np.pi / 2 + 0.1, max_value=np.pi / 2 - 0.1, allow_nan=False),
     )
     @settings(max_examples=20, deadline=5000)
     def test_rotation_is_isochoric(self, angle):

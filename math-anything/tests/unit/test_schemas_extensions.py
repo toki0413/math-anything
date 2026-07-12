@@ -3,58 +3,57 @@
 import pytest
 
 from math_anything.schemas.extensions import (
-    SchemaExtension,
-    ExtensionRegistry,
-    ExtensionMetadata,
     ExtendedMathSchema,
+    ExtensionMetadata,
+    ExtensionRegistry,
+    GraphNeuralNetworkExtension,
     MLInteratomicPotentialExtension,
     PINNLossExtension,
-    GraphNeuralNetworkExtension,
+    SchemaExtension,
     get_available_extensions,
     get_extension_documentation,
     validate_with_extensions,
 )
-from math_anything.schemas.precision import (
-    MathematicalStructure,
-    VariableDependency,
-    DiscretizationScheme,
-    SolutionStrategy,
-    Approximation,
-    MLContext,
-    ModelingGuidance,
-    MathematicalDecoding,
-    PrecisionMetadata,
-    EnhancedMathSchema,
-    _filter_none,
-)
 from math_anything.schemas.math_schema import (
-    MathSchema,
-    SchemaValidator,
-    StreamingSchemaBuilder,
-    MathSchemaPool,
-    GoverningEquation,
-    SymbolicConstraint,
     BoundaryCondition,
-    MathematicalObject,
-    TensorComponent,
+    ComputationalEdge,
     ComputationalGraph,
     ComputationalNode,
-    ComputationalEdge,
-    Discretization,
-    Solver,
-    NumericalMethod,
     ConservationProperty,
-    ParameterRelationship,
+    Discretization,
+    GoverningEquation,
+    MathematicalObject,
+    MathSchema,
+    MathSchemaPool,
     MetaInfo,
-    UpdateMode,
+    NumericalMethod,
+    ParameterRelationship,
+    SchemaValidator,
+    Solver,
+    StreamingSchemaBuilder,
+    SymbolicConstraint,
+    TensorComponent,
     TensorRank,
+    UpdateMode,
 )
-
+from math_anything.schemas.precision import (
+    Approximation,
+    DiscretizationScheme,
+    EnhancedMathSchema,
+    MathematicalDecoding,
+    MathematicalStructure,
+    MLContext,
+    ModelingGuidance,
+    PrecisionMetadata,
+    SolutionStrategy,
+    VariableDependency,
+    _filter_none,
+)
 
 # ── ExtensionMetadata ──
 
-class TestExtensionMetadata:
 
+class TestExtensionMetadata:
     def test_to_dict(self):
         m = ExtensionMetadata(name="test", version="1.0", description="desc")
         d = m.to_dict()
@@ -69,8 +68,8 @@ class TestExtensionMetadata:
 
 # ── SchemaExtension subclasses ──
 
-class TestMLInteratomicPotentialExtension:
 
+class TestMLInteratomicPotentialExtension:
     def test_name(self):
         e = MLInteratomicPotentialExtension()
         assert e.name == "ml_interatomic_potential"
@@ -83,7 +82,6 @@ class TestMLInteratomicPotentialExtension:
 
 
 class TestPINNLossExtension:
-
     def test_name(self):
         e = PINNLossExtension()
         assert e.name == "pinn_loss_function"
@@ -95,7 +93,6 @@ class TestPINNLossExtension:
 
 
 class TestGraphNeuralNetworkExtension:
-
     def test_name(self):
         e = GraphNeuralNetworkExtension()
         assert e.name == "graph_neural_network"
@@ -108,8 +105,8 @@ class TestGraphNeuralNetworkExtension:
 
 # ── ExtensionRegistry ──
 
-class TestExtensionRegistry:
 
+class TestExtensionRegistry:
     def test_get_available_extensions(self):
         exts = get_available_extensions()
         assert isinstance(exts, list)
@@ -127,8 +124,8 @@ class TestExtensionRegistry:
 
 # ── ExtendedMathSchema ──
 
-class TestExtendedMathSchema:
 
+class TestExtendedMathSchema:
     def test_create(self):
         base = MathSchema()
         es = ExtendedMathSchema(base)
@@ -176,8 +173,8 @@ class TestExtendedMathSchema:
 
 # ── Precision dataclasses ──
 
-class TestMathematicalStructure:
 
+class TestMathematicalStructure:
     def test_to_dict(self):
         ms = MathematicalStructure(
             problem_type="eigenvalue",
@@ -195,7 +192,6 @@ class TestMathematicalStructure:
 
 
 class TestVariableDependency:
-
     def test_to_dict(self):
         vd = VariableDependency(
             relation="V_eff depends on n(r)",
@@ -208,7 +204,6 @@ class TestVariableDependency:
 
 
 class TestDiscretizationScheme:
-
     def test_to_dict(self):
         ds = DiscretizationScheme(
             method="plane-wave",
@@ -220,7 +215,6 @@ class TestDiscretizationScheme:
 
 
 class TestSolutionStrategy:
-
     def test_to_dict(self):
         ss = SolutionStrategy(
             method="self-consistent iteration",
@@ -231,7 +225,6 @@ class TestSolutionStrategy:
 
 
 class TestApproximation:
-
     def test_to_dict(self):
         a = Approximation(
             name="LDA",
@@ -243,7 +236,6 @@ class TestApproximation:
 
 
 class TestMLContext:
-
     def test_to_dict(self):
         ml = MLContext(
             input_mathematical_roles=[{"name": "structure", "role": "geometry"}],
@@ -254,7 +246,6 @@ class TestMLContext:
 
 
 class TestModelingGuidance:
-
     def test_to_dict(self):
         mg = ModelingGuidance(
             problem_type="DFT",
@@ -264,7 +255,6 @@ class TestModelingGuidance:
 
 
 class TestMathematicalDecoding:
-
     def test_to_dict(self):
         md = MathematicalDecoding(
             core_problem={"type": "eigenvalue"},
@@ -274,7 +264,6 @@ class TestMathematicalDecoding:
 
 
 class TestPrecisionMetadata:
-
     def test_to_dict(self):
         pm = PrecisionMetadata(
             extraction_confidence=0.9,
@@ -285,7 +274,6 @@ class TestPrecisionMetadata:
 
 
 class TestEnhancedMathSchema:
-
     def test_create(self):
         es = EnhancedMathSchema()
         assert es.mathematical_structure is None
@@ -308,8 +296,8 @@ class TestEnhancedMathSchema:
 
 # ── _filter_none ──
 
-class TestFilterNone:
 
+class TestFilterNone:
     def test_removes_none(self):
         assert _filter_none({"a": 1, "b": None}) == {"a": 1}
 
@@ -328,8 +316,8 @@ class TestFilterNone:
 
 # ── StreamingSchemaBuilder ──
 
-class TestStreamingSchemaBuilder:
 
+class TestStreamingSchemaBuilder:
     def test_build_empty(self):
         b = StreamingSchemaBuilder()
         schema = b.build()
@@ -347,8 +335,11 @@ class TestStreamingSchemaBuilder:
         b = StreamingSchemaBuilder()
         mo = MathematicalObject(field="u", tensor_rank=0, tensor_form="scalar")
         bc = BoundaryCondition(
-            id="bc1", type="dirichlet", domain={},
-            mathematical_object=mo, software_implementation={},
+            id="bc1",
+            type="dirichlet",
+            domain={},
+            mathematical_object=mo,
+            software_implementation={},
         )
         b.add_boundary_conditions([bc])
         assert b.field_count == 1
@@ -363,8 +354,8 @@ class TestStreamingSchemaBuilder:
 
 # ── MathSchemaPool ──
 
-class TestMathSchemaPool:
 
+class TestMathSchemaPool:
     def test_acquire_and_release(self):
         # Clear pool first
         MathSchemaPool._pool.clear()
@@ -393,8 +384,8 @@ class TestMathSchemaPool:
 
 # ── SchemaValidator ──
 
-class TestSchemaValidator:
 
+class TestSchemaValidator:
     def test_valid_schema_dict(self):
         v = SchemaValidator()
         data = MathSchema().to_dict()
@@ -408,7 +399,13 @@ class TestSchemaValidator:
 
     def test_missing_meta_keys(self):
         v = SchemaValidator()
-        data = {"schema_version": "1.0.0", "meta": {}, "mathematical_model": {}, "numerical_method": {}, "computational_graph": {}}
+        data = {
+            "schema_version": "1.0.0",
+            "meta": {},
+            "mathematical_model": {},
+            "numerical_method": {},
+            "computational_graph": {},
+        }
         assert v.validate(data) is False
 
     def test_unsupported_version_warning(self):
@@ -425,8 +422,8 @@ class TestSchemaValidator:
 
 # ── MathSchema serialization ──
 
-class TestMathSchemaSerialization:
 
+class TestMathSchemaSerialization:
     def test_to_json(self):
         s = MathSchema()
         j = s.to_json()
@@ -434,9 +431,7 @@ class TestMathSchemaSerialization:
 
     def test_to_dict_roundtrip(self):
         s = MathSchema()
-        s.add_governing_equation(
-            GoverningEquation(id="eq1", type="PDE", name="Test", mathematical_form="x=0")
-        )
+        s.add_governing_equation(GoverningEquation(id="eq1", type="PDE", name="Test", mathematical_form="x=0"))
         d = s.to_dict()
         s2 = MathSchema.from_dict(d)
         assert len(s2.mathematical_model.governing_equations) == 1
@@ -456,7 +451,9 @@ class TestMathSchemaSerialization:
     def test_add_boundary_condition(self):
         s = MathSchema()
         mo = MathematicalObject(field="u", tensor_rank=0, tensor_form="scalar")
-        bc = BoundaryCondition(id="bc1", type="dirichlet", domain={}, mathematical_object=mo, software_implementation={})
+        bc = BoundaryCondition(
+            id="bc1", type="dirichlet", domain={}, mathematical_object=mo, software_implementation={}
+        )
         s.add_boundary_condition(bc)
         assert len(s.mathematical_model.boundary_conditions) == 1
 
@@ -480,8 +477,8 @@ class TestMathSchemaSerialization:
 
 # ── Enums ──
 
-class TestEnums:
 
+class TestEnums:
     def test_update_mode(self):
         assert UpdateMode.EXPLICIT_UPDATE.value == "explicit_update"
         assert UpdateMode.IMPLICIT_LOOP.value == "implicit_loop"

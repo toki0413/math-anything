@@ -2,21 +2,21 @@
 
 import pytest
 
-from math_anything.schemas import MathSchema
+from math_anything.check.abaqus_check import AbaqusCheckEngine
 from math_anything.check.base import (
     CheckEngine,
     CheckResult,
     GenericCheckEngine,
-    register_check_engine,
-    get_check_engine,
     check_schema,
+    get_check_engine,
+    register_check_engine,
 )
-from math_anything.check.vasp_check import VaspCheckEngine
 from math_anything.check.lammps_check import LammpsCheckEngine
-from math_anything.check.abaqus_check import AbaqusCheckEngine
-
+from math_anything.check.vasp_check import VaspCheckEngine
+from math_anything.schemas import MathSchema
 
 # ── Helpers ──
+
 
 def _make_schema(raw: dict) -> MathSchema:
     s = MathSchema()
@@ -26,8 +26,8 @@ def _make_schema(raw: dict) -> MathSchema:
 
 # ── CheckResult ──
 
-class TestCheckResult:
 
+class TestCheckResult:
     def test_to_text_error(self):
         r = CheckResult(rule="ENCUT low", severity="error", message="too low")
         text = r.to_text()
@@ -52,8 +52,8 @@ class TestCheckResult:
 
 # ── GenericCheckEngine ──
 
-class TestGenericCheckEngine:
 
+class TestGenericCheckEngine:
     def test_engine_name(self):
         e = GenericCheckEngine()
         assert e.engine_name == "generic"
@@ -72,8 +72,8 @@ class TestGenericCheckEngine:
 
 # ── Registry ──
 
-class TestCheckRegistry:
 
+class TestCheckRegistry:
     def test_get_unknown_returns_generic(self):
         e = get_check_engine("nonexistent")
         assert isinstance(e, GenericCheckEngine)
@@ -91,8 +91,8 @@ class TestCheckRegistry:
 
 # ── VaspCheckEngine ──
 
-class TestVaspCheckEngine:
 
+class TestVaspCheckEngine:
     def test_engine_name(self):
         assert VaspCheckEngine().engine_name == "vasp"
 
@@ -101,10 +101,12 @@ class TestVaspCheckEngine:
         assert isinstance(results, list)
 
     def test_encut_below_enmax(self):
-        schema = _make_schema({
-            "incar": {"ENCUT": 200},
-            "potcar": {"enmax_list": [300, 350]},
-        })
+        schema = _make_schema(
+            {
+                "incar": {"ENCUT": 200},
+                "potcar": {"enmax_list": [300, 350]},
+            }
+        )
         results = VaspCheckEngine().check(schema)
         errors = [r for r in results if r.severity == "error"]
         assert any("ENCUT" in r.rule for r in errors)
@@ -122,19 +124,23 @@ class TestVaspCheckEngine:
         assert len(warns) > 0
 
     def test_smearing_tetrahedron_sparse_k(self):
-        schema = _make_schema({
-            "incar": {"ISMEAR": -5},
-            "kpoints": {"mesh": {"subdivisions": [2, 2, 2]}},
-        })
+        schema = _make_schema(
+            {
+                "incar": {"ISMEAR": -5},
+                "kpoints": {"mesh": {"subdivisions": [2, 2, 2]}},
+            }
+        )
         results = VaspCheckEngine().check(schema)
         errors = [r for r in results if "tetrahedron" in r.rule.lower()]
         assert len(errors) > 0
 
     def test_smearing_sigma_large(self):
-        schema = _make_schema({
-            "incar": {"ISMEAR": 0, "SIGMA": 0.5},
-            "kpoints": {"mesh": {}},
-        })
+        schema = _make_schema(
+            {
+                "incar": {"ISMEAR": 0, "SIGMA": 0.5},
+                "kpoints": {"mesh": {}},
+            }
+        )
         results = VaspCheckEngine().check(schema)
         warns = [r for r in results if "SIGMA" in r.rule]
         assert any(r.severity == "warning" for r in warns)
@@ -185,7 +191,7 @@ class TestVaspCheckEngine:
         schema = _make_schema({"incar": {"LWAVE": ".FALSE.", "LCHARG": ".FALSE."}})
         results = VaspCheckEngine().check(schema)
         # The check looks for specific string patterns in LWAVE/LCHARG
-        output_results = [r for r in results if "output" in r.rule.lower() or "WAVECAR" in r.rule or "CHGCAR" in r.rule]
+        [r for r in results if "output" in r.rule.lower() or "WAVECAR" in r.rule or "CHGCAR" in r.rule]
         # Even if the specific check doesn't fire, just verify no crash
         assert isinstance(results, list)
 
@@ -198,8 +204,8 @@ class TestVaspCheckEngine:
 
 # ── LammpsCheckEngine ──
 
-class TestLammpsCheckEngine:
 
+class TestLammpsCheckEngine:
     def test_engine_name(self):
         assert LammpsCheckEngine().engine_name == "lammps"
 
@@ -226,20 +232,24 @@ class TestLammpsCheckEngine:
         assert len(errors) > 0
 
     def test_nve_with_thermostat(self):
-        schema = _make_schema({
-            "fixes": {"f1": {"style": "nve"}, "f2": {"style": "langevin"}},
-            "timestep": 1.0,
-            "units": "metal",
-        })
+        schema = _make_schema(
+            {
+                "fixes": {"f1": {"style": "nve"}, "f2": {"style": "langevin"}},
+                "timestep": 1.0,
+                "units": "metal",
+            }
+        )
         results = LammpsCheckEngine().check(schema)
         warns = [r for r in results if "NVE" in r.rule]
         assert len(warns) > 0
 
     def test_deform_nonperiodic(self):
-        schema = _make_schema({
-            "fixes": {"f1": {"style": "deform"}},
-            "boundary": "p f p",
-        })
+        schema = _make_schema(
+            {
+                "fixes": {"f1": {"style": "deform"}},
+                "boundary": "p f p",
+            }
+        )
         results = LammpsCheckEngine().check(schema)
         errors = [r for r in results if "deform" in r.rule.lower()]
         assert len(errors) > 0
@@ -271,8 +281,8 @@ class TestLammpsCheckEngine:
 
 # ── AbaqusCheckEngine ──
 
-class TestAbaqusCheckEngine:
 
+class TestAbaqusCheckEngine:
     def test_engine_name(self):
         assert AbaqusCheckEngine().engine_name == "abaqus"
 

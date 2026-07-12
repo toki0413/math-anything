@@ -5,23 +5,23 @@ import math
 import numpy as np
 import pytest
 
+from math_anything.psrn.bridge import (
+    EnhancedPSRNSymbolicRegression,
+    PSRNSymbolicRegression,
+    upgrade_to_enhanced_psrn,
+    upgrade_to_psrn,
+)
 from math_anything.psrn.compiled_evaluator import (
+    _VECTORIZED_OPS,
     CompiledEvaluator,
     FastSymbolLayer,
     NumbaEvaluator,
     _eml,
-    _VECTORIZED_OPS,
 )
 from math_anything.psrn.pse_engine import PSEConfig, PSEEngine
-from math_anything.psrn.bridge import (
-    PSRNSymbolicRegression,
-    EnhancedPSRNSymbolicRegression,
-    upgrade_to_psrn,
-    upgrade_to_enhanced_psrn,
-)
-
 
 # ── CompiledEvaluator fixtures ──
+
 
 @pytest.fixture
 def evaluator():
@@ -36,6 +36,7 @@ def sample_data():
 
 
 # ── CompiledEvaluator: creation ──
+
 
 class TestCompiledEvaluatorCreation:
     def test_creates_with_empty_cache(self, evaluator):
@@ -52,6 +53,7 @@ class TestCompiledEvaluatorCreation:
 
 
 # ── CompiledEvaluator: compile + evaluate_single ──
+
 
 class TestCompiledEvaluatorCompile:
     def test_compile_simple_add(self, evaluator):
@@ -157,6 +159,7 @@ class TestCompiledEvaluatorCompile:
 
 # ── CompiledEvaluator: error handling ──
 
+
 class TestCompiledEvaluatorErrors:
     def test_unknown_variable_raises(self, evaluator):
         with pytest.raises(ValueError, match="Unknown variable"):
@@ -177,6 +180,7 @@ class TestCompiledEvaluatorErrors:
 
 # ── CompiledEvaluator: evaluate ──
 
+
 class TestCompiledEvaluatorEvaluate:
     def test_evaluate_single_expr(self, evaluator, sample_data):
         result = evaluator.evaluate("x + y", sample_data, ["x", "y"])
@@ -189,6 +193,7 @@ class TestCompiledEvaluatorEvaluate:
 
 
 # ── CompiledEvaluator: evaluate_batch_vec ──
+
 
 class TestCompiledEvaluatorBatch:
     def test_batch_basic(self, evaluator, sample_data):
@@ -214,6 +219,7 @@ class TestCompiledEvaluatorBatch:
 
 # ── CompiledEvaluator: clear_cache ──
 
+
 class TestCompiledEvaluatorCache:
     def test_clear_cache(self, evaluator):
         evaluator.compile("sin(x)", ["x"])
@@ -223,6 +229,7 @@ class TestCompiledEvaluatorCache:
 
 
 # ── FastSymbolLayer ──
+
 
 class TestFastSymbolLayer:
     def test_unary_op(self):
@@ -256,6 +263,7 @@ class TestFastSymbolLayer:
 
 # ── _eml function ──
 
+
 class TestEMLFunction:
     def test_eml_basic(self):
         result = _eml(0.0, 1.0)
@@ -270,6 +278,7 @@ class TestEMLFunction:
 
 
 # ── PSEConfig ──
+
 
 class TestPSEConfig:
     def test_default_config(self):
@@ -288,6 +297,7 @@ class TestPSEConfig:
 
 
 # ── PSEEngine: creation ──
+
 
 class TestPSEEngineCreation:
     def test_creates_with_default_config(self):
@@ -308,6 +318,7 @@ class TestPSEEngineCreation:
 
 
 # ── PSEEngine: internal methods ──
+
 
 class TestPSEEngineInternals:
     def test_compute_complexity_simple(self):
@@ -387,6 +398,7 @@ class TestPSEEngineInternals:
 
 # ── PSRNSymbolicRegression (Bridge) ──
 
+
 class TestPSRNSymbolicRegressionCreation:
     def test_creates_with_defaults(self):
         sr = PSRNSymbolicRegression()
@@ -449,9 +461,11 @@ class TestPSRNSymbolicRegressionEval:
 
 # ── upgrade functions ──
 
+
 class TestUpgradeFunctions:
     def test_upgrade_to_psrn(self):
         from math_anything.eml_v2 import ImprovedSymbolicRegression
+
         sr = ImprovedSymbolicRegression()
         psrn_sr = upgrade_to_psrn(sr, n_layers=3, max_iterations=7)
         assert isinstance(psrn_sr, PSRNSymbolicRegression)
@@ -460,6 +474,7 @@ class TestUpgradeFunctions:
 
     def test_upgrade_to_enhanced_psrn(self):
         from math_anything.eml_v2 import ImprovedSymbolicRegression
+
         sr = ImprovedSymbolicRegression()
         enhanced = upgrade_to_enhanced_psrn(sr, n_layers=2, max_layer_size=200)
         assert isinstance(enhanced, EnhancedPSRNSymbolicRegression)
@@ -467,6 +482,7 @@ class TestUpgradeFunctions:
 
 
 # ── NumbaEvaluator ──
+
 
 class TestNumbaEvaluator:
     def test_creates(self):
@@ -482,6 +498,7 @@ class TestNumbaEvaluator:
 
 
 # ── _VECTORIZED_OPS coverage ──
+
 
 class TestVectorizedOps:
     def test_identity(self):

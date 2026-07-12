@@ -137,9 +137,7 @@ def test_identical_kept_and_lost_sets_are_equivalent_with_confidence_one():
     ce = CategoryEngine()
     ce.register_morphism(_make_morphism("m1", "A", "B", kept=["energy"], lost=["spin"]))
     ce.register_morphism(_make_morphism("m2", "B", "C", kept=["energy"], lost=["density"]))
-    ce.register_morphism(
-        _make_morphism("alt", "A", "C", kept=["energy"], lost=["spin", "density"])
-    )
+    ce.register_morphism(_make_morphism("alt", "A", "C", kept=["energy"], lost=["spin", "density"]))
     ce.link("m1", "A", "B")
     ce.link("m2", "B", "C")
     ce.link("alt", "A", "C")

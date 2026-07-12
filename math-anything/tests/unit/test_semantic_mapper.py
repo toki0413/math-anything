@@ -8,8 +8,8 @@ from math_anything.codegen.semantic_mapper import (
     quick_map,
 )
 
-
 # ── MathMapping dataclass ──
+
 
 class TestMathMapping:
     def test_creation(self):
@@ -42,6 +42,7 @@ class TestMathMapping:
 
 
 # ── SemanticMapper: creation ──
+
 
 class TestSemanticMapperCreation:
     def test_creates_empty(self):
@@ -108,6 +109,7 @@ class TestSemanticMapperCreation:
 
 
 # ── SemanticMapper: map_commands ──
+
 
 class TestMapCommands:
     def test_empty_commands(self):
@@ -285,6 +287,7 @@ class TestMapCommands:
 
 # ── SemanticMapper: _extract_variables ──
 
+
 class TestExtractVariables:
     def test_extracts_variables(self):
         m = SemanticMapper()
@@ -331,6 +334,7 @@ class TestExtractVariables:
 
 
 # ── SemanticMapper: suggest_math_semantics ──
+
 
 class TestSuggestMathSemantics:
     def test_suggest_nvt(self):
@@ -398,6 +402,7 @@ class TestSuggestMathSemantics:
 
 # ── SemanticMapper: build_computational_graph ──
 
+
 class TestBuildComputationalGraph:
     def test_empty_commands(self):
         m = SemanticMapper()
@@ -415,11 +420,13 @@ class TestBuildComputationalGraph:
 
     def test_multiple_commands_sequential_edges(self):
         m = SemanticMapper()
-        graph = m.build_computational_graph([
-            {"name": "nvt"},
-            {"name": "minimize"},
-            {"name": "run"},
-        ])
+        graph = m.build_computational_graph(
+            [
+                {"name": "nvt"},
+                {"name": "minimize"},
+                {"name": "run"},
+            ]
+        )
         assert len(graph["nodes"]) == 3
         assert len(graph["edges"]) == 2  # sequential links
         # Check edge structure
@@ -447,20 +454,24 @@ class TestBuildComputationalGraph:
 
     def test_node_ids_increment(self):
         m = SemanticMapper()
-        graph = m.build_computational_graph([
-            {"name": "a"},
-            {"name": "b"},
-            {"name": "c"},
-        ])
+        graph = m.build_computational_graph(
+            [
+                {"name": "a"},
+                {"name": "b"},
+                {"name": "c"},
+            ]
+        )
         ids = [n["id"] for n in graph["nodes"]]
         assert ids == ["node_0", "node_1", "node_2"]
 
     def test_edges_link_consecutive_nodes(self):
         m = SemanticMapper()
-        graph = m.build_computational_graph([
-            {"name": "a"},
-            {"name": "b"},
-        ])
+        graph = m.build_computational_graph(
+            [
+                {"name": "a"},
+                {"name": "b"},
+            ]
+        )
         edge = graph["edges"][0]
         assert edge["from"] == "node_0"
         assert edge["to"] == "node_1"
@@ -473,6 +484,7 @@ class TestBuildComputationalGraph:
 
 
 # ── quick_map ──
+
 
 class TestQuickMap:
     def test_quick_map_returns_dict(self):

@@ -21,11 +21,13 @@ def _tiny_dataset():
 
 
 def test_build_training_path_returns_engine_and_path():
-    net = SequentialNetwork([
-        LinearMorphism(name="linear_1", input_dim=1, output_dim=2),
-        ActivationMorphism(name="relu_1", activation="relu"),
-        LinearMorphism(name="linear_2", input_dim=2, output_dim=1),
-    ])
+    net = SequentialNetwork(
+        [
+            LinearMorphism(name="linear_1", input_dim=1, output_dim=2),
+            ActivationMorphism(name="relu_1", activation="relu"),
+            LinearMorphism(name="linear_2", input_dim=2, output_dim=1),
+        ]
+    )
     result = train_and_capture(net, _tiny_dataset(), LossMorphism(name="mse", loss="mse"), epochs=3, lr=0.05)
 
     engine, path = build_training_path(result, name_prefix="run_a")
@@ -39,18 +41,22 @@ def test_identical_training_runs_are_homotopic():
     loss_fn = LossMorphism(name="mse", loss="mse")
     dataset = _tiny_dataset()
 
-    net_a = SequentialNetwork([
-        LinearMorphism(name="linear_1", input_dim=1, output_dim=2),
-        ActivationMorphism(name="relu_1", activation="relu"),
-        LinearMorphism(name="linear_2", input_dim=2, output_dim=1),
-    ])
+    net_a = SequentialNetwork(
+        [
+            LinearMorphism(name="linear_1", input_dim=1, output_dim=2),
+            ActivationMorphism(name="relu_1", activation="relu"),
+            LinearMorphism(name="linear_2", input_dim=2, output_dim=1),
+        ]
+    )
     result_a = train_and_capture(net_a, dataset, loss_fn, epochs=3, lr=0.05)
 
-    net_b = SequentialNetwork([
-        LinearMorphism(name="linear_1", input_dim=1, output_dim=2),
-        ActivationMorphism(name="relu_1", activation="relu"),
-        LinearMorphism(name="linear_2", input_dim=2, output_dim=1),
-    ])
+    net_b = SequentialNetwork(
+        [
+            LinearMorphism(name="linear_1", input_dim=1, output_dim=2),
+            ActivationMorphism(name="relu_1", activation="relu"),
+            LinearMorphism(name="linear_2", input_dim=2, output_dim=1),
+        ]
+    )
     result_b = train_and_capture(net_b, dataset, loss_fn, epochs=3, lr=0.05)
 
     witness = training_paths_homotopic(result_a, result_b)

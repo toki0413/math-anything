@@ -7,48 +7,48 @@ Covers:
   - ConservationMatrixField: edge cases, verify_conservation, to_dict
 """
 
-import pytest
 import numpy as np
+import pytest
 
-from math_anything.structures.enums import (
-    OperatorType,
-    SpectrumType,
-    SymmetryGroup,
-    VariationalPrinciple,
-    StructureDomain,
-)
-from math_anything.structures.invariant_registry import (
-    SPECTRAL_SELF_ADJOINT_INVARIANTS,
-    VARIATIONAL_INVARIANTS,
-    HAMILTONIAN_INVARIANTS,
-    CONSERVATION_LAW_INVARIANTS,
-    INVARIANT_REGISTRY,
-    get_invariants,
-    query_invariants,
-)
 from math_anything.structures._core import StructuralInvariant
-from math_anything.structures.evolution import (
-    EvolutionProblem,
-    HamiltonianSystem,
-    ConservationLawSystem,
-    ConservedQuantity,
-    DissipativeSystem,
-    StochasticSystem,
-    NavierStokesProblem,
-    NSRegime,
-    NSTurbulenceModel,
-    FluxType,
-)
 from math_anything.structures.conservation_field import (
+    NOETHER_CORRESPONDENCE,
+    TIME_TRANSLATION_CONSERVATION,
     ConservationMatrixField,
     FieldConservedQuantity,
     NoetherCurrent,
-    NOETHER_CORRESPONDENCE,
-    TIME_TRANSLATION_CONSERVATION,
+)
+from math_anything.structures.enums import (
+    OperatorType,
+    SpectrumType,
+    StructureDomain,
+    SymmetryGroup,
+    VariationalPrinciple,
+)
+from math_anything.structures.evolution import (
+    ConservationLawSystem,
+    ConservedQuantity,
+    DissipativeSystem,
+    EvolutionProblem,
+    FluxType,
+    HamiltonianSystem,
+    NavierStokesProblem,
+    NSRegime,
+    NSTurbulenceModel,
+    StochasticSystem,
+)
+from math_anything.structures.invariant_registry import (
+    CONSERVATION_LAW_INVARIANTS,
+    HAMILTONIAN_INVARIANTS,
+    INVARIANT_REGISTRY,
+    SPECTRAL_SELF_ADJOINT_INVARIANTS,
+    VARIATIONAL_INVARIANTS,
+    get_invariants,
+    query_invariants,
 )
 
-
 # ── Fixtures ──
+
 
 @pytest.fixture
 def hamiltonian():
@@ -69,8 +69,7 @@ def conservation_law():
 def conservation_law_with_thermal():
     return ConservationLawSystem(
         conserved_variables=[
-            ConservedQuantity(name="energy", symbol="E",
-                              dimensions={"temperature": 1.0}),
+            ConservedQuantity(name="energy", symbol="E", dimensions={"temperature": 1.0}),
         ],
         hyperbolic=False,
         has_diffusion=True,
@@ -113,6 +112,7 @@ def schrodinger_field():
 
 
 # ── Enum tests ──
+
 
 class TestOperatorType:
     def test_self_adjoint(self):
@@ -240,6 +240,7 @@ class TestStructureDomain:
 
 # ── InvariantRegistry tests ──
 
+
 class TestInvariantRegistryPredefined:
     def test_spectral_invariants_count(self):
         assert len(SPECTRAL_SELF_ADJOINT_INVARIANTS) >= 3
@@ -325,6 +326,7 @@ class TestQueryInvariants:
 
 
 # ── Evolution tests ──
+
 
 class TestEvolutionProblem:
     def test_default_creation(self):
@@ -476,6 +478,7 @@ class TestNavierStokesProblem:
 
 # ── ConservationMatrixField tests ──
 
+
 class TestConservationMatrixFieldEmpty:
     def test_empty_field_n_conserved(self, empty_field):
         assert empty_field.n_conserved == 0
@@ -580,7 +583,7 @@ class TestConservationMatrixFieldVerify:
         )
         U = np.array([1.0])
         results = f.verify_conservation(U)
-        assert results["mass"] == False
+        assert not results["mass"]
 
     def test_verify_with_source_vector(self):
         # coupling produces dU/dt = source → conserved
@@ -593,7 +596,7 @@ class TestConservationMatrixFieldVerify:
         )
         U = np.array([1.0])
         results = f.verify_conservation(U)
-        assert results["mass"] == True
+        assert results["mass"]
 
 
 class TestConservationMatrixFieldBuildMethods:

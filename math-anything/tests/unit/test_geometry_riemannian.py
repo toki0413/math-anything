@@ -1,21 +1,20 @@
 """Tests for Riemannian geometry — MetricFunction, Christoffel symbols, curvature, Lie derivatives."""
 
-import pytest
 import numpy as np
+import pytest
 
 from math_anything.structures.geometry_riemannian import (
     MetricFunction,
-    schwarzschild_metric,
     flat_metric,
-    spherical_metric,
-    lie_derivative_vector_field,
-    lie_derivative_scalar,
     lie_derivative_metric,
+    lie_derivative_scalar,
+    lie_derivative_vector_field,
+    schwarzschild_metric,
+    spherical_metric,
 )
 
 
 class TestMetricFunction:
-
     def test_flat_metric_at_origin(self):
         """Flat metric should be identity at any point."""
         mf = flat_metric(dim=3)
@@ -90,35 +89,52 @@ class TestMetricFunction:
 
 
 class TestLieDerivatives:
-
     def test_lie_derivative_scalar_constant_field(self):
         """Lie derivative of a constant scalar along any field should be zero."""
-        X = lambda c: np.array([1.0, 0.0])
-        f = lambda c: 5.0  # constant
+
+        def X(c):
+            return np.array([1.0, 0.0])
+
+        def f(c):
+            return 5.0  # constant
+
         coords = {"x0": 0.0, "x1": 0.0}
         result = lie_derivative_scalar(X, f, coords)
         assert abs(result) < 1e-5
 
     def test_lie_derivative_scalar_linear(self):
         """L_X f for X = d/dx and f = x should give 1."""
-        X = lambda c: np.array([1.0, 0.0])
-        f = lambda c: c["x0"]
+
+        def X(c):
+            return np.array([1.0, 0.0])
+
+        def f(c):
+            return c["x0"]
+
         coords = {"x0": 1.0, "x1": 0.0}
         result = lie_derivative_scalar(X, f, coords)
         assert abs(result - 1.0) < 1e-4
 
     def test_lie_derivative_vector_commuting(self):
         """Lie derivative of d/dy along d/dx should be zero (commuting fields)."""
-        X = lambda c: np.array([1.0, 0.0])
-        Y = lambda c: np.array([0.0, 1.0])
+
+        def X(c):
+            return np.array([1.0, 0.0])
+
+        def Y(c):
+            return np.array([0.0, 1.0])
+
         coords = {"x0": 0.0, "x1": 0.0}
         result = lie_derivative_vector_field(X, Y, coords)
         np.testing.assert_allclose(result, [0.0, 0.0], atol=1e-4)
 
     def test_lie_derivative_metric_killing(self):
         """For a Killing vector field, L_X g = 0."""
+
         # Translation in flat space is a Killing vector
-        X = lambda c: np.array([1.0, 0.0])
+        def X(c):
+            return np.array([1.0, 0.0])
+
         mf = flat_metric(dim=2)
         coords = {"x0": 0.0, "x1": 0.0}
         result = lie_derivative_metric(X, mf, coords)
@@ -126,8 +142,11 @@ class TestLieDerivatives:
 
     def test_lie_derivative_metric_non_killing(self):
         """For a non-Killing vector, L_X g != 0."""
+
         # Scaling field X = x d/dx is NOT a Killing vector for flat metric
-        X = lambda c: np.array([c["x0"], 0.0])
+        def X(c):
+            return np.array([c["x0"], 0.0])
+
         mf = flat_metric(dim=2)
         coords = {"x0": 1.0, "x1": 0.0}
         result = lie_derivative_metric(X, mf, coords)
