@@ -93,6 +93,7 @@ explain_*.py
 publication_ready_analysis.py
 real_*.py
 test_*.py
+try_*.py
 math-guard/
 math-trend/
 md17_data/
