@@ -1,16 +1,16 @@
 # Bourbaki MCP Server
 
-A [Model Context Protocol](https://modelcontextprotocol.io) server that exposes Bourbaki's mathematical structure extraction capabilities to LLMs through standardized tool interfaces.
+A [Model Context Protocol](https://modelcontextprotocol.io) server that exposes Bourbaki's mathematical structure analysis and verification capabilities to LLMs through standardized tool interfaces.
 
 Built on [FastMCP](https://gofastmcp.com) SDK v3.2+.
 
 ## What is Bourbaki MCP?
 
-Bourbaki MCP extracts, compares, validates, and discovers mathematical structures across **8 physics/ML domains** (DFT, CFD, MD, FEM, EM, QC, phase field, supervised learning) and **19 computational science engines**. It provides:
+Bourbaki MCP analyzes, compares, validates, and discovers mathematical structures across **8 physics/ML domains** (DFT, CFD, MD, FEM, EM, QC, phase field, supervised learning) and **19 computational science engines**. It provides:
 
 - **Domain analysis** — conservation fields, morphism chains, and constraint propagation for each physics/ML discipline
 - **Cross-domain comparison** — what invariants are shared vs. domain-specific
-- **Structure extraction** — canonical forms, variable dependencies, discretization, solution strategies
+- **Structure verification** — multi-layer verification pipeline via `verify_structure`
 - **Cross-engine comparison** — semantic diff of mathematical schemas
 - **Constraint analysis** — invariant detection and conservation law verification
 - **Dimensional analysis** — Buckingham π theorem and consistency checking
@@ -391,7 +391,6 @@ For Claude Desktop with SSE:
 1. **"Unknown domain":** Available domains are `dft`, `cfd`, `md`, `fem`, `em`, `qc`, `phase_field`, `supervised_learning`. Use `list_domains` to confirm.
 2. **"Unknown engine":** Only 7 engines have primary extractors (vasp, lammps, abaqus, ansys, comsol, gromacs, multiwfn). Other engines are listed but extraction is not yet implemented.
 3. **JSON serialization error:** The extractor may return a non-serializable object — this is a bug, please report.
-4. **Knowledge base unavailable:** Set API keys for arXiv/Wikidata/NIST access. The server gracefully degrades to offline mode.
 
 ### Connection issues with Claude Desktop
 
