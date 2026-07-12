@@ -40,7 +40,7 @@ mcp = FastMCP(
 
 @mcp.tool()
 def analyze_domain(domain: str, parameters: dict[str, Any] | None = None) -> str:
-    """Analyze a physics domain: conservation field + morphism chain + constraint propagation.
+    """Analyze a physics/ML domain: conservation field + morphism chain + constraint propagation.
 
     Each domain represents a physics discipline as a specific configuration
     of mathematical structures. Reveals what invariants are preserved,
@@ -76,7 +76,7 @@ def compare_domains(
     domain_b: str = "",
     params_b: dict[str, Any] | None = None,
 ) -> str:
-    """Compare two physics domains — same conservation field, different morphism chains.
+    """Compare two physics/ML domains — same conservation field, different morphism chains.
 
     Reveals what mathematical properties are shared vs. domain-specific,
     showing how different physics disciplines are instantiations of
@@ -85,11 +85,14 @@ def compare_domains(
     Args:
         domain_a: First domain name
         params_a: First domain parameters
-        domain_b: Second domain name
+        domain_b: Second domain name (optional; defaults to "md")
         params_b: Second domain parameters
     """
     from math_anything.domains import DOMAIN_REGISTRY
     from math_anything.domains import list_domains as _list_domains
+
+    if not domain_b or not domain_b.strip():
+        domain_b = "md"
 
     for name in [domain_a, domain_b]:
         if name not in DOMAIN_REGISTRY:
@@ -207,7 +210,7 @@ def analyze_morphism_chain(
     chain: list[str] | None = None,
     parameters: dict[str, Any] | None = None,
 ) -> str:
-    """Trace invariant changes through a morphism chain.
+    """Trace invariant changes through a physics/ML morphism chain.
 
     Shows how mathematical structures transform through approximation
     hierarchies, tracking what invariants are preserved, lost, or introduced

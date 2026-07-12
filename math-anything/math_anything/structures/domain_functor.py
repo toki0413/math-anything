@@ -60,8 +60,8 @@ def _build_prefixed_chain(
 ) -> tuple[list[str], str]:
     """Register one prefixed domain chain in ``engine``.
 
-    Returns the list of morphism names and the final structure name before the
-    terminal morphism.
+    Returns the list of morphism names and the ``{prefix}_end`` object name
+    (target of the terminal morphism).
     """
     path: list[str] = []
     prev = f"{prefix}_start"
@@ -140,8 +140,6 @@ def build_bridge_natural_transformation(
     """
     if source_prefix == target_prefix:
         raise ValueError("source_prefix and target_prefix must differ")
-    if source_prefix.startswith(target_prefix) or target_prefix.startswith(source_prefix):
-        raise ValueError("source_prefix and target_prefix must not be prefix-substrings of each other")
 
     components: dict[str, str] = {}
     linked_structures = {link.source_structure for link in engine.morphism_links}
