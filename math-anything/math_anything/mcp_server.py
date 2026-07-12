@@ -3,7 +3,7 @@
 
 Exposes Bourbaki's 3-layer architecture to LLMs:
 
-  Foundation (algorithms) → Structures (types) → Domains (physics)
+  Foundation (algorithms) → Structures (types) → Domains (physics/ML)
 
 8 physics/ML domains: dft, cfd, md, fem, em, qc, phase_field, supervised_learning
 18 conservation fields, morphism chains, type theory verification,

@@ -65,11 +65,9 @@ def _build_prefixed_chain(
     """
     path: list[str] = []
     prev = f"{prefix}_start"
-    terminal_kept: list[str] = []
     for i, step in enumerate(chain_steps):
         name = f"{prefix}_{step['name']}"
         kept = step.get("invariants_kept", [])
-        terminal_kept = list(kept)
         engine.register_morphism(
             _make_morphism(
                 name,
@@ -81,6 +79,9 @@ def _build_prefixed_chain(
         engine.link(name, prev, target)
         path.append(name)
         prev = target
+    # Terminal morphisms inherit the last real step's kept invariants so that
+    # identity functors stay natural across the whole chain.
+    terminal_kept: list[str] = list(chain_steps[-1].get("invariants_kept", [])) if chain_steps else []
     final = f"{prefix}_end"
     terminal = _make_morphism(
         f"{prefix}_terminal",
@@ -135,14 +136,14 @@ def build_bridge_natural_transformation(
     `{source_prefix}_end` and similarly for target.
     """
     components: dict[str, str] = {}
-    source_structures = {link.source_structure for link in engine.morphism_links}
-    source_structures.update(link.target_structure for link in engine.morphism_links)
+    linked_structures = {link.source_structure for link in engine.morphism_links}
+    linked_structures.update(link.target_structure for link in engine.morphism_links)
 
-    for src in sorted(source_structures):
+    for src in sorted(linked_structures):
         if not src.startswith(f"{source_prefix}_"):
             continue
         dst = src.replace(f"{source_prefix}_", f"{target_prefix}_", 1)
-        if dst not in source_structures:
+        if dst not in linked_structures:
             continue
         name = f"bridge_{source_prefix}_to_{target_prefix}_{src}"
         engine.register_morphism(
@@ -189,6 +190,17 @@ def is_domain_natural_transformation(
 
         path1 = [f_f, eta_dst]
         path2 = [eta_src, f_g]
+
+        for label, path in (("η_Y ∘ F(f)", path1), ("G(f) ∘ η_X", path2)):
+            for i in range(len(path) - 1):
+                current_target = links[path[i]].target_structure
+                next_source = links[path[i + 1]].source_structure
+                if current_target != next_source:
+                    return False, (
+                        f"{label} is disconnected: morphism '{path[i]}' ends at "
+                        f"'{current_target}' but morphism '{path[i + 1]}' starts at "
+                        f"'{next_source}'"
+                    )
 
         try:
             inv1 = cumulative_invariants_along_path(engine, path1)

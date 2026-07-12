@@ -9,13 +9,27 @@ from math_anything.structures.domain_functor import (
 from math_anything.structures.functor import NaturalTransformation
 
 
-def _build_identity_object_map(engine: object, path: list[str], prefix: str) -> dict[str, str]:
+def _build_identity_object_map(engine: object, prefix: str) -> dict[str, str]:
     """Build an object map that sends every {prefix} structure to itself."""
     object_map: dict[str, str] = {}
     for link in engine.morphism_links:
         if link.source_structure.startswith(f"{prefix}_"):
             object_map[link.source_structure] = link.source_structure
             object_map[link.target_structure] = link.target_structure
+    return object_map
+
+
+def _build_cross_object_map(
+    engine: object, source_prefix: str, target_prefix: str
+) -> dict[str, str]:
+    """Map every {source_prefix} structure to its {target_prefix} counterpart."""
+    object_map: dict[str, str] = {}
+    for link in engine.morphism_links:
+        for struct in (link.source_structure, link.target_structure):
+            if struct.startswith(f"{source_prefix}_"):
+                object_map[struct] = struct.replace(
+                    f"{source_prefix}_", f"{target_prefix}_", 1
+                )
     return object_map
 
 
@@ -49,11 +63,17 @@ def test_identity_domain_functor_is_natural():
         "supervised_learning",
         {"input_dim": 2, "output_dim": 1},
     )
-    object_map = _build_identity_object_map(engine, path_a, "a")
-    morphism_map = {name: name for name in path_a}
-    F = DomainFunctor(object_map, morphism_map)
-    G = DomainFunctor(object_map, morphism_map)
+    # F is the identity functor on the a chain.
+    object_map_f = _build_identity_object_map(engine, "a")
+    morphism_map_f = {name: name for name in path_a}
+    F = DomainFunctor(object_map_f, morphism_map_f)
 
+    # G maps the a chain to the parallel b chain.
+    object_map_g = _build_cross_object_map(engine, "a", "b")
+    morphism_map_g = {a_name: b_name for a_name, b_name in zip(path_a, path_b)}
+    G = DomainFunctor(object_map_g, morphism_map_g)
+
+    # η_X: F(X)=a_X -> G(X)=b_X for every a structure X.
     eta = build_bridge_natural_transformation(
         engine,
         source_prefix="a",
@@ -75,11 +95,16 @@ def test_mismatched_functor_is_not_natural():
         "supervised_learning",
         {"input_dim": 2, "output_dim": 1},
     )
-    object_map = _build_identity_object_map(engine, path_a, "a")
+    # F is the identity functor on the a chain.
+    object_map_f = _build_identity_object_map(engine, "a")
+    morphism_map_f = {name: name for name in path_a}
+    F = DomainFunctor(object_map_f, morphism_map_f)
 
-    F = DomainFunctor(object_map, {name: name for name in path_a})
-    # G maps every a morphism to the first b morphism, which breaks the square.
-    G = DomainFunctor(object_map, {name: path_b[0] for name in path_a})
+    # G maps objects a -> b but collapses every morphism to a single b morphism,
+    # breaking the naturality square.
+    object_map_g = _build_cross_object_map(engine, "a", "b")
+    G = DomainFunctor(object_map_g, {name: path_b[0] for name in path_a})
+
     eta = build_bridge_natural_transformation(
         engine,
         source_prefix="a",
@@ -95,32 +120,33 @@ def test_mismatched_functor_is_not_natural():
 
 
 def test_cross_domain_functor_is_natural():
-    """A functor from supervised_learning to dft plus a bridge is natural."""
+    """A cross-instance functor with matching cumulative invariants is natural."""
     engine, path_a, path_b = build_domain_pair_engine(
         "supervised_learning",
         {"input_dim": 2, "output_dim": 1},
-        "dft",
-        {"n_atoms": 1, "n_electrons": 1, "k_points": [1, 1, 1]},
+        "supervised_learning",
+        {
+            "input_dim": 2,
+            "output_dim": 1,
+            "architecture": "cnn",
+            "loss": "cross_entropy",
+        },
     )
 
-    # Map each a structure to the corresponding b structure (both chains are
-    # long enough that the first len(path_a) b objects cover the a chain).
-    object_map: dict[str, str] = {}
-    for link in engine.morphism_links:
-        if link.source_structure.startswith("a_"):
-            object_map[link.source_structure] = link.source_structure.replace("a_", "b_", 1)
-            object_map[link.target_structure] = link.target_structure.replace("a_", "b_", 1)
+    # F is the identity functor on the a chain.
+    object_map_f = _build_identity_object_map(engine, "a")
+    morphism_map_f = {name: name for name in path_a}
+    F = DomainFunctor(object_map_f, morphism_map_f)
 
-    # Map each a morphism to the corresponding b morphism in order.
-    morphism_map = {
+    # G maps the a chain to the parallel b chain (same domain, different params).
+    object_map_g = _build_cross_object_map(engine, "a", "b")
+    morphism_map_g = {
         a_name: b_name for a_name, b_name in zip(path_a, path_b)
     }
-    F = DomainFunctor(object_map, morphism_map)
-    G = DomainFunctor(object_map, morphism_map)
+    G = DomainFunctor(object_map_g, morphism_map_g)
 
-    # Bridges from a structures to their b counterparts.  Preserve every
-    # invariant kept by the target chain so the bridge does not change the
-    # cumulative invariant count on either side of the naturality square.
+    # Preserve every invariant kept by the target chain so the bridge does not
+    # change the cumulative invariant count on either side of the square.
     target_kept = {
         inv
         for name in path_b
@@ -147,10 +173,14 @@ def test_missing_bridge_component_is_not_natural():
         "supervised_learning",
         {"input_dim": 2, "output_dim": 1},
     )
-    object_map = _build_identity_object_map(engine, path_a, "a")
-    morphism_map = {name: name for name in path_a}
-    F = DomainFunctor(object_map, morphism_map)
-    G = DomainFunctor(object_map, morphism_map)
+    # F is the identity functor on the a chain; G maps a -> b.
+    object_map_f = _build_identity_object_map(engine, "a")
+    morphism_map_f = {name: name for name in path_a}
+    F = DomainFunctor(object_map_f, morphism_map_f)
+
+    object_map_g = _build_cross_object_map(engine, "a", "b")
+    morphism_map_g = {a_name: b_name for a_name, b_name in zip(path_a, path_b)}
+    G = DomainFunctor(object_map_g, morphism_map_g)
 
     full_eta = build_bridge_natural_transformation(
         engine,
