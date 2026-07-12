@@ -152,4 +152,4 @@ def test_cli_ml_backend_uninstalled_falls_back_to_numpy():
     data = json.loads(result.stdout)
     assert data["backend_requested"] == "deepmd"
     assert data["backend_used"] == "numpy"
-    assert data["backend_available"] is True
+    assert data["backend_available"] is False

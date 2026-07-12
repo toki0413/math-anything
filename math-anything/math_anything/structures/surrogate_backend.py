@@ -144,7 +144,7 @@ class ChgnetBackend(_OptionalBackendStub):
 class BackendRegistry:
     """Registry of available surrogate backends."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._backends: dict[str, type] = {}
 
     def register(self, name: str, backend_cls: type) -> None:

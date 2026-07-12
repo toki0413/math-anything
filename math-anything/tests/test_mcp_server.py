@@ -500,7 +500,7 @@ def test_mcp_analyze_ml_model_backend_fallback():
     report = json.loads(raw)
     assert report["backend_requested"] == "deepmd"
     assert report["backend_used"] == "numpy"
-    assert report["backend_available"] is True
+    assert report["backend_available"] is False
     assert "surrogate_demo_prediction" in report
 
 

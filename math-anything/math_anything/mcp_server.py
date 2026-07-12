@@ -870,13 +870,10 @@ def analyze_ml_model(
 
     import numpy as np
 
-    from math_anything.structures.surrogate_backend import (
-        SurrogateModel,
-        list_backends,
-    )
+    from math_anything.structures.surrogate_backend import SurrogateModel
 
     backend_used = backend
-    backend_available = backend in list_backends()
+
     def _demo_with_backend(backend_name: str):
         model = SurrogateModel(
             backend=backend_name,
@@ -893,9 +890,11 @@ def analyze_ml_model(
 
     try:
         demo_pred = _demo_with_backend(backend)
+        backend_available = True
     except ImportError:
         backend_used = "numpy"
         demo_pred = _demo_with_backend("numpy")
+        backend_available = False
 
     report["backend_requested"] = backend
     report["backend_used"] = backend_used

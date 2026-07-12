@@ -1064,10 +1064,7 @@ def cmd_ml(args: argparse.Namespace) -> int:
 
         import numpy as np
 
-        from math_anything.structures.surrogate_backend import (
-            SurrogateModel,
-            list_backends,
-        )
+        from math_anything.structures.surrogate_backend import SurrogateModel
 
         def _demo_with_backend(backend_name: str):
             model = SurrogateModel(
@@ -1084,12 +1081,13 @@ def cmd_ml(args: argparse.Namespace) -> int:
             return model.predict(np.array([0.5] * args.input_dim))
 
         backend_used = args.backend
-        backend_available = args.backend in list_backends()
         try:
             demo_pred = _demo_with_backend(args.backend)
+            backend_available = True
         except ImportError:
             backend_used = "numpy"
             demo_pred = _demo_with_backend("numpy")
+            backend_available = False
 
         report["backend_requested"] = args.backend
         report["backend_used"] = backend_used
