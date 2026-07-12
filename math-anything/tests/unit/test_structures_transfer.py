@@ -1,0 +1,54 @@
+import numpy as np
+
+from math_anything.structures.neural_network import (
+    ActivationMorphism,
+    LinearMorphism,
+    LossMorphism,
+    SequentialNetwork,
+)
+from math_anything.structures.transfer import (
+    WeightSpaceTransfer,
+    flatten_network_weights,
+    set_network_weights,
+    transfer_learn,
+    transfer_weights,
+)
+
+
+def test_transfer_weights_shape():
+    adapter = np.array([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])
+    source = np.array([1.0, 2.0])
+    target = transfer_weights(source, adapter)
+    assert target.shape == (3,)
+    np.testing.assert_allclose(target, [1.0, 2.0, 3.0])
+
+
+def test_flatten_and_set_network_weights_roundtrip():
+    net = SequentialNetwork([
+        LinearMorphism(name="linear_1", input_dim=1, output_dim=2),
+        ActivationMorphism(name="relu_1", activation="relu"),
+    ])
+    original = flatten_network_weights(net)
+    set_network_weights(net, original + 0.1)
+    restored = flatten_network_weights(net)
+    np.testing.assert_allclose(restored, original + 0.1)
+
+
+def test_transfer_learn_trains_target():
+    source = SequentialNetwork([
+        LinearMorphism(name="linear_1", input_dim=1, output_dim=2),
+        ActivationMorphism(name="relu_1", activation="relu"),
+        LinearMorphism(name="linear_2", input_dim=2, output_dim=1),
+    ])
+    target = SequentialNetwork([
+        LinearMorphism(name="linear_1", input_dim=1, output_dim=2),
+        ActivationMorphism(name="relu_1", activation="relu"),
+        LinearMorphism(name="linear_2", input_dim=2, output_dim=1),
+    ])
+    loss_fn = LossMorphism(name="mse", loss="mse")
+    dataset = [(np.array([x]), np.array([2 * x + 1])) for x in [-1.0, 0.0, 1.0]]
+
+    adapter = WeightSpaceTransfer(flatten_network_weights(source).size, flatten_network_weights(target).size).matrix
+    result = transfer_learn(source, target, dataset, loss_fn, adapter, epochs=3, lr=0.05)
+    assert len(result.states) == 3
+    assert result.final_loss < result.states[0].loss
