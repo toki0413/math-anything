@@ -88,6 +88,11 @@ scientific_skills_analysis.py
 
 # Test/coverage output
 coverage.xml
+.pytest_cache/
+.pytest-unit.log
+pytest-*.log
+.hypothesis/
+.ruff_cache/
 coverage_report.txt
 fresh_*_output.txt
 full_coverage_report.txt

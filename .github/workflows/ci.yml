@@ -42,11 +42,15 @@ jobs:
 
       - name: Lint with ruff | 运行 ruff 检查
         working-directory: math-anything
-        run: ruff check math_anything/
+        run: |
+          ruff check math_anything/
+          ruff check tests/
 
       - name: Check formatting with ruff | 运行 ruff 格式化检查
         working-directory: math-anything
-        run: ruff format --check math_anything/
+        run: |
+          ruff format --check math_anything/
+          ruff format --check tests/
 
   type-check:
     name: Type Check | 类型检查
