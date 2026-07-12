@@ -217,6 +217,10 @@ class LocalKnowledgeCache:
         created = datetime.fromisoformat(meta["created"])
         ttl = meta["ttl"]
 
+        # TTL <= 0 means the entry is already/still expired.
+        if ttl <= 0:
+            return True
+
         return datetime.now() > created + timedelta(seconds=ttl)
 
     def _enforce_size_limit(self):

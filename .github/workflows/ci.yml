@@ -12,9 +12,6 @@ on:
       - "**.md"
       - "docs/**"
 
-permissions:
-  contents: write
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -81,9 +78,6 @@ jobs:
   test:
     name: Test | 测试 (${{ matrix.python-version }}, ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
-    env:
-      # Disable Hypothesis deadlines to avoid flakiness on slower Windows runners
-      HYPOTHESIS_DEADLINE: None
     strategy:
       fail-fast: false
       matrix:
@@ -118,12 +112,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          if [ "${{ runner.os }}" = "Windows" ]; then
-            # Coverage on Windows runners can cause flaky hypothesis deadlines
-            pytest tests/unit/ -v --tb=short --no-cov 2>&1 | tee pytest-unit.log
-          else
-            pytest tests/unit/ -v --tb=short --cov-report=xml 2>&1 | tee pytest-unit.log
-          fi
+          pytest tests/unit/ -v --tb=short --cov-report=xml 2>&1 | tee pytest-unit.log
 
       - name: Upload unit test log on failure | 失败时上传单元测试日志
         if: failure()
@@ -132,45 +121,7 @@ jobs:
           name: pytest-unit-log-${{ matrix.os }}-${{ matrix.python-version }}
           path: math-anything/pytest-unit.log
 
-      - name: Post failure tail to commit | 将失败日志提交到 commit comment
-        if: failure() && runner.os == 'Windows'
-        working-directory: math-anything
-        shell: bash
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PY_VERSION: ${{ matrix.python-version }}
-        run: |
-          python - <<'PY'
-          import json, os, sys, urllib.request
-          try:
-              tail = open('pytest-unit.log', encoding='utf-8', errors='replace').read()[-3500:]
-          except FileNotFoundError:
-              sys.exit(0)
-          body = (
-              f"Windows {os.environ.get('PY_VERSION')} unit-test failure tail:\n\n"
-              f"```\n{tail}\n```"
-          )
-          repo = os.environ['GITHUB_REPOSITORY']
-          sha = os.environ['GITHUB_SHA']
-          url = f"https://api.github.com/repos/{repo}/commits/{sha}/comments"
-          data = json.dumps({"body": body}).encode()
-          req = urllib.request.Request(
-              url,
-              data=data,
-              headers={
-                  "Authorization": f"token {os.environ['GITHUB_TOKEN']}",
-                  "Content-Type": "application/json",
-              },
-              method="POST",
-          )
-          try:
-              urllib.request.urlopen(req)
-          except Exception as e:
-              print("Could not post failure tail:", e)
-          PY
-
       - name: Check coverage threshold | 检查覆盖率阈值
-        if: matrix.os != 'windows-latest'
         working-directory: math-anything
         run: coverage report --fail-under=50
 
