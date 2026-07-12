@@ -351,6 +351,13 @@ For more information: https://github.com/toki/math-anything
         action="store_true",
         help="Demonstrate transfer learning as a natural transformation",
     )
+    ml_parser.add_argument(
+        "--backend",
+        type=str,
+        default="numpy",
+        choices=["numpy", "deepmd", "mace", "chgnet"],
+        help="Surrogate backend to use (falls back to numpy if not installed)",
+    )
 
     # Homotopy command
     homotopy_parser = subparsers.add_parser(
@@ -1054,6 +1061,51 @@ def cmd_ml(args: argparse.Namespace) -> int:
             "emerged": analysis.emerged,
             "morphism_chain": analysis.morphism_chain,
         }
+
+        import numpy as np
+
+        from math_anything.structures.surrogate_backend import (
+            SurrogateModel,
+            get_backend,
+            list_backends,
+        )
+
+        backend_used = args.backend
+        backend_available = args.backend in list_backends()
+        try:
+            model = SurrogateModel(
+                backend=args.backend,
+                input_dim=args.input_dim,
+                output_dim=args.output_dim,
+                hidden_dim=4,
+            )
+            dataset = [
+                (np.array([x] * args.input_dim), np.array([2.0 * x + 1.0] * args.output_dim))
+                for x in [-1.0, 0.0, 1.0]
+            ]
+            model.fit(dataset, epochs=5, lr=0.05)
+            demo_pred = model.predict(np.array([0.5] * args.input_dim))
+        except ImportError:
+            backend_used = "numpy"
+            model = SurrogateModel(
+                backend="numpy",
+                input_dim=args.input_dim,
+                output_dim=args.output_dim,
+                hidden_dim=4,
+            )
+            dataset = [
+                (np.array([x] * args.input_dim), np.array([2.0 * x + 1.0] * args.output_dim))
+                for x in [-1.0, 0.0, 1.0]
+            ]
+            model.fit(dataset, epochs=5, lr=0.05)
+            demo_pred = model.predict(np.array([0.5] * args.input_dim))
+
+        report["backend_requested"] = args.backend
+        report["backend_used"] = backend_used
+        report["backend_available"] = backend_available
+        report["surrogate_demo_prediction"] = (
+            demo_pred.tolist() if hasattr(demo_pred, "tolist") else demo_pred
+        )
 
         if args.compare_with:
             from math_anything.topology.cross_domain import cross_domain_homotopy

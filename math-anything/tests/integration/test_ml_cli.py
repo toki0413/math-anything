@@ -109,3 +109,47 @@ def test_cli_ml_transfer_runs():
     assert "transfer_learning" in data
     assert isinstance(data["transfer_learning"]["natural_transformation_valid"], bool)
     assert isinstance(data["transfer_learning"]["final_loss"], float)
+
+
+def test_cli_ml_backend_numpy_runs():
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "math_anything",
+            "ml",
+            "--input-dim", "1",
+            "--output-dim", "1",
+            "--backend", "numpy",
+        ],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    data = json.loads(result.stdout)
+    assert data["backend_requested"] == "numpy"
+    assert data["backend_used"] == "numpy"
+    assert data["backend_available"] is True
+
+
+def test_cli_ml_backend_uninstalled_falls_back_to_numpy():
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "math_anything",
+            "ml",
+            "--input-dim", "1",
+            "--output-dim", "1",
+            "--backend", "deepmd",
+        ],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    data = json.loads(result.stdout)
+    assert data["backend_requested"] == "deepmd"
+    assert data["backend_used"] == "numpy"
+    assert data["backend_available"] is True

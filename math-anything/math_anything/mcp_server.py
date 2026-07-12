@@ -793,6 +793,7 @@ def analyze_ml_model(
     loss: str = "mse",
     compare_paths: bool = False,
     transfer: bool = False,
+    backend: str = "numpy",
 ) -> str:
     """Analyze a supervised-learning model as a morphism chain.
 
@@ -866,6 +867,50 @@ def analyze_ml_model(
             "confidence": homotopy_witness.confidence,
         },
     }
+
+    import numpy as np
+
+    from math_anything.structures.surrogate_backend import (
+        SurrogateModel,
+        list_backends,
+    )
+
+    backend_used = backend
+    backend_available = backend in list_backends()
+    try:
+        model = SurrogateModel(
+            backend=backend,
+            input_dim=input_dim,
+            output_dim=output_dim,
+            hidden_dim=4,
+        )
+        dataset = [
+            (np.array([x] * input_dim), np.array([2.0 * x + 1.0] * output_dim))
+            for x in [-1.0, 0.0, 1.0]
+        ]
+        model.fit(dataset, epochs=5, lr=0.05)
+        demo_pred = model.predict(np.array([0.5] * input_dim))
+    except ImportError:
+        backend_used = "numpy"
+        model = SurrogateModel(
+            backend="numpy",
+            input_dim=input_dim,
+            output_dim=output_dim,
+            hidden_dim=4,
+        )
+        dataset = [
+            (np.array([x] * input_dim), np.array([2.0 * x + 1.0] * output_dim))
+            for x in [-1.0, 0.0, 1.0]
+        ]
+        model.fit(dataset, epochs=5, lr=0.05)
+        demo_pred = model.predict(np.array([0.5] * input_dim))
+
+    report["backend_requested"] = backend
+    report["backend_used"] = backend_used
+    report["backend_available"] = backend_available
+    report["surrogate_demo_prediction"] = (
+        demo_pred.tolist() if hasattr(demo_pred, "tolist") else demo_pred
+    )
 
     if compare_paths:
         import numpy as np
