@@ -38,9 +38,32 @@ def test_surrogate_model_facade_uses_numpy():
     assert pred.shape == (1,)
 
 
+def test_surrogate_model_to_dict_and_chain():
+    model = SurrogateModel(backend="numpy", input_dim=1, output_dim=1, hidden_dim=4)
+    chain = model.to_morphism_chain()
+    assert isinstance(chain, list)
+    info = model.to_dict()
+    assert info["backend"] == "numpy"
+    assert info["available"] is True
+    assert "morphism_chain" in info
+
+
+def test_backend_registry_directly():
+    registry = BackendRegistry()
+    registry.register("numpy", NumpySurrogateBackend)
+    assert "numpy" in registry.list()
+    backend = registry.get("numpy", input_dim=1, output_dim=1)
+    assert backend.name == "numpy"
+
+
 def test_optional_backend_stub_raises_without_framework():
     # These frameworks are not runtime dependencies, so the stubs must raise.
     for name in ("deepmd", "mace", "chgnet"):
         backend = get_backend(name, input_dim=1, output_dim=1)
         with pytest.raises((ImportError, NotImplementedError)):
             backend.fit([], epochs=1, lr=0.05)
+        with pytest.raises((ImportError, NotImplementedError)):
+            backend.predict(np.array([0.5]))
+        chain = backend.to_morphism_chain()
+        assert isinstance(chain, list)
+        assert "not installed" in chain[0].get("description", "")
