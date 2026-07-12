@@ -792,6 +792,7 @@ def analyze_ml_model(
     architecture: str = "mlp",
     loss: str = "mse",
     compare_paths: bool = False,
+    transfer: bool = False,
 ) -> str:
     """Analyze a supervised-learning model as a morphism chain.
 
@@ -894,6 +895,63 @@ def analyze_ml_model(
             "equivalent": witness.equivalent,
             "shared_invariants": witness.shared_invariants,
             "confidence": witness.confidence,
+        }
+
+    if transfer:
+        import numpy as np
+
+        from math_anything.structures.functor import (
+            MatrixFunctor,
+            NaturalTransformation,
+            is_natural_transformation,
+        )
+        from math_anything.structures.neural_network import (
+            ActivationMorphism,
+            LinearMorphism,
+            SequentialNetwork,
+        )
+        from math_anything.structures.neural_network import (
+            LossMorphism as LossFn,
+        )
+        from math_anything.structures.transfer import (
+            WeightSpaceTransfer,
+            flatten_network_weights,
+            transfer_learn,
+        )
+
+        loss_fn = LossFn(name="loss", loss=loss)
+        dataset = [
+            (np.array([x] * input_dim), np.array([2.0 * x + 1.0] * output_dim))
+            for x in [-1.0, 0.0, 1.0]
+        ]
+
+        def _make_network():
+            return SequentialNetwork([
+                LinearMorphism(name="linear_1", input_dim=input_dim, output_dim=4),
+                ActivationMorphism(name="relu_1", activation="relu"),
+                LinearMorphism(name="linear_2", input_dim=4, output_dim=output_dim),
+            ])
+
+        source = _make_network()
+        target = _make_network()
+        source_dim = len(flatten_network_weights(source))
+        adapter = WeightSpaceTransfer(source_dim, source_dim).matrix
+
+        result = transfer_learn(source, target, dataset, loss_fn, adapter, epochs=3, lr=0.05)
+
+        dim = source_dim
+        F = MatrixFunctor(np.eye(dim))
+        G = MatrixFunctor(np.eye(dim))
+        eta = NaturalTransformation({dim: np.eye(dim)})
+        valid, reason = is_natural_transformation(
+            F, G, eta, test_morphisms=[(dim, dim, np.eye(dim))]
+        )
+
+        report["transfer_learning"] = {
+            "natural_transformation_valid": valid,
+            "natural_transformation_reason": reason,
+            "final_loss": result.final_loss,
+            "epochs": 3,
         }
 
     return json.dumps(report, indent=2, ensure_ascii=False, default=str)

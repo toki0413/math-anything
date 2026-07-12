@@ -87,3 +87,25 @@ def test_cli_ml_compare_paths_runs():
     assert "optimization_landscape_homotopy" in data
     assert isinstance(data["optimization_landscape_homotopy"]["equivalent"], bool)
     assert 0.0 <= data["optimization_landscape_homotopy"]["confidence"] <= 1.0
+
+
+def test_cli_ml_transfer_runs():
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "math_anything",
+            "ml",
+            "--input-dim", "1",
+            "--output-dim", "1",
+            "--transfer",
+        ],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    data = json.loads(result.stdout)
+    assert "transfer_learning" in data
+    assert isinstance(data["transfer_learning"]["natural_transformation_valid"], bool)
+    assert isinstance(data["transfer_learning"]["final_loss"], float)

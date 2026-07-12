@@ -346,6 +346,11 @@ For more information: https://github.com/toki/math-anything
         action="store_true",
         help="Train two identical runs and report optimization-landscape homotopy",
     )
+    ml_parser.add_argument(
+        "--transfer",
+        action="store_true",
+        help="Demonstrate transfer learning as a natural transformation",
+    )
 
     # Homotopy command
     homotopy_parser = subparsers.add_parser(
@@ -1105,6 +1110,65 @@ def cmd_ml(args: argparse.Namespace) -> int:
                 "equivalent": witness.equivalent,
                 "shared_invariants": witness.shared_invariants,
                 "confidence": witness.confidence,
+            }
+
+        if args.transfer:
+            import numpy as np
+
+            from math_anything.structures.functor import (
+                MatrixFunctor,
+                NaturalTransformation,
+                is_natural_transformation,
+            )
+            from math_anything.structures.neural_network import (
+                ActivationMorphism,
+                LinearMorphism,
+                SequentialNetwork,
+            )
+            from math_anything.structures.neural_network import (
+                LossMorphism as LossFn,
+            )
+            from math_anything.structures.transfer import (
+                WeightSpaceTransfer,
+                flatten_network_weights,
+                transfer_learn,
+            )
+
+            loss_fn = LossFn(name="loss", loss=args.loss)
+            dataset = [
+                (np.array([x] * args.input_dim), np.array([2.0 * x + 1.0] * args.output_dim))
+                for x in [-1.0, 0.0, 1.0]
+            ]
+
+            def _make_network():
+                return SequentialNetwork([
+                    LinearMorphism(name="linear_1", input_dim=args.input_dim, output_dim=4),
+                    ActivationMorphism(name="relu_1", activation="relu"),
+                    LinearMorphism(name="linear_2", input_dim=4, output_dim=args.output_dim),
+                ])
+
+            source = _make_network()
+            target = _make_network()
+            source_dim = len(flatten_network_weights(source))
+            adapter = WeightSpaceTransfer(source_dim, source_dim).matrix
+
+            result = transfer_learn(source, target, dataset, loss_fn, adapter, epochs=3, lr=0.05)
+
+            # Natural-transformation check: identity adapter + identical functors should commute.
+            dim = source_dim
+            F = MatrixFunctor(np.eye(dim))
+            G = MatrixFunctor(np.eye(dim))
+            eta = NaturalTransformation({dim: np.eye(dim)})
+            sample_morphism = np.eye(dim)
+            valid, reason = is_natural_transformation(
+                F, G, eta, test_morphisms=[(dim, dim, sample_morphism)]
+            )
+
+            report["transfer_learning"] = {
+                "natural_transformation_valid": valid,
+                "natural_transformation_reason": reason,
+                "final_loss": result.final_loss,
+                "epochs": 3,
             }
 
         if args.visualize == "mermaid":

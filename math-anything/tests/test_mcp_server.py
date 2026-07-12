@@ -454,5 +454,21 @@ def test_mcp_analyze_ml_model_reports_optimization_landscape_homotopy():
     assert 0.0 <= report["optimization_landscape_homotopy"]["confidence"] <= 1.0
 
 
+def test_mcp_analyze_ml_model_reports_transfer_learning():
+    from math_anything.mcp_server import analyze_ml_model
+
+    raw = analyze_ml_model(
+        input_dim=1,
+        output_dim=1,
+        architecture="mlp",
+        loss="mse",
+        transfer=True,
+    )
+    report = json.loads(raw)
+    assert "transfer_learning" in report
+    assert isinstance(report["transfer_learning"]["natural_transformation_valid"], bool)
+    assert isinstance(report["transfer_learning"]["final_loss"], float)
+
+
 if __name__ == "__main__":
     unittest.main()
