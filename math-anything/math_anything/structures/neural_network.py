@@ -82,6 +82,19 @@ class ActivationMorphism(Morphism):
         x = np.clip(x, -500.0, 500.0)
         return 1.0 / (1.0 + np.exp(-x))
 
+    def derivative(self, pre_activation: np.ndarray) -> np.ndarray:
+        """Return the element-wise derivative of the activation at pre_activation."""
+        x = np.asarray(pre_activation, dtype=float)
+        if self.activation == "relu":
+            return (x > 0).astype(float)
+        if self.activation == "tanh":
+            t = np.tanh(x)
+            return 1.0 - t * t
+        # sigmoid
+        x = np.clip(x, -500.0, 500.0)
+        s = 1.0 / (1.0 + np.exp(-x))
+        return s * (1.0 - s)
+
 
 class LossMorphism(Morphism):
     """Loss function comparing predictions to targets."""
@@ -123,7 +136,7 @@ class LossMorphism(Morphism):
 class SequentialNetwork:
     """A tiny sequential MLP built from LinearMorphism and ActivationMorphism.
 
-    Supports forward evaluation, manual backprop for linear+relu, and SGD updates.
+    Supports forward evaluation, manual backprop for linear+activation, and SGD updates.
     This is intentionally minimal: no new runtime dependencies, deterministic
     seed-0 initialization, and fast enough for unit tests.
     """
@@ -142,8 +155,9 @@ class SequentialNetwork:
                 self._cache.append((h, z))
                 h = z
             elif isinstance(layer, ActivationMorphism):
+                z = h
                 h = layer.apply(h)
-                self._cache.append((None, h))
+                self._cache.append((None, z))
             else:
                 h = layer.apply(h)
                 self._cache.append((None, h))
@@ -155,7 +169,7 @@ class SequentialNetwork:
         y_true: np.ndarray,
         loss_fn: LossMorphism,
     ) -> dict[str, np.ndarray]:
-        """Backprop for MSE loss through linear + relu layers."""
+        """Backprop for MSE loss through linear + activation layers."""
         y_pred = self.forward(x)
         y_true = np.asarray(y_true, dtype=float)
         delta = 2 * (y_pred - y_true) / max(y_true.size, 1)
@@ -164,8 +178,8 @@ class SequentialNetwork:
         for idx in reversed(range(len(self.layers))):
             layer = self.layers[idx]
             prev_input, pre_activation = self._cache[idx]
-            if isinstance(layer, ActivationMorphism) and layer.activation == "relu":
-                delta = delta * (pre_activation > 0).astype(float)
+            if isinstance(layer, ActivationMorphism):
+                delta = delta * layer.derivative(pre_activation)
             elif isinstance(layer, LinearMorphism):
                 grads[f"{layer.name}_weight"] = np.outer(delta, prev_input)
                 grads[f"{layer.name}_bias"] = delta
