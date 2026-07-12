@@ -282,7 +282,7 @@ Analyze a supervised-learning model as a morphism chain.
 - `loss` (string, optional) — Loss function (default: `mse`)
 - `compare_paths` (boolean, optional) — Compute optimization-landscape homotopy between two training paths (default: false)
 - `transfer` (boolean, optional) — Verify transfer learning as a natural transformation (default: false)
-- `backend` (string, optional) — Surrogate backend to demo: `numpy`, `sklearn`, `torch`, `jax` (default: `numpy`)
+- `backend` (string, optional) — Surrogate backend to demo: `numpy`, `deepmd`, `mace`, `chgnet` (default: `numpy`). If an optional backend is not installed, the demo gracefully falls back to `numpy`.
 
 **Example:**
 ```json

@@ -5,7 +5,7 @@ Exposes Bourbaki's 3-layer architecture to LLMs:
 
   Foundation (algorithms) → Structures (types) → Domains (physics)
 
-7 physics domains: DFT, CFD, MD, FEM, EM, QC, PhaseField
+8 physics/ML domains: dft, cfd, md, fem, em, qc, phase_field, supervised_learning
 18 conservation fields, morphism chains, type theory verification,
 dimensional analysis, symbolic regression, and numerical solvers.
 
@@ -28,7 +28,7 @@ mcp = FastMCP(
     instructions=(
         "Bourbaki MCP Server. Mathematical Structure Modeling for Computational Science. "
         "3-layer architecture: Foundation → Structures → Domains. "
-        "7 physics domains: DFT, CFD, MD, FEM, EM, QC, PhaseField."
+        "8 physics/ML domains: dft, cfd, md, fem, em, qc, phase_field, supervised_learning."
     ),
 )
 
@@ -1058,7 +1058,7 @@ def analyze_simulation(domain: str, description: str = "") -> str:
     """Analyze a simulation through the lens of its mathematical domain.
 
     Args:
-        domain: Physics domain (dft, cfd, md, fem, em, qc, phase_field)
+        domain: Physics/ML domain (dft, cfd, md, fem, em, qc, phase_field, supervised_learning)
         description: Brief description of the simulation
     """
     return f"""Analyze the mathematical structure of a {domain} simulation.
