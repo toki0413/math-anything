@@ -112,7 +112,7 @@ def compare_domains(
 
 @mcp.tool()
 def list_domains() -> str:
-    """List all available physics domains with their morphism chain descriptions.
+    """List all available physics/ML domains with their morphism chain descriptions.
 
     Each domain represents a physics discipline as a specific configuration
     of conservation fields and morphism chains.
@@ -1080,7 +1080,7 @@ Domain: {domain}"""
 
 @mcp.prompt()
 def compare_approaches(domain_a: str = "dft", domain_b: str = "md") -> str:
-    """Compare two physics domains at the structural level.
+    """Compare two physics/ML domains at the structural level.
 
     Shows how different physics disciplines are instantiations of
     the same mathematical structures, revealing what's preserved and lost.
