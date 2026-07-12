@@ -84,6 +84,7 @@ scientific_skills_analysis.py
 # Build/IDE artifacts
 .build/
 .trae/
+.worktrees/
 
 # Test/coverage output
 coverage.xml
