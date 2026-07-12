@@ -46,10 +46,10 @@ def analyze_domain(domain: str, parameters: dict[str, Any] | None = None) -> str
     of mathematical structures. Reveals what invariants are preserved,
     weakened, or lost through the morphism chain.
 
-    Domains: dft, cfd, md, fem, em, qc, phase_field
+    Domains: dft, cfd, md, fem, em, qc, phase_field, supervised_learning
 
     Args:
-        domain: Domain name (dft, cfd, md, fem, em, qc, phase_field)
+        domain: Domain name (dft, cfd, md, fem, em, qc, phase_field, supervised_learning)
         parameters: Domain-specific parameters
     """
     from math_anything.domains import DOMAIN_REGISTRY
@@ -214,7 +214,7 @@ def analyze_morphism_chain(
     at each step.
 
     Args:
-        domain: Domain name (dft, cfd, md, fem, em, qc, phase_field)
+        domain: Domain name (dft, cfd, md, fem, em, qc, phase_field, supervised_learning)
         chain: Optional specific morphism names to trace
         parameters: Domain parameters
     """
@@ -1004,7 +1004,7 @@ def get_version() -> str:
             "name": "bourbaki-mcp",
             "version": "3.0.0",
             "protocol_version": "2024-11-05",
-            "domains": 7,
+            "domains": 8,
             "conservation_fields": 18,
         },
         indent=2,

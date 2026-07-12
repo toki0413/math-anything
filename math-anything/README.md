@@ -29,7 +29,7 @@ DFT, MD, CFD, FEM — these are not different software tools. They are different
 ```
                     ┌─────────────────────────────────────────────┐
   Layer 3           │  Domain Instantiation                       │
-  (Physics/ML)      │  DFT  │  CFD  │  MD  │  FEM  │  EM  │  QC  │  PhaseField  │  SupervisedLearning │
+  (Physics/ML)      │  DFT  │  CFD  │  MD  │  FEM  │  EM  │  QC  │  phase_field  │  supervised_learning │
                     │  (different morphism chains, same base)     │
                     ├─────────────────────────────────────────────┤
   Layer 2           │  Mathematical Structures                    │

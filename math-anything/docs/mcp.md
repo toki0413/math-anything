@@ -6,7 +6,7 @@ Built on [FastMCP](https://gofastmcp.com) SDK v3.2+.
 
 ## What is Bourbaki MCP?
 
-Bourbaki MCP analyzes, compares, validates, and discovers mathematical structures across **8 physics/ML domains** (DFT, CFD, MD, FEM, EM, QC, phase field, supervised learning) and **19 computational science engines**. It provides:
+Bourbaki MCP analyzes, compares, validates, and discovers mathematical structures across **8 physics/ML domains** (DFT, CFD, MD, FEM, EM, QC, phase field, supervised learning) and a wide range of computational science engines. It provides:
 
 - **Domain analysis** — conservation fields, morphism chains, and constraint propagation for each physics/ML discipline
 - **Cross-domain comparison** — what invariants are shared vs. domain-specific
@@ -143,7 +143,7 @@ Compare two physics/ML domains — same conservation field, different morphism c
 **Parameters:**
 - `domain_a` (string, required) — First domain name
 - `params_a` (object, optional) — First domain parameters
-- `domain_b` (string, required) — Second domain name
+- `domain_b` (string, optional) — Second domain name. Defaults to `""`, which falls back to `md`
 - `params_b` (object, optional) — Second domain parameters
 
 **Example:**

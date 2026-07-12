@@ -138,14 +138,20 @@ def build_bridge_natural_transformation(
     Assumes structures are named `{source_prefix}_start`, `{source_prefix}_state_i`,
     `{source_prefix}_end` and similarly for target.
     """
+    if source_prefix == target_prefix:
+        raise ValueError("source_prefix and target_prefix must differ")
+    if source_prefix.startswith(target_prefix) or target_prefix.startswith(source_prefix):
+        raise ValueError("source_prefix and target_prefix must not be prefix-substrings of each other")
+
     components: dict[str, str] = {}
     linked_structures = {link.source_structure for link in engine.morphism_links}
     linked_structures.update(link.target_structure for link in engine.morphism_links)
 
+    prefix_len = len(source_prefix) + 1  # include trailing '_'
     for src in sorted(linked_structures):
         if not src.startswith(f"{source_prefix}_"):
             continue
-        dst = src.replace(f"{source_prefix}_", f"{target_prefix}_", 1)
+        dst = f"{target_prefix}_{src[prefix_len:]}"
         if dst not in linked_structures:
             continue
         name = f"bridge_{source_prefix}_to_{target_prefix}_{src}"
@@ -183,8 +189,12 @@ def is_domain_natural_transformation(
         source_obj = links[f_name].source_structure
         target_obj = links[f_name].target_structure
 
-        f_f = F.map_morphism(f_name)
-        f_g = G.map_morphism(f_name)
+        try:
+            f_f = F.map_morphism(f_name)
+            f_g = G.map_morphism(f_name)
+        except KeyError as e:
+            return False, f"Functor does not map morphism: {e}"
+
         eta_src = eta.components.get(source_obj)
         eta_dst = eta.components.get(target_obj)
 
