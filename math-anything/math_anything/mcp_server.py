@@ -908,10 +908,8 @@ def analyze_ml_model(
         from math_anything.structures.neural_network import (
             ActivationMorphism,
             LinearMorphism,
+            LossMorphism,
             SequentialNetwork,
-        )
-        from math_anything.structures.neural_network import (
-            LossMorphism as LossFn,
         )
         from math_anything.structures.transfer import (
             WeightSpaceTransfer,
@@ -919,7 +917,7 @@ def analyze_ml_model(
             transfer_learn,
         )
 
-        loss_fn = LossFn(name="loss", loss=loss)
+        loss_fn = LossMorphism(name="loss", loss=loss)
         dataset = [
             (np.array([x] * input_dim), np.array([2.0 * x + 1.0] * output_dim))
             for x in [-1.0, 0.0, 1.0]

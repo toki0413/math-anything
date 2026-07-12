@@ -1123,10 +1123,8 @@ def cmd_ml(args: argparse.Namespace) -> int:
             from math_anything.structures.neural_network import (
                 ActivationMorphism,
                 LinearMorphism,
+                LossMorphism,
                 SequentialNetwork,
-            )
-            from math_anything.structures.neural_network import (
-                LossMorphism as LossFn,
             )
             from math_anything.structures.transfer import (
                 WeightSpaceTransfer,
@@ -1134,7 +1132,7 @@ def cmd_ml(args: argparse.Namespace) -> int:
                 transfer_learn,
             )
 
-            loss_fn = LossFn(name="loss", loss=args.loss)
+            loss_fn = LossMorphism(name="loss", loss=args.loss)
             dataset = [
                 (np.array([x] * args.input_dim), np.array([2.0 * x + 1.0] * args.output_dim))
                 for x in [-1.0, 0.0, 1.0]
