@@ -33,6 +33,19 @@ class DomainFunctor(Functor):
         return self.morphism_map[name]
 
 
+def _make_morphism(
+    name: str,
+    invariants_kept: list[str],
+    invariants_lost: list[str],
+) -> Any:
+    """Return a simple morphism object with the required invariant attributes."""
+    return type("M", (), {
+        "name": name,
+        "invariants_kept": invariants_kept,
+        "invariants_lost": invariants_lost,
+    })()
+
+
 def build_domain_pair_engine(
     domain_a_name: str,
     params_a: dict[str, Any],
@@ -41,7 +54,13 @@ def build_domain_pair_engine(
     prefix_a: str = "a",
     prefix_b: str = "b",
 ) -> tuple[CategoryEngine, list[str], list[str]]:
-    """Build a merged CategoryEngine containing two domain morphism chains."""
+    """Build a merged CategoryEngine containing two domain morphism chains.
+
+    Each chain ends with a terminal morphism that closes the path at the
+    ``{prefix}_end`` object.  Terminal morphisms inherit the ``invariants_kept``
+    of the last real chain step so that identity functors remain natural across
+    the whole path.
+    """
     if domain_a_name not in DOMAIN_REGISTRY or domain_b_name not in DOMAIN_REGISTRY:
         available = sorted(DOMAIN_REGISTRY.keys())
         raise KeyError(f"Unknown domain. Available: {available}")
@@ -61,21 +80,23 @@ def build_domain_pair_engine(
         name = f"{prefix_a}_{step['name']}"
         kept = step.get("invariants_kept", [])
         terminal_kept_a = list(kept)
-        engine.register_morphism(type("M", (), {
-            "name": name,
-            "invariants_kept": kept,
-            "invariants_lost": step.get("invariants_lost", []),
-        })())
+        engine.register_morphism(
+            _make_morphism(
+                name,
+                invariants_kept=kept,
+                invariants_lost=step.get("invariants_lost", []),
+            )
+        )
         target = f"{prefix_a}_state_{i}"
         engine.link(name, prev_a, target)
         path_a.append(name)
         prev_a = target
     final_a = f"{prefix_a}_end"
-    terminal_a = type("M", (), {
-        "name": f"{prefix_a}_terminal",
-        "invariants_kept": terminal_kept_a,
-        "invariants_lost": [],
-    })()
+    terminal_a = _make_morphism(
+        f"{prefix_a}_terminal",
+        invariants_kept=terminal_kept_a,
+        invariants_lost=[],
+    )
     engine.register_morphism(terminal_a)
     engine.link(f"{prefix_a}_terminal", prev_a, final_a)
     path_a.append(f"{prefix_a}_terminal")
@@ -86,21 +107,23 @@ def build_domain_pair_engine(
         name = f"{prefix_b}_{step['name']}"
         kept = step.get("invariants_kept", [])
         terminal_kept_b = list(kept)
-        engine.register_morphism(type("M", (), {
-            "name": name,
-            "invariants_kept": kept,
-            "invariants_lost": step.get("invariants_lost", []),
-        })())
+        engine.register_morphism(
+            _make_morphism(
+                name,
+                invariants_kept=kept,
+                invariants_lost=step.get("invariants_lost", []),
+            )
+        )
         target = f"{prefix_b}_state_{i}"
         engine.link(name, prev_b, target)
         path_b.append(name)
         prev_b = target
     final_b = f"{prefix_b}_end"
-    terminal_b = type("M", (), {
-        "name": f"{prefix_b}_terminal",
-        "invariants_kept": terminal_kept_b,
-        "invariants_lost": [],
-    })()
+    terminal_b = _make_morphism(
+        f"{prefix_b}_terminal",
+        invariants_kept=terminal_kept_b,
+        invariants_lost=[],
+    )
     engine.register_morphism(terminal_b)
     engine.link(f"{prefix_b}_terminal", prev_b, final_b)
     path_b.append(f"{prefix_b}_terminal")
@@ -131,11 +154,13 @@ def build_bridge_natural_transformation(
         if dst not in source_structures:
             continue
         name = f"bridge_{source_prefix}_to_{target_prefix}_{src}"
-        engine.register_morphism(type("M", (), {
-            "name": name,
-            "invariants_kept": bridge_invariants_kept,
-            "invariants_lost": bridge_invariants_lost,
-        })())
+        engine.register_morphism(
+            _make_morphism(
+                name,
+                invariants_kept=bridge_invariants_kept,
+                invariants_lost=bridge_invariants_lost,
+            )
+        )
         engine.link(name, src, dst)
         components[src] = name
 

@@ -1,5 +1,3 @@
-import pytest
-
 from math_anything.structures.domain_functor import (
     DomainFunctor,
     build_bridge_natural_transformation,
