@@ -9,6 +9,13 @@ from math_anything.domains import DOMAIN_REGISTRY
 from math_anything.structures.functor import Functor, NaturalTransformation
 from math_anything.topology.homotopy import cumulative_invariants_along_path
 
+__all__ = [
+    "DomainFunctor",
+    "build_domain_pair_engine",
+    "build_bridge_natural_transformation",
+    "is_domain_natural_transformation",
+]
+
 
 class DomainFunctor(Functor):
     """Functor that maps source domain structures/morphisms to target names."""
@@ -46,6 +53,46 @@ def _make_morphism(
     })()
 
 
+def _build_prefixed_chain(
+    engine: CategoryEngine,
+    chain_steps: list[dict[str, Any]],
+    prefix: str,
+) -> tuple[list[str], str]:
+    """Register one prefixed domain chain in ``engine``.
+
+    Returns the list of morphism names and the final structure name before the
+    terminal morphism.
+    """
+    path: list[str] = []
+    prev = f"{prefix}_start"
+    terminal_kept: list[str] = []
+    for i, step in enumerate(chain_steps):
+        name = f"{prefix}_{step['name']}"
+        kept = step.get("invariants_kept", [])
+        terminal_kept = list(kept)
+        engine.register_morphism(
+            _make_morphism(
+                name,
+                invariants_kept=kept,
+                invariants_lost=step.get("invariants_lost", []),
+            )
+        )
+        target = f"{prefix}_state_{i}"
+        engine.link(name, prev, target)
+        path.append(name)
+        prev = target
+    final = f"{prefix}_end"
+    terminal = _make_morphism(
+        f"{prefix}_terminal",
+        invariants_kept=terminal_kept,
+        invariants_lost=[],
+    )
+    engine.register_morphism(terminal)
+    engine.link(f"{prefix}_terminal", prev, final)
+    path.append(f"{prefix}_terminal")
+    return path, final
+
+
 def build_domain_pair_engine(
     domain_a_name: str,
     params_a: dict[str, Any],
@@ -67,66 +114,10 @@ def build_domain_pair_engine(
 
     dom_a = DOMAIN_REGISTRY[domain_a_name](params_a)
     dom_b = DOMAIN_REGISTRY[domain_b_name](params_b)
-    chain_a = dom_a.build_morphism_chain()
-    chain_b = dom_b.build_morphism_chain()
 
     engine = CategoryEngine()
-    path_a: list[str] = []
-    path_b: list[str] = []
-
-    prev_a = f"{prefix_a}_start"
-    terminal_kept_a: list[str] = []
-    for i, step in enumerate(chain_a):
-        name = f"{prefix_a}_{step['name']}"
-        kept = step.get("invariants_kept", [])
-        terminal_kept_a = list(kept)
-        engine.register_morphism(
-            _make_morphism(
-                name,
-                invariants_kept=kept,
-                invariants_lost=step.get("invariants_lost", []),
-            )
-        )
-        target = f"{prefix_a}_state_{i}"
-        engine.link(name, prev_a, target)
-        path_a.append(name)
-        prev_a = target
-    final_a = f"{prefix_a}_end"
-    terminal_a = _make_morphism(
-        f"{prefix_a}_terminal",
-        invariants_kept=terminal_kept_a,
-        invariants_lost=[],
-    )
-    engine.register_morphism(terminal_a)
-    engine.link(f"{prefix_a}_terminal", prev_a, final_a)
-    path_a.append(f"{prefix_a}_terminal")
-
-    prev_b = f"{prefix_b}_start"
-    terminal_kept_b: list[str] = []
-    for i, step in enumerate(chain_b):
-        name = f"{prefix_b}_{step['name']}"
-        kept = step.get("invariants_kept", [])
-        terminal_kept_b = list(kept)
-        engine.register_morphism(
-            _make_morphism(
-                name,
-                invariants_kept=kept,
-                invariants_lost=step.get("invariants_lost", []),
-            )
-        )
-        target = f"{prefix_b}_state_{i}"
-        engine.link(name, prev_b, target)
-        path_b.append(name)
-        prev_b = target
-    final_b = f"{prefix_b}_end"
-    terminal_b = _make_morphism(
-        f"{prefix_b}_terminal",
-        invariants_kept=terminal_kept_b,
-        invariants_lost=[],
-    )
-    engine.register_morphism(terminal_b)
-    engine.link(f"{prefix_b}_terminal", prev_b, final_b)
-    path_b.append(f"{prefix_b}_terminal")
+    path_a, _ = _build_prefixed_chain(engine, dom_a.build_morphism_chain(), prefix_a)
+    path_b, _ = _build_prefixed_chain(engine, dom_b.build_morphism_chain(), prefix_b)
 
     return engine, path_a, path_b
 
@@ -190,8 +181,8 @@ def is_domain_natural_transformation(
 
         f_f = F.map_morphism(f_name)
         f_g = G.map_morphism(f_name)
-        eta_src = eta.components.get(F.map_object(source_obj))
-        eta_dst = eta.components.get(F.map_object(target_obj))
+        eta_src = eta.components.get(source_obj)
+        eta_dst = eta.components.get(target_obj)
 
         if eta_src is None or eta_dst is None:
             return False, f"Missing bridge for {source_obj} or {target_obj}"
