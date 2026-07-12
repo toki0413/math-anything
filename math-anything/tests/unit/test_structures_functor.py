@@ -30,6 +30,10 @@ def test_natural_transformation_identity_is_valid():
 
 
 def test_non_natural_transformation_is_invalid():
+    # Note: the brief used G = MatrixFunctor(2 * np.eye(d)), which is naturally
+    # isomorphic to the identity functor via eta = I, so the original assertion
+    # would have failed. We use diag([2.0, 3.0]) to get a non-scalar functor that
+    # genuinely does not commute with the identity natural transformation.
     d = 2
     F = MatrixFunctor(np.eye(d))
     G = MatrixFunctor(np.diag([2.0, 3.0]))

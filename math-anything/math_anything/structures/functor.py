@@ -42,6 +42,10 @@ class MatrixFunctor(Functor):
 
     def map_morphism(self, morphism: Any) -> np.ndarray:
         M = np.asarray(morphism, dtype=float)
+        if M.shape != (self._dim, self._dim):
+            raise ValueError(
+                f"Morphism must be a {self._dim}x{self._dim} matrix, got {M.shape}"
+            )
         return self.matrix @ M @ self._inv
 
 
@@ -65,11 +69,13 @@ def is_natural_transformation(
     otherwise (False, diagnostic message).
     """
     for source_obj, target_obj, morphism in test_morphisms:
-        eta_source = np.asarray(eta.components.get(source_obj), dtype=float)
-        eta_target = np.asarray(eta.components.get(target_obj), dtype=float)
-
-        if eta_source.size == 0 or eta_target.size == 0:
+        source_component = eta.components.get(source_obj)
+        target_component = eta.components.get(target_obj)
+        if source_component is None or target_component is None:
             return False, f"Missing component for {source_obj} or {target_obj}"
+
+        eta_source = np.asarray(source_component, dtype=float)
+        eta_target = np.asarray(target_component, dtype=float)
 
         left = G.map_morphism(morphism) @ eta_source
         right = eta_target @ F.map_morphism(morphism)
