@@ -29,7 +29,7 @@ DFT, MD, CFD, FEM — these are not different software tools. They are different
 ```
                     ┌─────────────────────────────────────────────┐
   Layer 3           │  Domain Instantiation                       │
-  (Physics)         │  DFT  │  CFD  │  MD  │  FEM               │
+  (Physics/ML)      │  DFT  │  CFD  │  MD  │  FEM  │  EM  │  QC  │  PhaseField  │  SupervisedLearning │
                     │  (different morphism chains, same base)     │
                     ├─────────────────────────────────────────────┤
   Layer 2           │  Mathematical Structures                    │
@@ -72,11 +72,11 @@ Bourbaki:     ENCUT = 520
 
 ## Features
 
-- **4 physics domains** — DFT, CFD, MD, FEM, each as a morphism chain over conservation fields
+- **8 physics and ML domains** — DFT, CFD, MD, FEM, EM, QC, phase field, and supervised learning, each as a morphism chain over conservation fields
 - **18 conservation matrix field equations** — Navier-Stokes, Euler, Schrödinger, Maxwell, elasticity, MHD, heat, Dirac, Einstein field, and more, each with Noether correspondence
 - **5-layer verification pipeline** — Syntax → Semantics → Invariants → Conservation → Completeness
 - **12 Rust-accelerated functions** — EML operator, closure computation, Buckingham π groups, category graph traversal, expression simplification, and more via `math_anything_rs`
-- **MCP server with 15 tools** — Domain analysis, cross-domain comparison, structure extraction, conservation fields, morphism chains, dimensional analysis, Riemann geometry, knowledge base queries, and more
+- **MCP server with 13 tools** — Domain analysis, cross-domain comparison, conservation fields, morphism chains, dimensional analysis, Riemann geometry, topology/loop/homotopy/curvature, ML surrogate, training-trajectory curvature, optimization-landscape homotopy, transfer learning as natural transformation, surrogate backends, and more
 
 ## Quick Start
 
@@ -187,6 +187,22 @@ diff = ma.diff(vasp_schema, qe_schema)
 # Semantic diff: what changed mathematically, not just what lines differ
 ```
 
+### Machine Learning as Mathematical Structure
+
+```python
+from math_anything.mcp_server import analyze_ml_model
+
+report = analyze_ml_model(
+    input_dim=2,
+    output_dim=1,
+    architecture="mlp",
+    loss="mse",
+    compare_paths=True,
+    transfer=True,
+    backend="numpy",
+)
+```
+
 ## Architecture
 
 Bourbaki implements a **3-layer architecture**:
@@ -194,10 +210,10 @@ Bourbaki implements a **3-layer architecture**:
 ```
 Layer 1  Foundation     — Algorithms, category theory, type theory, constraint propagation
 Layer 2  Structures     — Mathematical structure type system (conservation fields, morphisms)
-Layer 3  Domains        — Physics discipline instantiations (DFT, CFD, MD, FEM)
+Layer 3  Domains        — Physics/ML discipline instantiations (DFT, CFD, MD, FEM, EM, QC, phase field, supervised learning)
 ```
 
-Each layer builds on the one below. Domains are *fibers* over the base of mathematical structures — DFT, CFD, MD, and FEM are all sections of the same sheaf.
+Each layer builds on the one below. Domains are *fibers* over the base of mathematical structures — DFT, CFD, MD, FEM, EM, QC, phase field, and supervised learning are all sections of the same sheaf.
 
 ### Morphism Chain
 
@@ -218,6 +234,10 @@ This lets you trace exactly where a physical property was sacrificed.
 | CFD | Navier-Stokes | 4 | Mass, momentum |
 | MD | Hamiltonian | 5 | Energy, momentum, angular momentum |
 | FEM | Variational | 4 | Variational consistency, Galerkin orthogonality |
+| EM | Maxwell | 2 | Charge conservation |
+| QC | Many-electron Schrödinger | 4 | Particle number conservation |
+| phase_field | Cahn-Hilliard / Allen-Cahn | 3 | Free-energy dissipation |
+| supervised_learning | Function approximation | 5 | Generalization gap, optimization landscape |
 
 ## Supported Engines
 
@@ -244,8 +264,8 @@ pip install maturin
 maturin develop --release
 
 # Run tests
-pytest tests/unit/ -v --tb=short --cov=math_anything
-pytest tests/integration/ -v --tb=short
+python -m pytest tests/unit/ -v --tb=short --cov=math_anything
+python -m pytest tests/integration/ -v --tb=short
 
 # Lint & typecheck
 ruff check math_anything/

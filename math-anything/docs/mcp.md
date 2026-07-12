@@ -6,9 +6,9 @@ Built on [FastMCP](https://gofastmcp.com) SDK v3.2+.
 
 ## What is Bourbaki MCP?
 
-Bourbaki MCP extracts, compares, validates, and discovers mathematical structures across **4 physics domains** (DFT, CFD, MD, FEM) and **19 computational science engines**. It provides:
+Bourbaki MCP extracts, compares, validates, and discovers mathematical structures across **8 physics/ML domains** (DFT, CFD, MD, FEM, EM, QC, phase field, supervised learning) and **19 computational science engines**. It provides:
 
-- **Domain analysis** — conservation fields, morphism chains, and constraint propagation for each physics discipline
+- **Domain analysis** — conservation fields, morphism chains, and constraint propagation for each physics/ML discipline
 - **Cross-domain comparison** — what invariants are shared vs. domain-specific
 - **Structure extraction** — canonical forms, variable dependencies, discretization, solution strategies
 - **Cross-engine comparison** — semantic diff of mathematical schemas
@@ -120,10 +120,10 @@ Add to `~/.windsurf/mcp.json`:
 
 #### 1. `analyze_domain`
 
-Analyze a physics domain: conservation field + morphism chain + constraint propagation.
+Analyze a physics/ML domain: conservation field + morphism chain + constraint propagation.
 
 **Parameters:**
-- `domain` (string, required) — Domain name: `dft`, `cfd`, `md`, `fem`
+- `domain` (string, required) — Domain name: `dft`, `cfd`, `md`, `fem`, `em`, `qc`, `phase_field`, `supervised_learning`
 - `parameters` (object, optional) — Domain-specific parameters
 
 **Example:**
@@ -138,7 +138,7 @@ Analyze a physics domain: conservation field + morphism chain + constraint propa
 
 #### 2. `compare_domains`
 
-Compare two physics domains — same conservation field, different morphism chains.
+Compare two physics/ML domains — same conservation field, different morphism chains.
 
 **Parameters:**
 - `domain_a` (string, required) — First domain name
@@ -160,145 +160,105 @@ Compare two physics domains — same conservation field, different morphism chai
 
 #### 3. `list_domains`
 
-List all available physics domains with their morphism chain descriptions.
+List all available physics/ML domains with their morphism chain descriptions.
 
 **Parameters:** None
 
 **Returns:** Domain list with names, descriptions, equation types, and morphism chain lengths.
 
-### Structure Extraction
+### Conservation & Structures
 
-#### 4. `extract_mathematical_structure`
-
-Extract mathematical structure from simulation parameters.
-
-**Parameters:**
-- `engine` (string, required) — Simulation engine name
-- `parameters` (object, required) — Engine-specific parameters
-
-**Example:**
-```json
-{
-  "engine": "vasp",
-  "parameters": {"encut": 520, "ediff": 1e-6, "sigma": 0.05}
-}
-```
-
-**Returns:** Mathematical structure with canonical forms, variable dependencies, discretization scheme, solution strategy, approximations, and mathematical decoding.
-
-#### 5. `compare_calculations`
-
-Compare two mathematical schemas and report differences.
-
-**Parameters:**
-- `schema_a` (object, required) — First EnhancedMathSchema
-- `schema_b` (object, required) — Second EnhancedMathSchema
-- `critical_only` (boolean, optional) — Only report critical changes
-
-**Returns:** Diff report with categorized changes (critical, warning, info).
-
-#### 6. `validate_constraints`
-
-Validate symbolic constraints in a mathematical schema.
-
-**Parameters:**
-- `schema` (object, required) — EnhancedMathSchema
-
-**Returns:** Validation report with constraint expressions and statuses.
-
-#### 7. `list_supported_engines`
-
-List all 19 supported simulation engines organized by category.
-
-**Parameters:** None
-
-**Returns:** Engine list with categories:
-- **Quantum Mechanics:** vasp, qe, cp2k, gaussian, gamess, nwchem, multiwfn
-- **Molecular Dynamics:** lammps, gromacs, liggghts
-- **Continuum Mechanics:** abaqus, ansys, comsol, solidworks
-- **CFD:** openfoam, fluent, su2
-- **Uncertainty Quantification:** dakota
-- **Multiscale:** voxel
-
-### Conservation & Constraints
-
-#### 8. `analyze_constraints`
-
-Analyze mathematical invariants and constraints for a calculation setup.
-
-**Parameters:**
-- `engine` (string, required) — Simulation engine name
-- `parameters` (object, required) — Engine-specific parameters
-- `morphism_chain` (array of strings, optional) — Morphism chain for propagation analysis
-
-**Returns:** Invariant analysis with conservation laws and constraint propagation.
-
-#### 9. `build_conservation_field`
+#### 4. `build_conservation_field`
 
 Build conservation matrix field for a given equation type.
 
 **Parameters:**
 - `equation_type` (string, required) — One of: `navier_stokes`, `euler`, `schrodinger`, `maxwell`, `elasticity`, `mhd`, `heat`, `dirac`, `einstein_field`, `klein_gordon`, `wave`, `kohn_sham`, `boltzmann`, `shallow_water`, `schrodinger_nonlinear`, `vlasov`, `hartree_fock`, `advection_diffusion`
+- `parameters` (object, optional) — Equation-specific parameters (e.g., `{"mu": 0.01, "hbar": 1.0}`)
 
 **Returns:** Conservation laws with Noether correspondence and symmetry mappings.
 
-#### 10. `dimensional_analyze`
+#### 5. `analyze_morphism_chain`
 
-Buckingham π theorem dimensional analysis.
+Analyze a chain of mathematical morphisms.
 
 **Parameters:**
-- `schema` (object, required) — Schema with `canonical_form` key
+- `domain` (string, required) — Domain name (dft, cfd, md, fem, em, qc, phase_field, supervised_learning)
+- `chain` (array of strings, optional) — Morphism chain to trace
+- `parameters` (object, optional) — Domain parameters
+
+**Returns:** Step-by-step analysis with invariants kept, lost, and introduced at each stage, plus cumulative summary.
+
+#### 6. `solve_numerical`
+
+Unified numerical solver for mathematical structures.
+
+**Parameters:**
+- `solver_type` (string, required) — One of: `symplectic`, `eigenvalue`, `scf`, `conservation`, `variational`, `continuum`
+- `parameters` (object, required) — Solver-specific parameters
+
+**Returns:** Numerical solution for the selected solver type.
+
+### Foundation Layer
+
+#### 7. `dimensional_analyze`
+
+Buckingham π theorem dimensional analysis and symbolic dimensional checking.
+
+**Parameters:**
+- `schema` (object, optional) — Mathematical schema for context
 - `quantities` (array, optional) — List of quantity dicts with `name`, `symbol`, `dimension`
+- `expression_lhs` (string, optional) — Left-hand side of equation for dimensional checking
+- `expression_rhs` (string, optional) — Right-hand side of equation for dimensional checking
 
-**Returns:** Dimensional consistency check and dimensionless π groups.
+**Returns:** Dimensional consistency check, dimensionless π groups, and/or expression dimensional comparison.
 
-### Verification & Discovery
+#### 8. `verify_structure`
 
-#### 11. `verify_mathematical_structure`
-
-Verify mathematical structure consistency and completeness.
+Verify mathematical structure through multi-layer verification pipeline.
 
 **Parameters:**
-- `schema` (object, required) — EnhancedMathSchema
+- `schema` (object, required) — Mathematical schema to verify
+- `layers` (array of strings, optional) — Subset of layers: `symbolic`, `type_system`, `logic`, `llm_semantic`, `lean4_formal`
 
-**Returns:** Verification report checking governing equations, boundary conditions, conservation properties, and discretization.
+**Returns:** Verification report checking symbolic validation, type system, logic consistency, and optional LLM/Lean4 layers.
 
-#### 12. `discover_equations`
+#### 9. `discover_equations`
 
 Discover governing equations from data using symbolic regression.
 
 **Parameters:**
 - `variable_names` (string, required) — Comma-separated variable names
-- `method` (string, optional) — Discovery method: `sindyc`, `genetic`
+- `method` (string, optional) — Discovery method: `sindyc` (default), `genetic`
 - `max_complexity` (integer, optional) — Maximum equation complexity (default: 10)
 
 **Returns:** Symbolic regression configuration with candidate function library.
 
-#### 13. `query_knowledge_base`
+### Engine Adapter
 
-Query the mathematical knowledge base for related concepts.
+#### 10. `translate_engine_params`
 
-**Parameters:**
-- `query` (string, required) — Search query
-- `sources` (array of strings, optional) — Sources to search: `arxiv`, `wikidata`, `nist`
-- `max_results` (integer, optional) — Maximum results (default: 5)
-
-**Returns:** Search results from arXiv, Wikidata, and NIST Interatomic Potentials.
-
-### Morphisms & Geometry
-
-#### 14. `analyze_morphism_chain`
-
-Analyze a chain of mathematical morphisms.
+Translate engine-specific parameters to domain parameters.
 
 **Parameters:**
-- `engine` (string, required) — Starting engine
-- `parameters` (object, required) — Engine parameters
-- `chain` (array of strings, optional) — Morphism chain to trace
+- `engine` (string, required) — Simulation engine name
+- `parameters` (object, required) — Engine-specific parameters
 
-**Returns:** Step-by-step analysis with invariants kept, lost, and introduced at each stage, plus cumulative summary.
+**Returns:** Domain-agnostic parameter mapping.
 
-#### 15. `compute_riemann_geometry`
+### Topology Layer
+
+#### 11. `analyze_loops`
+
+Detect and classify topology loops in a demonstration morphism graph.
+
+**Parameters:**
+- `engine` (string, required) — Engine name (e.g., `vasp`, `lammps`, `qe`)
+- `parameters` (object, optional) — Engine parameters; reserved for future domain-specific loop population
+
+**Returns:** Loop classification, Betti numbers, curvature map, and Mermaid visualization.
+
+#### 12. `compute_riemann_geometry`
 
 Compute Riemannian geometric structures from a metric specification.
 
@@ -308,6 +268,36 @@ Compute Riemannian geometric structures from a metric specification.
 - `dim` (integer, required) — Manifold dimension
 
 **Returns:** Riemann tensor, Ricci tensor, scalar curvature.
+
+### ML Surrogate Layer
+
+#### 13. `analyze_ml_model`
+
+Analyze a supervised-learning model as a morphism chain.
+
+**Parameters:**
+- `input_dim` (integer, optional) — Input dimension (default: 2)
+- `output_dim` (integer, optional) — Output dimension (default: 1)
+- `architecture` (string, optional) — Network architecture (default: `mlp`)
+- `loss` (string, optional) — Loss function (default: `mse`)
+- `compare_paths` (boolean, optional) — Compute optimization-landscape homotopy between two training paths (default: false)
+- `transfer` (boolean, optional) — Verify transfer learning as a natural transformation (default: false)
+- `backend` (string, optional) — Surrogate backend to demo: `numpy`, `sklearn`, `torch`, `jax` (default: `numpy`)
+
+**Example:**
+```json
+{
+  "input_dim": 2,
+  "output_dim": 1,
+  "architecture": "mlp",
+  "loss": "mse",
+  "compare_paths": true,
+  "transfer": true,
+  "backend": "numpy"
+}
+```
+
+**Returns:** Domain analysis of supervised learning as a morphism chain, demo forward pass, optimization curvature, cross-domain homotopy witness, surrogate backend demo, and optional training-path homotopy and transfer-learning natural-transformation checks.
 
 ## Resources
 
@@ -349,7 +339,7 @@ Compare mathematical structures between two simulation engines.
 
 ### `compare_approaches`
 
-Compare two physics domains at the structural level — what invariants are shared vs. domain-specific.
+Compare two physics/ML domains at the structural level — what invariants are shared vs. domain-specific.
 
 **Arguments:**
 - `domain_a` — First domain name (default: `dft`)
@@ -398,7 +388,7 @@ For Claude Desktop with SSE:
 
 ### Tool returns error
 
-1. **"Unknown domain":** Available domains are `dft`, `cfd`, `md`, `fem`. Use `list_domains` to confirm.
+1. **"Unknown domain":** Available domains are `dft`, `cfd`, `md`, `fem`, `em`, `qc`, `phase_field`, `supervised_learning`. Use `list_domains` to confirm.
 2. **"Unknown engine":** Only 7 engines have primary extractors (vasp, lammps, abaqus, ansys, comsol, gromacs, multiwfn). Other engines are listed but extraction is not yet implemented.
 3. **JSON serialization error:** The extractor may return a non-serializable object — this is a bug, please report.
 4. **Knowledge base unavailable:** Set API keys for arXiv/Wikidata/NIST access. The server gracefully degrades to offline mode.
