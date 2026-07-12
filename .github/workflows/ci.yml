@@ -78,6 +78,9 @@ jobs:
   test:
     name: Test | 测试 (${{ matrix.python-version }}, ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+    env:
+      # Disable Hypothesis deadlines to avoid flakiness on slower Windows runners
+      HYPOTHESIS_DEADLINE: None
     strategy:
       fail-fast: false
       matrix:
