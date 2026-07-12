@@ -134,3 +134,6 @@ show_missing = true
 testpaths = ["tests"]
 pythonpath = [".", "engines"]
 addopts = "-v --tb=short --cov=math_anything --cov-report=term-missing"
+filterwarnings = [
+    "ignore:enhanced_psrn_v2 is deprecated:DeprecationWarning",
+]

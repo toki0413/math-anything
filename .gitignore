@@ -81,6 +81,24 @@ generate_final_revised.py
 generate_final_simple.py
 scientific_skills_analysis.py
 
+# Local experiments / scratch (decided 2026-07-12)
+PSRN_STRUCTURE_ANALYSIS.md
+TUTORIAL_CN.md
+bourbaki-architecture.md
+llm_prompt_*.md
+analyze_*.py
+demo_*.py
+download_*.py
+explain_*.py
+publication_ready_analysis.py
+real_*.py
+test_*.py
+math-guard/
+math-trend/
+md17_data/
+rmd17_data/
+test_vasp3/
+
 # Build/IDE artifacts
 .build/
 .trae/
