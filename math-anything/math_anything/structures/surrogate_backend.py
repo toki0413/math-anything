@@ -21,14 +21,11 @@ class SurrogateBackend(Protocol):
 
     name: str
 
-    def fit(self, dataset: list[tuple[Any, Any]], epochs: int = 10, lr: float = 0.05) -> None:
-        ...
+    def fit(self, dataset: list[tuple[Any, Any]], epochs: int = 10, lr: float = 0.05) -> None: ...
 
-    def predict(self, x: Any) -> Any:
-        ...
+    def predict(self, x: Any) -> Any: ...
 
-    def to_morphism_chain(self) -> list[dict[str, Any]]:
-        ...
+    def to_morphism_chain(self) -> list[dict[str, Any]]: ...
 
 
 class NumpySurrogateBackend:
@@ -51,11 +48,13 @@ class NumpySurrogateBackend:
         self._build_network()
 
     def _build_network(self) -> None:
-        self._network = SequentialNetwork([
-            LinearMorphism(name="linear_1", input_dim=self.input_dim, output_dim=self.hidden_dim),
-            ActivationMorphism(name=f"{self.activation}_1", activation=self.activation),
-            LinearMorphism(name="linear_2", input_dim=self.hidden_dim, output_dim=self.output_dim),
-        ])
+        self._network = SequentialNetwork(
+            [
+                LinearMorphism(name="linear_1", input_dim=self.input_dim, output_dim=self.hidden_dim),
+                ActivationMorphism(name=f"{self.activation}_1", activation=self.activation),
+                LinearMorphism(name="linear_2", input_dim=self.hidden_dim, output_dim=self.output_dim),
+            ]
+        )
 
     def fit(self, dataset: list[tuple[Any, Any]], epochs: int = 10, lr: float = 0.05) -> None:
         if self._network is None:
@@ -104,9 +103,7 @@ class _OptionalBackendStub:
         )
 
     def predict(self, x: Any) -> Any:
-        raise ImportError(
-            f"The '{self.name}' backend requires the '{self._package_name}' package."
-        )
+        raise ImportError(f"The '{self.name}' backend requires the '{self._package_name}' package.")
 
     def to_morphism_chain(self) -> list[dict[str, Any]]:
         return [

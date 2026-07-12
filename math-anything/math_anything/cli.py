@@ -888,6 +888,7 @@ def cmd_loops(args: argparse.Namespace) -> int:
             KohnShamMapping,
             PlaneWaveTruncation,
         )
+
         ce.register_morphism(BornOppenheimerApproximation())
         ce.register_morphism(KohnShamMapping())
         ce.register_morphism(PlaneWaveTruncation(encut=520))
@@ -1043,12 +1044,14 @@ def cmd_ml(args: argparse.Namespace) -> int:
     from math_anything.topology.visualization import to_mermaid
 
     try:
-        domain = DOMAIN_REGISTRY["supervised_learning"]({
-            "input_dim": args.input_dim,
-            "output_dim": args.output_dim,
-            "architecture": args.architecture,
-            "loss": args.loss,
-        })
+        domain = DOMAIN_REGISTRY["supervised_learning"](
+            {
+                "input_dim": args.input_dim,
+                "output_dim": args.output_dim,
+                "architecture": args.architecture,
+                "loss": args.loss,
+            }
+        )
         analysis = domain.analyze()
 
         report = {
@@ -1074,8 +1077,7 @@ def cmd_ml(args: argparse.Namespace) -> int:
                 hidden_dim=4,
             )
             dataset = [
-                (np.array([x] * args.input_dim), np.array([2.0 * x + 1.0] * args.output_dim))
-                for x in [-1.0, 0.0, 1.0]
+                (np.array([x] * args.input_dim), np.array([2.0 * x + 1.0] * args.output_dim)) for x in [-1.0, 0.0, 1.0]
             ]
             model.fit(dataset, epochs=5, lr=0.05)
             return model.predict(np.array([0.5] * args.input_dim))
@@ -1092,9 +1094,7 @@ def cmd_ml(args: argparse.Namespace) -> int:
         report["backend_requested"] = args.backend
         report["backend_used"] = backend_used
         report["backend_available"] = backend_available
-        report["surrogate_demo_prediction"] = (
-            demo_pred.tolist() if hasattr(demo_pred, "tolist") else demo_pred
-        )
+        report["surrogate_demo_prediction"] = demo_pred.tolist() if hasattr(demo_pred, "tolist") else demo_pred
 
         if args.compare_with:
             from math_anything.topology.cross_domain import cross_domain_homotopy
@@ -1132,16 +1132,17 @@ def cmd_ml(args: argparse.Namespace) -> int:
 
             loss_fn = LossMorphism(name="loss", loss=args.loss)
             dataset = [
-                (np.array([x] * args.input_dim), np.array([2.0 * x + 1.0] * args.output_dim))
-                for x in [-1.0, 0.0, 1.0]
+                (np.array([x] * args.input_dim), np.array([2.0 * x + 1.0] * args.output_dim)) for x in [-1.0, 0.0, 1.0]
             ]
 
             def _make_network():
-                return SequentialNetwork([
-                    LinearMorphism(name="linear_1", input_dim=args.input_dim, output_dim=4),
-                    ActivationMorphism(name="relu_1", activation="relu"),
-                    LinearMorphism(name="linear_2", input_dim=4, output_dim=args.output_dim),
-                ])
+                return SequentialNetwork(
+                    [
+                        LinearMorphism(name="linear_1", input_dim=args.input_dim, output_dim=4),
+                        ActivationMorphism(name="relu_1", activation="relu"),
+                        LinearMorphism(name="linear_2", input_dim=4, output_dim=args.output_dim),
+                    ]
+                )
 
             result_a = train_and_capture(_make_network(), dataset, loss_fn, epochs=5, lr=0.05)
             result_b = train_and_capture(_make_network(), dataset, loss_fn, epochs=5, lr=0.05)
@@ -1175,16 +1176,17 @@ def cmd_ml(args: argparse.Namespace) -> int:
 
             loss_fn = LossMorphism(name="loss", loss=args.loss)
             dataset = [
-                (np.array([x] * args.input_dim), np.array([2.0 * x + 1.0] * args.output_dim))
-                for x in [-1.0, 0.0, 1.0]
+                (np.array([x] * args.input_dim), np.array([2.0 * x + 1.0] * args.output_dim)) for x in [-1.0, 0.0, 1.0]
             ]
 
             def _make_network():
-                return SequentialNetwork([
-                    LinearMorphism(name="linear_1", input_dim=args.input_dim, output_dim=4),
-                    ActivationMorphism(name="relu_1", activation="relu"),
-                    LinearMorphism(name="linear_2", input_dim=4, output_dim=args.output_dim),
-                ])
+                return SequentialNetwork(
+                    [
+                        LinearMorphism(name="linear_1", input_dim=args.input_dim, output_dim=4),
+                        ActivationMorphism(name="relu_1", activation="relu"),
+                        LinearMorphism(name="linear_2", input_dim=4, output_dim=args.output_dim),
+                    ]
+                )
 
             source = _make_network()
             target = _make_network()
@@ -1199,9 +1201,7 @@ def cmd_ml(args: argparse.Namespace) -> int:
             G = MatrixFunctor(np.eye(dim))
             eta = NaturalTransformation({dim: np.eye(dim)})
             sample_morphism = np.eye(dim)
-            valid, reason = is_natural_transformation(
-                F, G, eta, test_morphisms=[(dim, dim, sample_morphism)]
-            )
+            valid, reason = is_natural_transformation(F, G, eta, test_morphisms=[(dim, dim, sample_morphism)])
 
             report["transfer_learning"] = {
                 "natural_transformation_valid": valid,
@@ -1215,11 +1215,17 @@ def cmd_ml(args: argparse.Namespace) -> int:
 
             ce = CategoryEngine()
             for step in analysis.morphism_chain:
-                ce.register_morphism(type("M", (), {
-                    "name": step["name"],
-                    "source_type": "MLState",
-                    "target_type": "MLState",
-                })())
+                ce.register_morphism(
+                    type(
+                        "M",
+                        (),
+                        {
+                            "name": step["name"],
+                            "source_type": "MLState",
+                            "target_type": "MLState",
+                        },
+                    )()
+                )
             prev = "Input"
             for step in analysis.morphism_chain:
                 ce.link(step["name"], prev, step["name"])

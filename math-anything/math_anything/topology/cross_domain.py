@@ -37,11 +37,17 @@ def cross_domain_homotopy(
     prev_a = "ManyBodySchrodinger" if domain_a_name == "dft" else f"{domain_a_name}_start"
     for i, step in enumerate(chain_a):
         name = f"a_{step['name']}"
-        ce.register_morphism(type("M", (), {
-            "name": name,
-            "invariants_kept": step.get("invariants_kept", []),
-            "invariants_lost": step.get("invariants_lost", []),
-        })())
+        ce.register_morphism(
+            type(
+                "M",
+                (),
+                {
+                    "name": name,
+                    "invariants_kept": step.get("invariants_kept", []),
+                    "invariants_lost": step.get("invariants_lost", []),
+                },
+            )()
+        )
         target = f"a_state_{i}"
         ce.link(name, prev_a, target)
         path_a.append(name)
@@ -50,11 +56,17 @@ def cross_domain_homotopy(
     prev_b = f"{domain_b_name}_start"
     for i, step in enumerate(chain_b):
         name = f"b_{step['name']}"
-        ce.register_morphism(type("M", (), {
-            "name": name,
-            "invariants_kept": step.get("invariants_kept", []),
-            "invariants_lost": step.get("invariants_lost", []),
-        })())
+        ce.register_morphism(
+            type(
+                "M",
+                (),
+                {
+                    "name": name,
+                    "invariants_kept": step.get("invariants_kept", []),
+                    "invariants_lost": step.get("invariants_lost", []),
+                },
+            )()
+        )
         target = f"b_state_{i}"
         ce.link(name, prev_b, target)
         path_b.append(name)

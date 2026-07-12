@@ -46,11 +46,15 @@ def _make_morphism(
     invariants_lost: list[str],
 ) -> Any:
     """Return a simple morphism object with the required invariant attributes."""
-    return type("M", (), {
-        "name": name,
-        "invariants_kept": invariants_kept,
-        "invariants_lost": invariants_lost,
-    })()
+    return type(
+        "M",
+        (),
+        {
+            "name": name,
+            "invariants_kept": invariants_kept,
+            "invariants_lost": invariants_lost,
+        },
+    )()
 
 
 def _build_prefixed_chain(

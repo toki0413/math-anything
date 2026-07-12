@@ -23,15 +23,9 @@ def flatten_network_weights(network: Any) -> list[float]:
 def set_network_weights(network: Any, weights: list[float]) -> None:
     """Set linear-layer weights and biases from a flattened vector."""
     weights_arr = np.asarray(weights, dtype=float)
-    expected = sum(
-        layer.weight.size + layer.bias.size
-        for layer in network.layers
-        if isinstance(layer, LinearMorphism)
-    )
+    expected = sum(layer.weight.size + layer.bias.size for layer in network.layers if isinstance(layer, LinearMorphism))
     if weights_arr.size != expected:
-        raise ValueError(
-            f"Expected {expected} weights, got {weights_arr.size}"
-        )
+        raise ValueError(f"Expected {expected} weights, got {weights_arr.size}")
     offset = 0
     for layer in network.layers:
         if isinstance(layer, LinearMorphism):
@@ -61,9 +55,7 @@ class WeightSpaceTransfer:
         else:
             self._matrix = np.asarray(matrix, dtype=float)
             if self._matrix.shape != (target_dim, source_dim):
-                raise ValueError(
-                    f"Expected adapter shape {(target_dim, source_dim)}, got {self._matrix.shape}"
-                )
+                raise ValueError(f"Expected adapter shape {(target_dim, source_dim)}, got {self._matrix.shape}")
 
     @property
     def matrix(self) -> list[list[float]]:

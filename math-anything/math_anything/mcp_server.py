@@ -747,6 +747,7 @@ def analyze_loops(engine: str, parameters: dict[str, Any] | None = None) -> str:
             KohnShamMapping,
             PlaneWaveTruncation,
         )
+
         ce.register_morphism(BornOppenheimerApproximation())
         ce.register_morphism(KohnShamMapping())
         ce.register_morphism(PlaneWaveTruncation(encut=520))
@@ -762,14 +763,16 @@ def analyze_loops(engine: str, parameters: dict[str, Any] | None = None) -> str:
         curvature_map = compute_curvature_map(loops, loss_weights)
         loops_data = []
         for loop in loops:
-            loops_data.append({
-                "type": classifier.classify(loop).value,
-                "nodes": list(loop.nodes),
-                "edges": list(loop.edges),
-                "directed": loop.is_directed,
-                "canonical_form": loop.canonical_form,
-                "curvature": curvature_map[loop.canonical_form],
-            })
+            loops_data.append(
+                {
+                    "type": classifier.classify(loop).value,
+                    "nodes": list(loop.nodes),
+                    "edges": list(loop.edges),
+                    "directed": loop.is_directed,
+                    "canonical_form": loop.canonical_form,
+                    "curvature": curvature_map[loop.canonical_form],
+                }
+            )
 
         report = {
             "engine": engine,
@@ -816,12 +819,14 @@ def analyze_ml_model(
         trajectory_curvature,
     )
 
-    domain = DOMAIN_REGISTRY["supervised_learning"]({
-        "input_dim": input_dim,
-        "output_dim": output_dim,
-        "architecture": architecture,
-        "loss": loss,
-    })
+    domain = DOMAIN_REGISTRY["supervised_learning"](
+        {
+            "input_dim": input_dim,
+            "output_dim": output_dim,
+            "architecture": architecture,
+            "loss": loss,
+        }
+    )
     analysis = domain.analyze()
 
     # Demonstrate forward pass through a tiny network
@@ -884,10 +889,7 @@ def analyze_ml_model(
             output_dim=output_dim,
             hidden_dim=4,
         )
-        dataset = [
-            (np.array([x] * input_dim), np.array([2.0 * x + 1.0] * output_dim))
-            for x in [-1.0, 0.0, 1.0]
-        ]
+        dataset = [(np.array([x] * input_dim), np.array([2.0 * x + 1.0] * output_dim)) for x in [-1.0, 0.0, 1.0]]
         model.fit(dataset, epochs=5, lr=0.05)
         return model.predict(np.array([0.5] * input_dim))
 
@@ -902,9 +904,7 @@ def analyze_ml_model(
     report["backend_requested"] = backend
     report["backend_used"] = backend_used
     report["backend_available"] = backend_available
-    report["surrogate_demo_prediction"] = (
-        demo_pred.tolist() if hasattr(demo_pred, "tolist") else demo_pred
-    )
+    report["surrogate_demo_prediction"] = demo_pred.tolist() if hasattr(demo_pred, "tolist") else demo_pred
 
     if compare_paths:
         import numpy as np
@@ -915,17 +915,16 @@ def analyze_ml_model(
         from math_anything.topology.training_curvature import train_and_capture
 
         loss_fn = LossMorphism(name="loss", loss=loss)
-        dataset = [
-            (np.array([x] * input_dim), np.array([2.0 * x + 1.0] * output_dim))
-            for x in [-1.0, 0.0, 1.0]
-        ]
+        dataset = [(np.array([x] * input_dim), np.array([2.0 * x + 1.0] * output_dim)) for x in [-1.0, 0.0, 1.0]]
 
         def _make_network():
-            return SequentialNetwork([
-                LinearMorphism(name="linear_1", input_dim=input_dim, output_dim=4),
-                ActivationMorphism(name="relu_1", activation="relu"),
-                LinearMorphism(name="linear_2", input_dim=4, output_dim=output_dim),
-            ])
+            return SequentialNetwork(
+                [
+                    LinearMorphism(name="linear_1", input_dim=input_dim, output_dim=4),
+                    ActivationMorphism(name="relu_1", activation="relu"),
+                    LinearMorphism(name="linear_2", input_dim=4, output_dim=output_dim),
+                ]
+            )
 
         result_a = train_and_capture(_make_network(), dataset, loss_fn, epochs=5, lr=0.05)
         result_b = train_and_capture(_make_network(), dataset, loss_fn, epochs=5, lr=0.05)
@@ -957,17 +956,16 @@ def analyze_ml_model(
         )
 
         loss_fn = LossMorphism(name="loss", loss=loss)
-        dataset = [
-            (np.array([x] * input_dim), np.array([2.0 * x + 1.0] * output_dim))
-            for x in [-1.0, 0.0, 1.0]
-        ]
+        dataset = [(np.array([x] * input_dim), np.array([2.0 * x + 1.0] * output_dim)) for x in [-1.0, 0.0, 1.0]]
 
         def _make_network():
-            return SequentialNetwork([
-                LinearMorphism(name="linear_1", input_dim=input_dim, output_dim=4),
-                ActivationMorphism(name="relu_1", activation="relu"),
-                LinearMorphism(name="linear_2", input_dim=4, output_dim=output_dim),
-            ])
+            return SequentialNetwork(
+                [
+                    LinearMorphism(name="linear_1", input_dim=input_dim, output_dim=4),
+                    ActivationMorphism(name="relu_1", activation="relu"),
+                    LinearMorphism(name="linear_2", input_dim=4, output_dim=output_dim),
+                ]
+            )
 
         source = _make_network()
         target = _make_network()
@@ -980,9 +978,7 @@ def analyze_ml_model(
         F = MatrixFunctor(np.eye(dim))
         G = MatrixFunctor(np.eye(dim))
         eta = NaturalTransformation({dim: np.eye(dim)})
-        valid, reason = is_natural_transformation(
-            F, G, eta, test_morphisms=[(dim, dim, np.eye(dim))]
-        )
+        valid, reason = is_natural_transformation(F, G, eta, test_morphisms=[(dim, dim, np.eye(dim))])
 
         report["transfer_learning"] = {
             "natural_transformation_valid": valid,

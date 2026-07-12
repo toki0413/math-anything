@@ -58,7 +58,4 @@ def compute_curvature_map(
     omitted, every morphism is treated as lossless and all curvatures are zero.
     """
     weights = loss_weights or {}
-    return {
-        loop.canonical_form: round(discrete_curvature(loop, weights), 4)
-        for loop in loops
-    }
+    return {loop.canonical_form: round(discrete_curvature(loop, weights), 4) for loop in loops}

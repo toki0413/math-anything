@@ -132,7 +132,6 @@ class LossMorphism(Morphism):
         return float(np.mean(np.abs(y_pred - y_true)))
 
 
-
 class SequentialNetwork:
     """A tiny sequential MLP built from LinearMorphism and ActivationMorphism.
 

@@ -20,9 +20,7 @@ class HomotopyWitness:
     confidence: float
 
 
-def cumulative_invariants_along_path(
-    category_engine: CategoryEngine, path: list[str]
-) -> dict[str, list[str]]:
+def cumulative_invariants_along_path(category_engine: CategoryEngine, path: list[str]) -> dict[str, list[str]]:
     """Accumulate kept and lost invariants along an explicit morphism path.
 
     Returns a JSON-serializable dict mapping ``"kept"`` and ``"lost"`` to sorted

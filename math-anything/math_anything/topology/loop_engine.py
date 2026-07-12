@@ -95,19 +95,14 @@ class LoopEngine:
             )
         return loops
 
-    def _order_cycle(
-        self, graph: nx.Graph, cycle_nodes: list[str]
-    ) -> list[str] | None:
+    def _order_cycle(self, graph: nx.Graph, cycle_nodes: list[str]) -> list[str] | None:
         """Return a closed walk ordering of nodes in an undirected cycle."""
         start = sorted(cycle_nodes)[0]
         ordered = [start]
         visited = {start}
         current = start
         while len(visited) < len(cycle_nodes):
-            neighbors = sorted(
-                n for n in graph.neighbors(current)
-                if n in cycle_nodes and n not in visited
-            )
+            neighbors = sorted(n for n in graph.neighbors(current) if n in cycle_nodes and n not in visited)
             if not neighbors:
                 return None
             nxt = neighbors[0]
@@ -120,9 +115,7 @@ class LoopEngine:
         ordered.append(start)
         return ordered
 
-    def _edges_for_orientation(
-        self, graph: nx.MultiDiGraph | nx.MultiGraph, ordered: list[str]
-    ) -> list[str] | None:
+    def _edges_for_orientation(self, graph: nx.MultiDiGraph | nx.MultiGraph, ordered: list[str]) -> list[str] | None:
         """Return edge keys if every consecutive pair has an edge in the given order."""
         edges: list[str] = []
         for u, v in zip(ordered, ordered[1:]):

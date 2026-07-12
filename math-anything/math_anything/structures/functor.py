@@ -43,9 +43,7 @@ class MatrixFunctor(Functor):
     def map_morphism(self, morphism: Any) -> np.ndarray:
         M = np.asarray(morphism, dtype=float)
         if M.shape != (self._dim, self._dim):
-            raise ValueError(
-                f"Morphism must be a {self._dim}x{self._dim} matrix, got {M.shape}"
-            )
+            raise ValueError(f"Morphism must be a {self._dim}x{self._dim} matrix, got {M.shape}")
         return self.matrix @ M @ self._inv
 
 

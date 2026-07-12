@@ -30,12 +30,7 @@ def _escape_label_mermaid(label: str) -> str:
     escape characters that would otherwise terminate the quoted region or be
     interpreted as syntax.
     """
-    escaped = (
-        label.replace("\\", "\\\\")
-        .replace('"', '\\"')
-        .replace("]", "\\]")
-        .replace("|", "\\|")
-    )
+    escaped = label.replace("\\", "\\\\").replace('"', '\\"').replace("]", "\\]").replace("|", "\\|")
     return f'"{escaped}"'
 
 
@@ -95,18 +90,14 @@ def to_graphviz(
         lines.append(f"    {src} -> {dst} [label={name}];")
 
     if loops:
-        lines.append('    subgraph cluster_loops {')
+        lines.append("    subgraph cluster_loops {")
         lines.append('        label="Loops";')
         for loop in loops:
             label = loop.canonical_form
             curvature = curvature_map.get(loop.canonical_form, 0.0)
             node_id = _escape_id(f"loop_{label}")
-            node_label = _escape_label_graphviz(
-                f"{label}\ncurvature={curvature:.3f}"
-            )
-            lines.append(
-                f"        {node_id} [shape=note, label={node_label}];"
-            )
+            node_label = _escape_label_graphviz(f"{label}\ncurvature={curvature:.3f}")
+            lines.append(f"        {node_id} [shape=note, label={node_label}];")
         lines.append("    }")
 
     lines.append("}")
