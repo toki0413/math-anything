@@ -62,19 +62,19 @@ class CategoryEngine:
         m = self.morphisms.get(morphism_name)
         if m is None:
             return ""
-        return m.kernel_description
+        return m.kernel_description  # type: ignore[no-any-return]
 
     def what_is_lost(self, morphism_name: str) -> list[str]:
         m = self.morphisms.get(morphism_name)
         if m is None:
             return []
-        return m.invariants_lost
+        return m.invariants_lost  # type: ignore[no-any-return]
 
     def what_is_kept(self, morphism_name: str) -> list[str]:
         m = self.morphisms.get(morphism_name)
         if m is None:
             return []
-        return m.invariants_kept
+        return m.invariants_kept  # type: ignore[no-any-return]
 
     def get_morphism_chain(self, from_structure: str, to_structure: str) -> list[dict]:
         graph: dict[str, list[tuple[str, str]]] = {}
@@ -82,7 +82,7 @@ class CategoryEngine:
             graph.setdefault(link.source_structure, []).append((link.target_structure, link.morphism.name))
         from collections import deque
 
-        queue = deque([(from_structure, [])])
+        queue = deque([(from_structure, [])])  # type: ignore[var-annotated]
         visited = {from_structure}
         while queue:
             current, path = queue.popleft()

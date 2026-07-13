@@ -115,7 +115,7 @@ class LammpsCheckEngine(CheckEngine):
                     rule="No integrator/fix detected",
                     severity="error",
                     message="No NVE, NVT, NPT, or equivalent fix found.",
-                    suggestion="Add 'fix ... nvt' or 'fix ... nve' to perform dynamics. Without a fix, atoms will not move.",
+                    suggestion="Add 'fix ... nvt' or 'fix ... nve' to perform dynamics. Without a fix, atoms will not move.",  # noqa: E501
                 )
             )
 
@@ -135,7 +135,7 @@ class LammpsCheckEngine(CheckEngine):
                     rule="Large timestep with barostat",
                     severity="warning",
                     message=f"NPT with timestep = {timestep} fs may cause cell fluctuations to become unstable.",
-                    suggestion="Barostats are sensitive to timestep. Use <= 1 fs for NPT, especially with anisotropic cells.",
+                    suggestion="Barostats are sensitive to timestep. Use <= 1 fs for NPT, especially with anisotropic cells.",  # noqa: E501
                 )
             )
 

@@ -29,7 +29,7 @@ class EnhancedPSRNConfig(PSRNConfig):
 
     # 分层剪枝配置
     pruning_strategy: PruningStrategy = PruningStrategy.PROGRESSIVE
-    pruning_schedule: List[float] = None  # 每层的保留比例
+    pruning_schedule: List[float] = None  # type: ignore[assignment]  # 每层的保留比例
 
     # 自适应常量优化
     use_adaptive_constants: bool = True
@@ -74,7 +74,7 @@ class AdaptiveConstantOptimizer:
         placeholders = re.findall(r"\{c\d+\}", expr_template)
         if not placeholders:
             # 没有可优化的常量
-            return expr_template, self._evaluate_expr(expr_template, X, y, variable_names)
+            return expr_template, self._evaluate_expr(expr_template, X, y, variable_names)  # type: ignore[return-value]
 
         # 初始化常量值
         constants = {p: 1.0 for p in placeholders}
@@ -146,7 +146,7 @@ class AdaptiveConstantOptimizer:
         from ..utils.safe_eval import SafeEvalError, safe_eval
 
         try:
-            return safe_eval(expr, local_vars)
+            return safe_eval(expr, local_vars)  # type: ignore[no-any-return]
         except SafeEvalError as e:
             raise ValueError(str(e)) from e
 
@@ -175,7 +175,7 @@ class EnhancedPSRN(PSRN):
                 max_iterations=self.enhanced_config.constant_iterations,
             )
         else:
-            self.constant_optimizer = None
+            self.constant_optimizer = None  # type: ignore[assignment]
 
         # 存储每层最优候选
         self.layer_best: List[List[Tuple[str, float]]] = []

@@ -64,7 +64,7 @@ class DFTDomain(Domain):
         if field.coupling_matrix is not None:
             result["coupling_matrix_shape"] = field.coupling_matrix.shape
         if field.symplectic_matrix is not None:
-            result["symplectic"] = True
+            result["symplectic"] = True  # type: ignore[assignment]
         return result
 
     def build_morphism_chain(self) -> list[dict[str, Any]]:

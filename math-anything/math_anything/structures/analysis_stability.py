@@ -174,15 +174,15 @@ class VonNeumannStability(StabilityCondition):
             theta: 相位角 θ = k*dx
         """
         if scheme == "ftcs":
-            return 1.0 - 1j * cfl * np.sin(theta)
+            return 1.0 - 1j * cfl * np.sin(theta)  # type: ignore[no-any-return]
         elif scheme == "lax_friedrichs":
-            return np.cos(theta) - 1j * cfl * np.sin(theta)
+            return np.cos(theta) - 1j * cfl * np.sin(theta)  # type: ignore[no-any-return]
         elif scheme == "lax_wendroff":
-            return 1 - cfl**2 * (1 - np.cos(theta)) - 1j * cfl * np.sin(theta)
+            return 1 - cfl**2 * (1 - np.cos(theta)) - 1j * cfl * np.sin(theta)  # type: ignore[no-any-return]
         elif scheme == "upwind":
-            return 1 - cfl * (1 - np.exp(-1j * theta))
+            return 1 - cfl * (1 - np.exp(-1j * theta))  # type: ignore[no-any-return]
         elif scheme == "crank_nicolson":
-            return (1 - 0.5j * cfl * np.sin(theta)) / (1 + 0.5j * cfl * np.sin(theta))
+            return (1 - 0.5j * cfl * np.sin(theta)) / (1 + 0.5j * cfl * np.sin(theta))  # type: ignore[no-any-return]
         return 1.0
 
     def is_stable(self, scheme: str, cfl: float, n_angles: int = 100) -> bool:
@@ -440,7 +440,7 @@ class HyperbolicCFL(CFL_Condition):
         invariants.append(
             StructuralInvariant(
                 name="cfl_hyperbolic",
-                expression=f"Δt ≤ Δx / {self.max_characteristic_speed} (information propagation limited by characteristics)",
+                expression=f"Δt ≤ Δx / {self.max_characteristic_speed} (information propagation limited by characteristics)",  # noqa: E501
                 theorem="CFL for hyperbolic conservation laws",
                 affected_quantities=["timestep", "grid_spacing", "characteristic_speed"],
             ),

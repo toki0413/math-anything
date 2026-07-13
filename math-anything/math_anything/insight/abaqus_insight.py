@@ -122,7 +122,7 @@ class AbaqusInsightEngine(InsightEngine):
                     f"  - Shear modulus  mu = E / (2(1+nu)) = {mu:.2f} MPa\n"
                     f"  - First Lame parameter lambda = E*nu/((1+nu)(1-2nu)) = {lam:.2f} MPa\n"
                     f"  - Bulk modulus K = E / (3(1-2nu)) = {K:.2f} MPa\n\n"
-                    f"The stiffness tensor is C_ijkl = lambda delta_ij delta_kl + mu (delta_ik delta_jl + delta_il delta_jk). "
+                    f"The stiffness tensor is C_ijkl = lambda delta_ij delta_kl + mu (delta_ik delta_jl + delta_il delta_jk). "  # noqa: E501
                     f"Positive definiteness requires E > 0 and -1 < nu < 0.5."
                 )
                 if rho is not None:
@@ -156,7 +156,7 @@ class AbaqusInsightEngine(InsightEngine):
             "C3D8": (
                 "8-node hexahedron (trilinear). Uses tri-linear Lagrange shape functions. "
                 "Full integration (2x2x2 Gauss) or reduced integration (1 GP) available. "
-                "Prone to shear locking in bending; use incompatible mode (C3D8I) or reduced integration (C3D8R) for bending-dominated problems."
+                "Prone to shear locking in bending; use incompatible mode (C3D8I) or reduced integration (C3D8R) for bending-dominated problems."  # noqa: E501
             ),
             "C3D8R": (
                 "8-node hexahedron with reduced integration (1 Gauss point). "

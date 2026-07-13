@@ -361,7 +361,7 @@ class HoTTTypeChecker:
             return HLevel.N_GROUPOID  # Universe 是 ∞-群胚
 
         if typ.kind == TermKind.VAR:
-            name = typ.name
+            name = typ.name  # type: ignore[attr-defined]
             # 检查是否是已注册的 HIT
             hit = self.hit_types.get(name)
             if hit:
@@ -862,7 +862,7 @@ class UnivalenceVerifier:
             "type_A": type_A_name,
             "type_B": type_B_name,
             "univalence_assertion": f"{type_A_name} =_U {type_B_name}",
-            "consequence": f"Any property P of {type_A_name} transfers to {type_B_name} via transport along {equiv_name}",
+            "consequence": f"Any property P of {type_A_name} transfers to {type_B_name} via transport along {equiv_name}",  # noqa: E501
             "computational_content": f"transport^{equiv_name} : P({type_A_name}) → P({type_B_name})",
             "verified_properties": {
                 "section": equiv["section_holds"],

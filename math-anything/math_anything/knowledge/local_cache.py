@@ -56,9 +56,9 @@ class LocalKnowledgeCache:
             default_ttl: Default TTL in seconds
         """
         if cache_dir is None:
-            cache_dir = Path.home() / ".math_anything" / "cache"
+            cache_dir = Path.home() / ".math_anything" / "cache"  # type: ignore[assignment]
 
-        self.cache_dir = Path(cache_dir)
+        self.cache_dir = Path(cache_dir)  # type: ignore[arg-type]
         self.cache_dir.mkdir(parents=True, exist_ok=True)
 
         self.max_size_bytes = max_size_mb * 1024 * 1024
@@ -251,7 +251,7 @@ class LocalKnowledgeCache:
         if self.metadata_file.exists():
             try:
                 with open(self.metadata_file, "r", encoding="utf-8") as f:
-                    return json.load(f)
+                    return json.load(f)  # type: ignore[no-any-return]
             except (json.JSONDecodeError, OSError, ValueError):
                 logger.debug("Failed to load cache metadata, starting fresh")
 

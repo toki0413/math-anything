@@ -239,7 +239,7 @@ class SymbolLayer:
             dims[layer] = next_dim
             current = next_dim
 
-        return dims
+        return dims  # type: ignore[return-value]
 
     def build_duplicate_mask(self, expressions: List[str]) -> Tuple[List[int], List[str]]:
         """构建重复表达式掩码，返回唯一表达式的索引和列表.

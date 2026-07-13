@@ -178,7 +178,7 @@ class LBMBoundaryExtractor:
         """Detect boundary types from flag field."""
         nx, ny, nz = flag_field.shape
 
-        boundaries = {
+        boundaries = {  # type: ignore[var-annotated]
             "wall": [],
             "inlet": [],
             "outlet": [],

@@ -26,12 +26,12 @@ class MDInsightTemplate(InsightTemplate):
 
     def _register_default_sections(self) -> None:
         MDInsightTemplate._INSIGHT_SECTIONS = [
-            _md_problem_overview,
-            _md_ensemble,
-            _md_potential,
-            _md_timestep,
-            _md_boundary,
-            _md_equilibration,
+            _md_problem_overview,  # type: ignore[list-item]
+            _md_ensemble,  # type: ignore[list-item]
+            _md_potential,  # type: ignore[list-item]
+            _md_timestep,  # type: ignore[list-item]
+            _md_boundary,  # type: ignore[list-item]
+            _md_equilibration,  # type: ignore[list-item]
         ]
 
 
@@ -257,12 +257,12 @@ class MDDraftTemplate(DraftTemplate):
 
     def _register_default_sections(self) -> None:
         MDDraftTemplate._DRAFT_SECTIONS = [
-            _md_draft_theory,
-            _md_draft_software,
-            _md_draft_potential,
-            _md_draft_ensemble,
-            _md_draft_protocol,
-            _md_draft_boundary,
+            _md_draft_theory,  # type: ignore[list-item]
+            _md_draft_software,  # type: ignore[list-item]
+            _md_draft_potential,  # type: ignore[list-item]
+            _md_draft_ensemble,  # type: ignore[list-item]
+            _md_draft_protocol,  # type: ignore[list-item]
+            _md_draft_boundary,  # type: ignore[list-item]
         ]
 
 
@@ -341,11 +341,11 @@ class MDCheckTemplate(CheckTemplate):
 
     def _register_default_sections(self) -> None:
         MDCheckTemplate._CHECK_SECTIONS = [
-            _md_check_timestep,
-            _md_check_ensemble,
-            _md_check_boundary,
-            _md_check_potential,
-            _md_check_run_length,
+            _md_check_timestep,  # type: ignore[list-item]
+            _md_check_ensemble,  # type: ignore[list-item]
+            _md_check_boundary,  # type: ignore[list-item]
+            _md_check_potential,  # type: ignore[list-item]
+            _md_check_run_length,  # type: ignore[list-item]
         ]
 
 

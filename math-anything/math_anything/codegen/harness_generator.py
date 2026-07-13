@@ -121,8 +121,8 @@ class HarnessAutoGenerator:
         source_dir: str,
         engine_name: str,
         engine_version: str = "1.0.0",
-        file_patterns: List[str] = None,
-        entry_point_hints: List[str] = None,
+        file_patterns: List[str] = None,  # type: ignore[assignment]
+        entry_point_hints: List[str] = None,  # type: ignore[assignment]
     ) -> HarnessTemplate:
         """Generate Harness from software source code.
 
@@ -310,7 +310,7 @@ class HarnessAutoGenerator:
             {"name": "Overall", "value": confidence.get("overall", 0)},
         ]
 
-        return template.render(
+        return template.render(  # type: ignore[no-any-return]
             engine_name=engine_name,
             engine_version=engine_version,
             source_path=analysis.get("source_path", "unknown"),

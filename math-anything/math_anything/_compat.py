@@ -15,7 +15,7 @@ except ImportError:  # pragma: no cover
         """字符串枚举，与 Python 3.11+ 的 enum.StrEnum 行为兼容."""
 
         def __str__(self) -> str:
-            return self.value
+            return self.value  # type: ignore[no-any-return]
 
         @staticmethod
         def _generate_next_value_(name, start, count, last_values):

@@ -167,7 +167,7 @@ class PSRNSymbolicRegression(ImprovedSymbolicRegression):
         try:
             from ..utils.safe_eval import safe_eval
 
-            return safe_eval(expr, context)
+            return safe_eval(expr, context)  # type: ignore[no-any-return]
         except Exception:
             return 0.0
 
@@ -226,8 +226,8 @@ class EnhancedPSRNSymbolicRegression(PSRNSymbolicRegression):
             max_layer_size=self.max_layer_size,
         )
 
-        self._enhanced_engine = ConservativeEnhancedPSRN(config)
-        best_expr, best_mse, top_k = self._enhanced_engine.fit(X, y, variable_names)
+        self._enhanced_engine = ConservativeEnhancedPSRN(config)  # type: ignore[assignment]
+        best_expr, best_mse, top_k = self._enhanced_engine.fit(X, y, variable_names)  # type: ignore[attr-defined]
 
         self._best_expr = best_expr
         self.best_fitness_ = best_mse

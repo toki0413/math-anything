@@ -315,7 +315,7 @@ class MathDiff:
                     {
                         "parameter": param,
                         "first": c1.expression,
-                        "second": None,
+                        "second": None,  # type: ignore[dict-item]
                         "type": "only_in_first",
                     }
                 )
@@ -323,8 +323,8 @@ class MathDiff:
                 differences.append(
                     {
                         "parameter": param,
-                        "first": None,
-                        "second": c2.expression,
+                        "first": None,  # type: ignore[dict-item]
+                        "second": c2.expression,  # type: ignore[union-attr]
                         "type": "only_in_second",
                     }
                 )
@@ -353,8 +353,8 @@ class MathDiff:
         symbols1 = schema1.raw_symbols if hasattr(schema1, "raw_symbols") else {}
         symbols2 = schema2.raw_symbols if hasattr(schema2, "raw_symbols") else {}
 
-        params1 = set()
-        params2 = set()
+        params1 = set()  # type: ignore[var-annotated]
+        params2 = set()  # type: ignore[var-annotated]
 
         # Extract parameter names
         if isinstance(symbols1, dict):
@@ -390,7 +390,7 @@ class MathDiff:
                             "second": p2,
                             "meaning": "similar_name",
                             "confidence": "medium",
-                            "similarity": round(similarity, 2),
+                            "similarity": round(similarity, 2),  # type: ignore[dict-item]
                         }
                     )
 
@@ -500,11 +500,11 @@ class MathDiff:
             parts.append(f"High similarity ({similarity_pct:.0f}%): These models share most mathematical structures.")
         elif similarity_pct > 50:
             parts.append(
-                f"Moderate similarity ({similarity_pct:.0f}%): These models have some common elements but differ in important ways."
+                f"Moderate similarity ({similarity_pct:.0f}%): These models have some common elements but differ in important ways."  # noqa: E501
             )
         else:
             parts.append(
-                f"Low similarity ({similarity_pct:.0f}%): These models represent fundamentally different mathematical approaches."
+                f"Low similarity ({similarity_pct:.0f}%): These models represent fundamentally different mathematical approaches."  # noqa: E501
             )
 
         # Add specifics
@@ -557,7 +557,7 @@ class MathDiff:
             mapped = False
             for (src, tgt), meaning in cls.CROSS_ENGINE_MAPPINGS.items():
                 if src == param_name and target_engine in tgt.lower():
-                    suggestions["mappable_parameters"].append(
+                    suggestions["mappable_parameters"].append(  # type: ignore[attr-defined]
                         {
                             "source": param_name,
                             "target": tgt,
@@ -569,7 +569,7 @@ class MathDiff:
                     break
 
             if not mapped:
-                suggestions["unmappable_parameters"].append(param_name)
+                suggestions["unmappable_parameters"].append(param_name)  # type: ignore[attr-defined]
 
         return suggestions
 

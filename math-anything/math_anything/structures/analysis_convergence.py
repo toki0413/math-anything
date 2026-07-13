@@ -99,13 +99,13 @@ class APrioriEstimate(ErrorEstimate):
         )
         return invariants
 
-    def fem_h1_estimate(self, h: float, p: int = None, u_regularity: int = None) -> float:
+    def fem_h1_estimate(self, h: float, p: int = None, u_regularity: int = None) -> float:  # type: ignore[assignment]
         """FEM H1 误差: C * h^min(p, u_regularity) * |u|_{H^{min(p,u_regularity)+1}}."""
         p = p if p is not None else self.polynomial_degree
         u_reg = u_regularity if u_regularity is not None else self.regularity_index
         return h ** min(p, u_reg)
 
-    def fem_l2_estimate(self, h: float, p: int = None, u_regularity: int = None) -> float:
+    def fem_l2_estimate(self, h: float, p: int = None, u_regularity: int = None) -> float:  # type: ignore[assignment]
         """FEM L2 误差 (Aubin-Nitsche): C * h^{min(p, u_regularity) + 1}."""
         p = p if p is not None else self.polynomial_degree
         u_reg = u_regularity if u_regularity is not None else self.regularity_index
@@ -164,7 +164,7 @@ class APosterioriEstimate(ErrorEstimate):
         self, residual_per_element: np.ndarray, mesh_size_per_element: np.ndarray
     ) -> np.ndarray:
         """计算单元误差指示子 η_K = h_K * ||R_K||."""
-        return mesh_size_per_element * residual_per_element
+        return mesh_size_per_element * residual_per_element  # type: ignore[no-any-return]
 
 
 @dataclass
@@ -251,7 +251,7 @@ class ConvergenceOrder(NumericalAnalysis):
         p, _ = np.polyfit(log_h, log_e, 1)
         return float(p)
 
-    def from_solutions(self, u_h: np.ndarray, u_2h: np.ndarray, u_4h: np.ndarray = None) -> float:
+    def from_solutions(self, u_h: np.ndarray, u_2h: np.ndarray, u_4h: np.ndarray = None) -> float:  # type: ignore[assignment]
         """用两个/三个网格层级的解估计收敛阶."""
         e_h = np.linalg.norm(u_h - u_2h)
         if u_4h is not None:
@@ -340,7 +340,7 @@ class ExponentialConvergence(ConvergenceOrder):
 
     def error_bound(self, n_dof: int, constant: float = 1.0) -> float:
         """计算指数收敛误差上界 C * exp(-α * N^β)."""
-        return constant * np.exp(-self.exponential_rate * n_dof**self.dof_exponent)
+        return constant * np.exp(-self.exponential_rate * n_dof**self.dof_exponent)  # type: ignore[no-any-return]
 
     def estimate_rate_from_errors(self, errors: list[float], dof_counts: list[int]) -> float:
         """从误差和自由度数估计指数收敛率 α."""
@@ -388,7 +388,7 @@ class SublinearConvergence(ConvergenceOrder):
         """计算次线性收敛误差上界 C / |log(h)|^β."""
         if h <= 0 or h >= 1:
             return float("inf")
-        return constant / abs(np.log(h)) ** self.log_exponent
+        return constant / abs(np.log(h)) ** self.log_exponent  # type: ignore[no-any-return]
 
     def estimate_log_exponent(self, errors: list[float], mesh_sizes: list[float]) -> float:
         """从数值实验估计对数指数 β."""

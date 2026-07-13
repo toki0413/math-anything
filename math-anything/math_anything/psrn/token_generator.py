@@ -269,7 +269,7 @@ class GPTokenGenerator(TokenGenerator):
         if sr.best_tree_ is None:
             return []
 
-        subtrees = []
+        subtrees = []  # type: ignore[var-annotated]
         self._collect_subtrees(sr.best_tree_, subtrees)
 
         # 去重并选择有代表性的子树

@@ -144,7 +144,7 @@ class LayerPruner:
                 stability_score = 0
             else:
                 val_range = np.max(val) - np.min(val)
-                stability_score = 1.0 if val_range > 1e-10 else 0.3
+                stability_score = 1.0 if val_range > 1e-10 else 0.3  # type: ignore[assignment]
 
             # 综合分数
             scores[j] = 0.5 * mse_score + 0.3 * corr_score + 0.2 * stability_score
@@ -158,7 +158,7 @@ class LayerPruner:
 
         # 获取 Top-K 索引
         top_indices = np.argsort(scores)[-k:][::-1]
-        return top_indices.tolist()
+        return top_indices.tolist()  # type: ignore[no-any-return]
 
     def _adaptive_prune(
         self,
@@ -187,10 +187,10 @@ class LayerPruner:
         if n_above < min_keep:
             # 放宽到 Top-K
             k = max(min_keep, int(len(scores) * self.config.initial_keep_ratio))
-            return np.argsort(scores)[-k:][::-1].tolist()
+            return np.argsort(scores)[-k:][::-1].tolist()  # type: ignore[no-any-return]
 
         # 保留高于阈值的
-        return np.where(scores >= threshold)[0].tolist()
+        return np.where(scores >= threshold)[0].tolist()  # type: ignore[no-any-return]
 
     def _diversity_prune(
         self,
@@ -273,7 +273,7 @@ class LayerPruner:
                     if len(residuals) > 0:
                         ss_tot = np.sum((y - np.mean(y)) ** 2)
                         r_squared = 1 - residuals[0] / ss_tot if ss_tot > 0 else 0
-                        linear_potential = max(0, r_squared) * 0.1
+                        linear_potential = max(0, r_squared) * 0.1  # type: ignore[assignment]
                 except (ValueError, np.linalg.LinAlgError) as e:
                     logger.debug(f"Linear potential estimation failed: {e}")
 
@@ -281,7 +281,7 @@ class LayerPruner:
 
         # 按潜力选择
         k = max(10, int(n * self.config.initial_keep_ratio))
-        return np.argsort(potentials)[-k:][::-1].tolist()
+        return np.argsort(potentials)[-k:][::-1].tolist()  # type: ignore[no-any-return]
 
     def _progressive_prune(self, scores: np.ndarray, layer_idx: int) -> List[int]:
         """渐进收紧剪枝.
@@ -292,7 +292,7 @@ class LayerPruner:
         keep_ratio = max(self.config.min_keep_ratio, self.config.initial_keep_ratio * (0.5**layer_idx))
 
         k = max(10, int(len(scores) * keep_ratio))
-        return np.argsort(scores)[-k:][::-1].tolist()
+        return np.argsort(scores)[-k:][::-1].tolist()  # type: ignore[no-any-return]
 
     def _estimate_complexity(self, expr: str) -> int:
         """估计表达式复杂度."""

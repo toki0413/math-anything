@@ -113,7 +113,7 @@ class CommandRegistry:
     @classmethod
     def get_by_category(cls) -> Dict[str, List[CommandInfo]]:
         """Group commands by category."""
-        by_category = {}
+        by_category = {}  # type: ignore[var-annotated]
         for cmd in cls.COMMANDS.values():
             by_category.setdefault(cmd.category, []).append(cmd)
         return by_category

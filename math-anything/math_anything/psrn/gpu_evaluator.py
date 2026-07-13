@@ -26,7 +26,7 @@ def has_gpu_support() -> bool:
     try:
         import numba.cuda
 
-        return numba.cuda.is_available()
+        return numba.cuda.is_available()  # type: ignore[no-any-return]
     except Exception:
         pass
 
@@ -130,22 +130,22 @@ class GPUEvaluator:
         cp = self._cupy
 
         # 将数据转移到 GPU
-        X_gpu = cp.asarray(X)
+        X_gpu = cp.asarray(X)  # type: ignore[union-attr]
         var_dict = {name: X_gpu[:, i] for i, name in enumerate(variable_names)}
 
         n_samples = X.shape[0]
         n_exprs = len(expressions)
-        results = cp.zeros((n_samples, n_exprs))
+        results = cp.zeros((n_samples, n_exprs))  # type: ignore[union-attr]
 
         for expr_idx, expr in enumerate(expressions):
             try:
                 result = self._safe_eval_gpu(expr, var_dict, cp)
                 results[:, expr_idx] = result
             except (ValueError, TypeError, ZeroDivisionError, OverflowError, RuntimeError):
-                results[:, expr_idx] = cp.nan
+                results[:, expr_idx] = cp.nan  # type: ignore[union-attr]
 
         # 将结果转移回 CPU
-        return cp.asnumpy(results)
+        return cp.asnumpy(results)  # type: ignore[no-any-return, union-attr]
 
     def _safe_eval_gpu(self, expr: str, var_dict: Dict, cp):
         """GPU 安全评估.
@@ -197,5 +197,5 @@ class GPUEvaluator:
         """返回缓存统计信息."""
         return {
             "cached_expressions": len(self._cache),
-            "cache_size_mb": sum(v.nbytes for v in self._cache.values()) / (1024 * 1024),
+            "cache_size_mb": sum(v.nbytes for v in self._cache.values()) / (1024 * 1024),  # type: ignore[dict-item]
         }

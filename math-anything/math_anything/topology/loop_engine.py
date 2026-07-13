@@ -82,7 +82,7 @@ class LoopEngine:
                 edges, is_directed = backward, True
                 normalized = self._normalize_cycle(list(reversed(ordered)))
             else:
-                edges, is_directed = self._edges_for_orientation(undirected, ordered), False
+                edges, is_directed = self._edges_for_orientation(undirected, ordered), False  # type: ignore[assignment]
                 normalized = self._normalize_cycle(ordered)
 
             loops.append(

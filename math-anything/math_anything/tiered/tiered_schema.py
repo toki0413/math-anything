@@ -138,7 +138,7 @@ class TieredAnalysisResult:
         if self.latent_info:
             result["latent_info"] = self.latent_info
         if self.ml_recommendations:
-            result["ml_recommendations"] = self.ml_recommendations
+            result["ml_recommendations"] = self.ml_recommendations  # type: ignore[assignment]
         if self.validation:
             result["validation"] = self.validation
 

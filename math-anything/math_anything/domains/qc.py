@@ -61,7 +61,7 @@ class QCDomain(Domain):
         if field.coupling_matrix is not None:
             result["coupling_matrix_shape"] = field.coupling_matrix.shape
         if field.eigenvalues is not None:
-            result["eigenvalues"] = [float(e) for e in field.eigenvalues[:6]]
+            result["eigenvalues"] = [float(e) for e in field.eigenvalues[:6]]  # type: ignore[misc]
 
         return result
 

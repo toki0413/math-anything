@@ -181,7 +181,7 @@ class EMLConstantEngine:
 
             # 检查精度
             if abs(node.value - target) < tolerance * (1.0 + abs(target)):
-                return node.repr
+                return node.repr  # type: ignore[no-any-return]
 
             if node.depth >= max_depth:
                 continue

@@ -118,7 +118,7 @@ class HybridPSRNGP:
         # 用 PSRN 候选初始化种群
         if self.config.use_psrn_seeding and self.psrn_candidates:
             initial_population = self._build_initial_population(self.psrn_candidates, X, y, variable_names)
-            self.gp.population = initial_population
+            self.gp.population = initial_population  # type: ignore[attr-defined]
 
         # 运行 GP
         self.best_tree = self.gp.fit(X, y, variable_names)
@@ -194,7 +194,7 @@ class HybridPSRNGP:
         variable_names: Optional[List[str]],
     ) -> List[Node]:
         """用 PSRN 候选构建 GP 初始种群."""
-        from ..utils import string_to_tree
+        from ..utils import string_to_tree  # type: ignore[attr-defined]
 
         population = []
 
@@ -243,22 +243,22 @@ class HybridPSRNGP:
         if max_depth <= 0:
             # 叶子节点
             if random.random() < 0.5:
-                return Node("const", value=random.uniform(-3, 3))
+                return Node("const", value=random.uniform(-3, 3))  # type: ignore[arg-type]
             else:
-                return Node("var", name=random.choice(variable_names))
+                return Node("var", name=random.choice(variable_names))  # type: ignore[arg-type]
 
         # 内部节点
         if random.random() < 0.3:
             # 一元算子
             op = random.choice(["sin", "cos", "exp", "log", "neg"])
             child = self._create_random_tree(variable_names, max_depth - 1)
-            return Node("unary", op=op, children=[child])
+            return Node("unary", op=op, children=[child])  # type: ignore[arg-type, call-arg]
         else:
             # 二元算子
             op = random.choice(["+", "-", "*", "/", "eml"])
             left = self._create_random_tree(variable_names, max_depth - 1)
             right = self._create_random_tree(variable_names, max_depth - 1)
-            return Node("binary", op=op, children=[left, right])
+            return Node("binary", op=op, children=[left, right])  # type: ignore[arg-type, call-arg]
 
     def _mutate_tree(self, tree: Node, variable_names: List[str]) -> Node:
         """简单变异."""
@@ -283,15 +283,15 @@ class HybridPSRNGP:
             if node.node_type == "unary":
                 node.op = random.choice(["sin", "cos", "exp", "log", "neg"])
             else:
-                node.op = random.choice(["+", "-", "*", "/", "eml"])
+                node.op = random.choice(["+", "-", "*", "/", "eml"])  # type: ignore[attr-defined]
 
         return mutated
 
     def _get_all_nodes(self, tree: Node) -> List[Node]:
         """获取树中所有节点."""
         nodes = [tree]
-        if tree.children:
-            for child in tree.children:
+        if tree.children:  # type: ignore[attr-defined]
+            for child in tree.children:  # type: ignore[attr-defined]
                 nodes.extend(self._get_all_nodes(child))
         return nodes
 
@@ -300,9 +300,9 @@ class HybridPSRNGP:
         if self.best_tree is None:
             raise RuntimeError("Model not fitted yet")
 
-        from ..eml_v2 import evaluate_tree
+        from ..eml_v2 import evaluate_tree  # type: ignore[attr-defined]
 
-        return evaluate_tree(self.best_tree, X)
+        return evaluate_tree(self.best_tree, X)  # type: ignore[no-any-return]
 
     def get_best_expression(self) -> str:
         """获取最优表达式字符串."""

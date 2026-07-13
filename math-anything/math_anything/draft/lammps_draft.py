@@ -67,17 +67,17 @@ class LammpsDraftEngine(DraftEngine):
             body += " $$m_i d^2 r_i/dt^2 = -\\nabla_i U({r_j})$$"
         body += " where $U$ is the potential energy surface derived from the chosen interatomic potential. "
         if ensemble == "NVE":
-            body += "The simulations were conducted in the microcanonical ensemble (NVE), conserving the total Hamiltonian $H = \\sum_i p_i^2/2m_i + U$."
+            body += "The simulations were conducted in the microcanonical ensemble (NVE), conserving the total Hamiltonian $H = \\sum_i p_i^2/2m_i + U$."  # noqa: E501
         elif ensemble == "NVT":
-            body += "The canonical ensemble (NVT) was enforced using a Nose-Hoover thermostat, which introduces a fictitious dynamical variable coupling the system to a thermal reservoir at the target temperature."
+            body += "The canonical ensemble (NVT) was enforced using a Nose-Hoover thermostat, which introduces a fictitious dynamical variable coupling the system to a thermal reservoir at the target temperature."  # noqa: E501
         elif ensemble == "NPT":
-            body += "The isothermal-isobaric ensemble (NPT) was maintained using Nose-Hoover thermostat and barostat, allowing both temperature and pressure to be controlled while permitting volume fluctuations."
+            body += "The isothermal-isobaric ensemble (NPT) was maintained using Nose-Hoover thermostat and barostat, allowing both temperature and pressure to be controlled while permitting volume fluctuations."  # noqa: E501
         elif ensemble == "Langevin":
-            body += "The Langevin thermostat was used to maintain constant temperature via stochastic damping and random forces, corresponding to coupling to an implicit solvent or heat bath."
+            body += "The Langevin thermostat was used to maintain constant temperature via stochastic damping and random forces, corresponding to coupling to an implicit solvent or heat bath."  # noqa: E501
         return self._section("Simulation Method", body, fmt)
 
     def _software(self, fmt: str) -> str:
-        body = "All molecular dynamics simulations were carried out using the Large-scale Atomic/Molecular Massively Parallel Simulator (LAMMPS)."
+        body = "All molecular dynamics simulations were carried out using the Large-scale Atomic/Molecular Massively Parallel Simulator (LAMMPS)."  # noqa: E501
         return self._section("Software", body, fmt)
 
     def _potential(self, pair_style: str, fmt: str) -> str:

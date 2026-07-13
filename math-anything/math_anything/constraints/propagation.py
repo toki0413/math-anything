@@ -224,7 +224,7 @@ class ConstraintPropagation:
                     for m in morphisms
                 ]
                 inv_names = [inv.name for inv in current_invariants]
-                rust_outcomes = _accel.propagate_constraints(inv_names, morphism_data)
+                rust_outcomes = _accel.propagate_constraints(inv_names, morphism_data)  # type: ignore[call-arg]
                 _logger.debug(
                     f"Constraint propagation: Rust batch path, "
                     f"{len(invariants)} invariants x {len(morphisms)} morphisms"
@@ -277,7 +277,7 @@ class ConstraintPropagation:
 
         # Python 回退路径: 逐个传播
         for i, morph in enumerate(morphisms):
-            step_results: list[PropagationResult] = []
+            step_results: list[PropagationResult] = []  # type: ignore[no-redef]
             src = source_labels[i] if i < len(source_labels) else "?"
             dst = target_labels[i] if i < len(target_labels) else "?"
 

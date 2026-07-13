@@ -253,7 +253,7 @@ class LearnedInvariant:
                 return str(val) == threshold
 
         if dc.operator == "==":
-            return val == threshold
+            return val == threshold  # type: ignore[no-any-return]
         if dc.operator == ">":
             return float(val) > threshold
         if dc.operator == "<":

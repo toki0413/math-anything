@@ -114,7 +114,7 @@ class CompiledEvaluator:
 
         elif isinstance(node, ast.Constant):
             # 常量 (Python 3.8+)
-            val = float(node.value)
+            val = float(node.value)  # type: ignore[arg-type]
             return lambda **kwargs: val
 
         elif isinstance(node, ast.BinOp):
@@ -183,7 +183,7 @@ class CompiledEvaluator:
         # 构建 kwargs
         kwargs = {name: X[:, i] for i, name in enumerate(variable_names)}
 
-        return func(**kwargs)
+        return func(**kwargs)  # type: ignore[no-any-return]
 
     def evaluate_batch_vec(
         self,
@@ -238,7 +238,7 @@ class CompiledEvaluator:
                 func = self.compile(expr, variable_names)
                 compiled_funcs.append(func)
             except Exception:
-                compiled_funcs.append(None)
+                compiled_funcs.append(None)  # type: ignore[arg-type]
 
         # 构建变量字典（只构建一次）
         kwargs = {name: X[:, i] for i, name in enumerate(variable_names)}
@@ -343,7 +343,7 @@ class NumbaEvaluator:
         if self._has_numba:
             return self._evaluate_numba(expressions, X, variable_names)
         else:
-            return self._compiled.evaluate_batch_vec(expressions, X, variable_names)
+            return self._compiled.evaluate_batch_vec(expressions, X, variable_names)  # type: ignore[no-any-return]
 
     def _evaluate_numba(
         self,
@@ -354,7 +354,7 @@ class NumbaEvaluator:
         """Numba 加速版本."""
         # 由于 Numba 不支持编译任意 AST，
         # 这里对常见模式进行特化编译
-        return self._compiled.evaluate_batch_vec(expressions, X, variable_names)
+        return self._compiled.evaluate_batch_vec(expressions, X, variable_names)  # type: ignore[no-any-return]
 
 
 def benchmark_evaluators():

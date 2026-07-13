@@ -52,6 +52,41 @@ jobs:
           ruff format --check math_anything/
           ruff format --check tests/
 
+  type-check:
+    name: Type Check | 类型检查
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout | 检出代码
+        uses: actions/checkout@v4
+
+      - name: Set up Python | 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache pip packages | 缓存 pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-type-${{ hashFiles('math-anything/pyproject.toml') }}
+
+      - name: Cache mypy cache | 缓存 mypy 增量结果
+        uses: actions/cache@v4
+        with:
+          path: math-anything/.mypy_cache
+          key: ${{ runner.os }}-mypy-${{ hashFiles('math-anything/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-mypy-
+
+      - name: Install package and mypy | 安装依赖与类型检查工具
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e "math-anything/[dev]"
+
+      - name: Run mypy | 运行类型检查
+        working-directory: math-anything
+        run: mypy math_anything/ --show-error-codes
+
   test:
     name: Test | 测试 (${{ matrix.python-version }}, ${{ matrix.os }})
     runs-on: ${{ matrix.os }}

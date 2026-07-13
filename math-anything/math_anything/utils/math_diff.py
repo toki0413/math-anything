@@ -253,7 +253,7 @@ class MathDiffer:
         self._compare_computational_graph(old_data, new_data)
         self._compare_raw_symbols(old_data, new_data)
 
-        return self.report
+        return self.report  # type: ignore[no-any-return]
 
     def compare_files(self, old_path: str, new_path: str) -> DiffReport:
         """Compare two schema files.

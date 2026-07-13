@@ -409,7 +409,7 @@ class Metric(TensorField):
             raise ValueError("度量分量 components 未设置，无法计算逆度量")
         g = np.array(self.components, dtype=float)
         g_inv = np.linalg.inv(g)
-        return g_inv.tolist()
+        return g_inv.tolist()  # type: ignore[no-any-return]
 
     def compute_volume_element(self) -> str:
         """返回体积形式表达式 √|det(g)| dx¹ ∧ ... ∧ dx^n。"""
@@ -475,7 +475,7 @@ class Connection(AbstractMathematicalStructure):
         return [
             StructuralInvariant(
                 name="difference_is_tensor",
-                expression="∇' - ∇ is a (1,2) tensor field (Christoffel symbols are NOT tensors, but their difference is)",
+                expression="∇' - ∇ is a (1,2) tensor field (Christoffel symbols are NOT tensors, but their difference is)",  # noqa: E501
                 theorem="Difference of two affine connections is a tensor",
                 affected_quantities=["connection", "christoffel_symbols"],
             ),

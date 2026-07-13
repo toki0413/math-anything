@@ -199,7 +199,7 @@ class PSRN:
         """获取搜索空间大小统计."""
         if not self._layer_outputs:
             # 估算
-            return self.layers[0].memory_estimate(self.config.n_input_slots, self.config.n_layers)
+            return self.layers[0].memory_estimate(self.config.n_input_slots, self.config.n_layers)  # type: ignore[return-value]
 
         return {i: len(exprs) for i, exprs in enumerate(self._layer_outputs)}
 

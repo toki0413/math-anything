@@ -127,7 +127,7 @@ class FVMDiscretization(ContinuumToDiscrete):
     n_cells: int = 100000
     face_interpolation: str = "linear"
     domain_length: float = 1.0
-    flux_function: Callable = field(default=None)
+    flux_function: Callable = field(default=None)  # type: ignore[assignment]
 
     invariants_kept: list[str] = field(
         default_factory=lambda: (
@@ -310,7 +310,7 @@ class SpectralDiscretization(ContinuumToDiscrete):
         dX = X - X.T
         D = np.outer(c, 1.0 / c) / (dX + np.eye(n + 1))
         D -= np.diag(D.sum(axis=1))
-        return D
+        return D  # type: ignore[no-any-return]
 
     def fourier_diff_matrix(self, n: int) -> np.ndarray:
         """计算 Fourier 谱微分矩阵."""

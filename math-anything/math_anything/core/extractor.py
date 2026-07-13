@@ -108,7 +108,7 @@ class ExtractorEngine:
         Returns:
             True if valid, False otherwise.
         """
-        return self.validator.validate(schema.to_dict())
+        return self.validator.validate(schema.to_dict())  # type: ignore[no-any-return]
 
     def get_validation_errors(self) -> List[str]:
         """Get validation errors from last validation.
@@ -116,7 +116,7 @@ class ExtractorEngine:
         Returns:
             List of error messages.
         """
-        return self.validator.errors.copy()
+        return self.validator.errors.copy()  # type: ignore[no-any-return]
 
     def get_validation_warnings(self) -> List[str]:
         """Get validation warnings from last validation.
@@ -124,7 +124,7 @@ class ExtractorEngine:
         Returns:
             List of warning messages.
         """
-        return self.validator.warnings.copy()
+        return self.validator.warnings.copy()  # type: ignore[no-any-return]
 
     @property
     def current_harness(self) -> Optional[MathAnythingHarness]:

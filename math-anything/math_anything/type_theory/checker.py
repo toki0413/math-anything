@@ -102,26 +102,26 @@ class TypeChecker:
         kind = term.kind
 
         if kind == TermKind.VAR:
-            typ = ctx.lookup(term.name)
+            typ = ctx.lookup(term.name)  # type: ignore[attr-defined]
             if typ is None:
-                raise TypeCheckError(f"Unbound variable: {term.name}", context=ctx, term=term)
+                raise TypeCheckError(f"Unbound variable: {term.name}", context=ctx, term=term)  # type: ignore[attr-defined]
             return typ
 
         elif kind == TermKind.UNIVERSE:
             # Type_i : Type_{i+1}
-            return Universe(term.level + 1)
+            return Universe(term.level + 1)  # type: ignore[attr-defined]
 
         elif kind == TermKind.PI:
             # Π(x:A).B : Type_{max(i,j)+1}
-            a_type = self.infer(ctx, term.domain)
+            a_type = self.infer(ctx, term.domain)  # type: ignore[attr-defined]
             if a_type.kind != TermKind.UNIVERSE:
                 raise TypeCheckError(f"Pi domain must be a type, got {term_to_str(a_type)}", context=ctx, term=term)
-            i = a_type.level
-            ctx_ext = ctx.extend(term.var_name, term.domain)
-            b_type = self.infer(ctx_ext, term.codomain)
+            i = a_type.level  # type: ignore[attr-defined]
+            ctx_ext = ctx.extend(term.var_name, term.domain)  # type: ignore[attr-defined]
+            b_type = self.infer(ctx_ext, term.codomain)  # type: ignore[attr-defined]
             if b_type.kind != TermKind.UNIVERSE:
                 raise TypeCheckError(f"Pi codomain must be a type, got {term_to_str(b_type)}", context=ctx, term=term)
-            j = b_type.level
+            j = b_type.level  # type: ignore[attr-defined]
             return Universe(max(i, j) + 1)
 
         elif kind == TermKind.LAMBDA:
@@ -134,27 +134,27 @@ class TypeChecker:
 
         elif kind == TermKind.APP:
             # f(a): 先推断 f 的类型，检查是 Π-类型，再检查参数
-            func_type = self.infer(ctx, term.func)
+            func_type = self.infer(ctx, term.func)  # type: ignore[attr-defined]
             func_type = whnf(func_type)
             if func_type.kind != TermKind.PI:
                 raise TypeCheckError(f"Cannot apply non-function type {term_to_str(func_type)}", context=ctx, term=term)
-            self.check(ctx, term.arg, func_type.domain)
-            return substitute(func_type.codomain, func_type.var_name, term.arg)
+            self.check(ctx, term.arg, func_type.domain)  # type: ignore[attr-defined]
+            return substitute(func_type.codomain, func_type.var_name, term.arg)  # type: ignore[attr-defined]
 
         elif kind == TermKind.SIGMA:
-            a_type = self.infer(ctx, term.fst_type)
+            a_type = self.infer(ctx, term.fst_type)  # type: ignore[attr-defined]
             if a_type.kind != TermKind.UNIVERSE:
                 raise TypeCheckError(
                     f"Sigma first component must be a type, got {term_to_str(a_type)}", context=ctx, term=term
                 )
-            i = a_type.level
-            ctx_ext = ctx.extend(term.var_name, term.fst_type)
-            b_type = self.infer(ctx_ext, term.snd_type)
+            i = a_type.level  # type: ignore[attr-defined]
+            ctx_ext = ctx.extend(term.var_name, term.fst_type)  # type: ignore[attr-defined]
+            b_type = self.infer(ctx_ext, term.snd_type)  # type: ignore[attr-defined]
             if b_type.kind != TermKind.UNIVERSE:
                 raise TypeCheckError(
                     f"Sigma second component must be a type, got {term_to_str(b_type)}", context=ctx, term=term
                 )
-            j = b_type.level
+            j = b_type.level  # type: ignore[attr-defined]
             return Universe(max(i, j) + 1)
 
         elif kind == TermKind.PAIR:
@@ -165,49 +165,49 @@ class TypeChecker:
             )
 
         elif kind == TermKind.PROJ1:
-            pair_type = self.infer(ctx, term.pair)
+            pair_type = self.infer(ctx, term.pair)  # type: ignore[attr-defined]
             pair_type = whnf(pair_type)
             if pair_type.kind != TermKind.SIGMA:
                 raise TypeCheckError(
                     f"Cannot project from non-Sigma type {term_to_str(pair_type)}", context=ctx, term=term
                 )
-            return pair_type.fst_type
+            return pair_type.fst_type  # type: ignore[attr-defined, no-any-return]
 
         elif kind == TermKind.PROJ2:
-            pair_type = self.infer(ctx, term.pair)
+            pair_type = self.infer(ctx, term.pair)  # type: ignore[attr-defined]
             pair_type = whnf(pair_type)
             if pair_type.kind != TermKind.SIGMA:
                 raise TypeCheckError(
                     f"Cannot project from non-Sigma type {term_to_str(pair_type)}", context=ctx, term=term
                 )
-            return substitute(pair_type.snd_type, pair_type.var_name, Proj1(term.pair))
+            return substitute(pair_type.snd_type, pair_type.var_name, Proj1(term.pair))  # type: ignore[attr-defined]
 
         elif kind == TermKind.IDENTITY:
-            a_type = self.infer(ctx, term.typ)
+            a_type = self.infer(ctx, term.typ)  # type: ignore[attr-defined]
             if a_type.kind != TermKind.UNIVERSE:
                 raise TypeCheckError(
                     f"Identity type requires a type, got {term_to_str(a_type)}", context=ctx, term=term
                 )
-            self.check(ctx, term.lhs, term.typ)
-            self.check(ctx, term.rhs, term.typ)
+            self.check(ctx, term.lhs, term.typ)  # type: ignore[attr-defined]
+            self.check(ctx, term.rhs, term.typ)  # type: ignore[attr-defined]
             return TYPE0
 
         elif kind == TermKind.REFL:
-            a_type = self.infer(ctx, term.typ)
-            self.check(ctx, term.term, term.typ)
-            return Identity(term.typ, term.term, term.term)
+            a_type = self.infer(ctx, term.typ)  # type: ignore[attr-defined]
+            self.check(ctx, term.term, term.typ)  # type: ignore[attr-defined]
+            return Identity(term.typ, term.term, term.term)  # type: ignore[attr-defined]
 
         elif kind == TermKind.SYM:
-            p_type = self.infer(ctx, term.proof)
+            p_type = self.infer(ctx, term.proof)  # type: ignore[attr-defined]
             if p_type.kind != TermKind.IDENTITY:
                 raise TypeCheckError(
                     f"sym requires identity type proof, got {term_to_str(p_type)}", context=ctx, term=term
                 )
-            return Identity(p_type.typ, p_type.rhs, p_type.lhs)
+            return Identity(p_type.typ, p_type.rhs, p_type.lhs)  # type: ignore[attr-defined]
 
         elif kind == TermKind.TRANS:
-            p_type = self.infer(ctx, term.p)
-            q_type = self.infer(ctx, term.q)
+            p_type = self.infer(ctx, term.p)  # type: ignore[attr-defined]
+            q_type = self.infer(ctx, term.q)  # type: ignore[attr-defined]
             if p_type.kind != TermKind.IDENTITY:
                 raise TypeCheckError(
                     f"trans first arg requires identity proof, got {term_to_str(p_type)}", context=ctx, term=term
@@ -217,41 +217,41 @@ class TypeChecker:
                     f"trans second arg requires identity proof, got {term_to_str(q_type)}", context=ctx, term=term
                 )
             # 检查 p 的右端等于 q 的左端
-            if not self.def_eq(ctx, p_type.rhs, q_type.lhs):
+            if not self.def_eq(ctx, p_type.rhs, q_type.lhs):  # type: ignore[attr-defined]
                 raise TypeCheckError(
-                    f"trans: endpoints don't match: {term_to_str(p_type.rhs)} ≠ {term_to_str(q_type.lhs)}",
+                    f"trans: endpoints don't match: {term_to_str(p_type.rhs)} ≠ {term_to_str(q_type.lhs)}",  # type: ignore[attr-defined]
                     context=ctx,
                     term=term,
                 )
-            if not self.def_eq(ctx, p_type.typ, q_type.typ):
+            if not self.def_eq(ctx, p_type.typ, q_type.typ):  # type: ignore[attr-defined]
                 raise TypeCheckError(
-                    f"trans: base types don't match: {term_to_str(p_type.typ)} ≠ {term_to_str(q_type.typ)}",
+                    f"trans: base types don't match: {term_to_str(p_type.typ)} ≠ {term_to_str(q_type.typ)}",  # type: ignore[attr-defined]
                     context=ctx,
                     term=term,
                 )
-            return Identity(p_type.typ, p_type.lhs, q_type.rhs)
+            return Identity(p_type.typ, p_type.lhs, q_type.rhs)  # type: ignore[attr-defined]
 
         elif kind == TermKind.CONG:
-            p_type = self.infer(ctx, term.proof)
+            p_type = self.infer(ctx, term.proof)  # type: ignore[attr-defined]
             if p_type.kind != TermKind.IDENTITY:
                 raise TypeCheckError(f"cong requires identity proof, got {term_to_str(p_type)}", context=ctx, term=term)
             # 检查 func : dom_type → cod_type
-            func_type = self.infer(ctx, term.func)
+            func_type = self.infer(ctx, term.func)  # type: ignore[attr-defined]
             func_type_whnf = whnf(func_type)
             if func_type_whnf.kind != TermKind.PI:
                 raise TypeCheckError(f"cong requires function, got {term_to_str(func_type)}", context=ctx, term=term)
-            return Identity(term.cod_type, App(term.func, p_type.lhs), App(term.func, p_type.rhs))
+            return Identity(term.cod_type, App(term.func, p_type.lhs), App(term.func, p_type.rhs))  # type: ignore[attr-defined]
 
         elif kind == TermKind.TRANSPORT:
             # transport(P, p, va) : P(b)
             # p : Id_A(a, b), va : P(a)
-            p_type = self.infer(ctx, term.eq_proof)
+            p_type = self.infer(ctx, term.eq_proof)  # type: ignore[attr-defined]
             if p_type.kind != TermKind.IDENTITY:
                 raise TypeCheckError(
                     f"transport requires identity proof, got {term_to_str(p_type)}", context=ctx, term=term
                 )
             # 检查 motive : A → Type
-            motive_type = self.infer(ctx, term.motive)
+            motive_type = self.infer(ctx, term.motive)  # type: ignore[attr-defined]
             motive_whnf = whnf(motive_type)
             if motive_whnf.kind != TermKind.PI:
                 raise TypeCheckError(
@@ -260,47 +260,47 @@ class TypeChecker:
                     term=term,
                 )
             # P(a) 的类型
-            pa_type = App(term.motive, term.a)
-            self.check(ctx, term.value, pa_type)
+            pa_type = App(term.motive, term.a)  # type: ignore[attr-defined]
+            self.check(ctx, term.value, pa_type)  # type: ignore[attr-defined]
             # 结果类型 P(b)
-            return App(term.motive, term.b)
+            return App(term.motive, term.b)  # type: ignore[attr-defined]
 
         elif kind == TermKind.ANNOTATION:
             # (t : A): 先检查 A 是类型，再用 check 模式
-            self.infer(ctx, term.typ)
-            self.check(ctx, term.term, term.typ)
-            return term.typ
+            self.infer(ctx, term.typ)  # type: ignore[attr-defined]
+            self.check(ctx, term.term, term.typ)  # type: ignore[attr-defined]
+            return term.typ  # type: ignore[attr-defined, no-any-return]
 
         elif kind == TermKind.INDUCTIVE:
             # 归纳类型名本身是一个类型
-            return Universe(term.universe_level + 1)
+            return Universe(term.universe_level + 1)  # type: ignore[attr-defined]
 
         elif kind == TermKind.CONSTRUCT:
-            itype = self.inductive_types.get(term.type_name)
+            itype = self.inductive_types.get(term.type_name)  # type: ignore[attr-defined]
             if itype is None:
-                raise TypeCheckError(f"Unknown inductive type: {term.type_name}", context=ctx, term=term)
+                raise TypeCheckError(f"Unknown inductive type: {term.type_name}", context=ctx, term=term)  # type: ignore[attr-defined]
             # 找到构造子
             for ctor in itype.constructors:
-                if ctor.name == term.ctor_name:
-                    if len(term.args) != len(ctor.arg_types):
+                if ctor.name == term.ctor_name:  # type: ignore[attr-defined]
+                    if len(term.args) != len(ctor.arg_types):  # type: ignore[attr-defined]
                         raise TypeCheckError(
-                            f"Constructor {term.ctor_name} expects {len(ctor.arg_types)} args, got {len(term.args)}",
+                            f"Constructor {term.ctor_name} expects {len(ctor.arg_types)} args, got {len(term.args)}",  # type: ignore[attr-defined]
                             context=ctx,
                             term=term,
                         )
-                    for arg, expected in zip(term.args, ctor.arg_types):
+                    for arg, expected in zip(term.args, ctor.arg_types):  # type: ignore[attr-defined]
                         self.check(ctx, arg, expected)
-                    return Var(term.type_name)
-            raise TypeCheckError(f"Unknown constructor {term.ctor_name} of {term.type_name}", context=ctx, term=term)
+                    return Var(term.type_name)  # type: ignore[attr-defined]
+            raise TypeCheckError(f"Unknown constructor {term.ctor_name} of {term.type_name}", context=ctx, term=term)  # type: ignore[attr-defined]
 
         elif kind == TermKind.IND_ELIM:
-            itype = self.inductive_types.get(term.type_name)
+            itype = self.inductive_types.get(term.type_name)  # type: ignore[attr-defined]
             if itype is None:
-                raise TypeCheckError(f"Unknown inductive type: {term.type_name}", context=ctx, term=term)
+                raise TypeCheckError(f"Unknown inductive type: {term.type_name}", context=ctx, term=term)  # type: ignore[attr-defined]
             # 检查 target 的类型
-            self.check(ctx, term.target, Var(term.type_name))
+            self.check(ctx, term.target, Var(term.type_name))  # type: ignore[attr-defined]
             # 结果类型: motive(target)
-            return App(term.motive, term.target)
+            return App(term.motive, term.target)  # type: ignore[attr-defined]
 
         raise TypeCheckError(f"Cannot infer type of {term.kind.name}", context=ctx, term=term)
 
@@ -317,35 +317,35 @@ class TypeChecker:
         if kind == TermKind.LAMBDA and expected_whnf.kind == TermKind.PI:
             # λx. body ⇐ Π(x:A).B(x)
             # 检查: Γ, x:A ⊢ body ⇐ B(x)
-            ctx_ext = ctx.extend(expected_whnf.var_name, expected_whnf.domain)
-            body_expected = expected_whnf.codomain
+            ctx_ext = ctx.extend(expected_whnf.var_name, expected_whnf.domain)  # type: ignore[attr-defined]
+            body_expected = expected_whnf.codomain  # type: ignore[attr-defined]
             # 如果 λ 的变量名和 Π 的不同，需要重命名
-            if term.var_name != expected_whnf.var_name:
-                body_expected = substitute(body_expected, expected_whnf.var_name, Var(term.var_name))
-                ctx_ext = ctx.extend(term.var_name, expected_whnf.domain)
-            self.check(ctx_ext, term.body, body_expected)
+            if term.var_name != expected_whnf.var_name:  # type: ignore[attr-defined]
+                body_expected = substitute(body_expected, expected_whnf.var_name, Var(term.var_name))  # type: ignore[attr-defined]
+                ctx_ext = ctx.extend(term.var_name, expected_whnf.domain)  # type: ignore[attr-defined]
+            self.check(ctx_ext, term.body, body_expected)  # type: ignore[attr-defined]
             return
 
         elif kind == TermKind.PAIR and expected_whnf.kind == TermKind.SIGMA:
             # (a, b) ⇐ Σ(x:A).B(x)
-            self.check(ctx, term.fst, expected_whnf.fst_type)
-            snd_expected = substitute(expected_whnf.snd_type, expected_whnf.var_name, term.fst)
-            self.check(ctx, term.snd, snd_expected)
+            self.check(ctx, term.fst, expected_whnf.fst_type)  # type: ignore[attr-defined]
+            snd_expected = substitute(expected_whnf.snd_type, expected_whnf.var_name, term.fst)  # type: ignore[attr-defined]
+            self.check(ctx, term.snd, snd_expected)  # type: ignore[attr-defined]
             return
 
         elif kind == TermKind.REFL:
             # refl ⇐ Id_A(a, b)  当 a ≡ b
             if expected_whnf.kind == TermKind.IDENTITY:
-                self.check(ctx, term.term, expected_whnf.typ)
-                if not self.def_eq(ctx, term.term, expected_whnf.lhs):
+                self.check(ctx, term.term, expected_whnf.typ)  # type: ignore[attr-defined]
+                if not self.def_eq(ctx, term.term, expected_whnf.lhs):  # type: ignore[attr-defined]
                     raise TypeCheckError(
-                        f"refl: term {term_to_str(term.term)} ≠ expected lhs {term_to_str(expected_whnf.lhs)}",
+                        f"refl: term {term_to_str(term.term)} ≠ expected lhs {term_to_str(expected_whnf.lhs)}",  # type: ignore[attr-defined]
                         context=ctx,
                         term=term,
                     )
-                if not self.def_eq(ctx, term.term, expected_whnf.rhs):
+                if not self.def_eq(ctx, term.term, expected_whnf.rhs):  # type: ignore[attr-defined]
                     raise TypeCheckError(
-                        f"refl: term {term_to_str(term.term)} ≠ expected rhs {term_to_str(expected_whnf.rhs)}",
+                        f"refl: term {term_to_str(term.term)} ≠ expected rhs {term_to_str(expected_whnf.rhs)}",  # type: ignore[attr-defined]
                         context=ctx,
                         term=term,
                     )
@@ -364,7 +364,7 @@ class TypeChecker:
         inferred = self.infer(ctx, term)
         if not self.def_eq(ctx, inferred, expected):
             raise TypeCheckError(
-                f"Type mismatch: {term_to_str(term)} has type {term_to_str(inferred)}, expected {term_to_str(expected)}",
+                f"Type mismatch: {term_to_str(term)} has type {term_to_str(inferred)}, expected {term_to_str(expected)}",  # noqa: E501
                 context=ctx,
                 term=term,
             )
@@ -409,65 +409,65 @@ class TypeChecker:
             return False
 
         if k1 == TermKind.VAR:
-            return t1.name == t2.name
+            return t1.name == t2.name  # type: ignore[attr-defined, no-any-return]
 
         elif k1 == TermKind.UNIVERSE:
-            return t1.level == t2.level
+            return t1.level == t2.level  # type: ignore[attr-defined, no-any-return]
 
         elif k1 == TermKind.PI:
             # Π(x:A).B ≡ Π(x:A').B' when A ≡ A' and B ≡ B'
-            if not self.def_eq(ctx, t1.domain, t2.domain):
+            if not self.def_eq(ctx, t1.domain, t2.domain):  # type: ignore[attr-defined]
                 return False
             # 在扩展上下文中比较 codomain
-            ctx_ext = ctx.extend(t1.var_name, t1.domain)
+            ctx_ext = ctx.extend(t1.var_name, t1.domain)  # type: ignore[attr-defined]
             # 重命名 t2 的变量
-            cod2 = substitute(t2.codomain, t2.var_name, Var(t1.var_name))
-            return self.def_eq(ctx_ext, t1.codomain, cod2)
+            cod2 = substitute(t2.codomain, t2.var_name, Var(t1.var_name))  # type: ignore[attr-defined]
+            return self.def_eq(ctx_ext, t1.codomain, cod2)  # type: ignore[attr-defined]
 
         elif k1 == TermKind.LAMBDA:
-            if t1.var_name == t2.var_name:
-                ctx_ext = ctx.extend(t1.var_name, ctx.lookup(t1.var_name) or TYPE0)
-                return self.def_eq(ctx_ext, t1.body, t2.body)
+            if t1.var_name == t2.var_name:  # type: ignore[attr-defined]
+                ctx_ext = ctx.extend(t1.var_name, ctx.lookup(t1.var_name) or TYPE0)  # type: ignore[attr-defined]
+                return self.def_eq(ctx_ext, t1.body, t2.body)  # type: ignore[attr-defined]
             # 重命名
-            body2 = substitute(t2.body, t2.var_name, Var(t1.var_name))
-            ctx_ext = ctx.extend(t1.var_name, ctx.lookup(t1.var_name) or TYPE0)
-            return self.def_eq(ctx_ext, t1.body, body2)
+            body2 = substitute(t2.body, t2.var_name, Var(t1.var_name))  # type: ignore[attr-defined]
+            ctx_ext = ctx.extend(t1.var_name, ctx.lookup(t1.var_name) or TYPE0)  # type: ignore[attr-defined]
+            return self.def_eq(ctx_ext, t1.body, body2)  # type: ignore[attr-defined]
 
         elif k1 == TermKind.APP:
-            return self.def_eq(ctx, t1.func, t2.func) and self.def_eq(ctx, t1.arg, t2.arg)
+            return self.def_eq(ctx, t1.func, t2.func) and self.def_eq(ctx, t1.arg, t2.arg)  # type: ignore[attr-defined]
 
         elif k1 == TermKind.SIGMA:
-            if not self.def_eq(ctx, t1.fst_type, t2.fst_type):
+            if not self.def_eq(ctx, t1.fst_type, t2.fst_type):  # type: ignore[attr-defined]
                 return False
-            ctx_ext = ctx.extend(t1.var_name, t1.fst_type)
-            snd2 = substitute(t2.snd_type, t2.var_name, Var(t1.var_name))
-            return self.def_eq(ctx_ext, t1.snd_type, snd2)
+            ctx_ext = ctx.extend(t1.var_name, t1.fst_type)  # type: ignore[attr-defined]
+            snd2 = substitute(t2.snd_type, t2.var_name, Var(t1.var_name))  # type: ignore[attr-defined]
+            return self.def_eq(ctx_ext, t1.snd_type, snd2)  # type: ignore[attr-defined]
 
         elif k1 == TermKind.PAIR:
-            return self.def_eq(ctx, t1.fst, t2.fst) and self.def_eq(ctx, t1.snd, t2.snd)
+            return self.def_eq(ctx, t1.fst, t2.fst) and self.def_eq(ctx, t1.snd, t2.snd)  # type: ignore[attr-defined]
 
         elif k1 in (TermKind.PROJ1, TermKind.PROJ2):
-            return self.def_eq(ctx, t1.pair, t2.pair)
+            return self.def_eq(ctx, t1.pair, t2.pair)  # type: ignore[attr-defined]
 
         elif k1 == TermKind.IDENTITY:
             return (
-                self.def_eq(ctx, t1.typ, t2.typ)
-                and self.def_eq(ctx, t1.lhs, t2.lhs)
-                and self.def_eq(ctx, t1.rhs, t2.rhs)
+                self.def_eq(ctx, t1.typ, t2.typ)  # type: ignore[attr-defined]
+                and self.def_eq(ctx, t1.lhs, t2.lhs)  # type: ignore[attr-defined]
+                and self.def_eq(ctx, t1.rhs, t2.rhs)  # type: ignore[attr-defined]
             )
 
         elif k1 == TermKind.REFL:
-            return self.def_eq(ctx, t1.typ, t2.typ) and self.def_eq(ctx, t1.term, t2.term)
+            return self.def_eq(ctx, t1.typ, t2.typ) and self.def_eq(ctx, t1.term, t2.term)  # type: ignore[attr-defined]
 
         elif k1 == TermKind.INDUCTIVE:
-            return t1.name == t2.name
+            return t1.name == t2.name  # type: ignore[attr-defined, no-any-return]
 
         elif k1 == TermKind.CONSTRUCT:
-            if t1.type_name != t2.type_name or t1.ctor_name != t2.ctor_name:
+            if t1.type_name != t2.type_name or t1.ctor_name != t2.ctor_name:  # type: ignore[attr-defined]
                 return False
-            if len(t1.args) != len(t2.args):
+            if len(t1.args) != len(t2.args):  # type: ignore[attr-defined]
                 return False
-            return all(self.def_eq(ctx, a1, a2) for a1, a2 in zip(t1.args, t2.args))
+            return all(self.def_eq(ctx, a1, a2) for a1, a2 in zip(t1.args, t2.args))  # type: ignore[attr-defined]
 
         return False
 

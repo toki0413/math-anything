@@ -94,8 +94,8 @@ class StructureBridge:
 
         # 创建 Kohn-Sham 结构
         struct = SelfConsistentProblem(
-            operator_type="self_adjoint",
-            spectrum_type="band" if params.get("kpoints") else "pure_point",
+            operator_type="self_adjoint",  # type: ignore[arg-type]
+            spectrum_type="band" if params.get("kpoints") else "pure_point",  # type: ignore[arg-type]
             variational=True,
             bounded_below=True,
             nonlinearity_source="density_dependent",
@@ -321,7 +321,7 @@ class StructureBridge:
             targets = ["target"] * len(morphisms)
             propagation_chain = propagator.propagate_chain(
                 learned,
-                morphisms,
+                morphisms,  # type: ignore[arg-type]
                 sources,
                 targets,
             )

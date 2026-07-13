@@ -270,19 +270,19 @@ class VerificationPipeline:
                     negated = a_lower[4:]
                     if negated in assumption_set:
                         contradiction_found = True
-                        checks["contradiction"] = f"Assumption '{a}' contradicts '{negated}'"
+                        checks["contradiction"] = f"Assumption '{a}' contradicts '{negated}'"  # type: ignore[assignment]
                     assumption_set.add(a_lower)
                 else:
                     if f"not {a_lower}" in assumption_set:
                         contradiction_found = True
-                        checks["contradiction"] = f"Assumption '{a}' contradicts 'not {a_lower}'"
+                        checks["contradiction"] = f"Assumption '{a}' contradicts 'not {a_lower}'"  # type: ignore[assignment]
                     assumption_set.add(a_lower)
             # Check if any goal directly contradicts an assumption
             for g in goals:
                 g_lower = g.lower().strip()
                 if f"not {g_lower}" in assumption_set:
                     contradiction_found = True
-                    checks["goal_contradiction"] = f"Goal '{g}' contradicts assumption 'not {g_lower}'"
+                    checks["goal_contradiction"] = f"Goal '{g}' contradicts assumption 'not {g_lower}'"  # type: ignore[assignment]
             checks["implies"] = not contradiction_found
 
         # 证明结构检查
@@ -297,8 +297,8 @@ class VerificationPipeline:
             checks["decidability"] = decidability.decidability.name
             checks["invariant_state"] = decidability.maps_to_invariant_state
         else:
-            checks["decidability"] = "UNKNOWN"
-            checks["invariant_state"] = "UNKNOWN"
+            checks["decidability"] = "UNKNOWN"  # type: ignore[assignment]
+            checks["invariant_state"] = "UNKNOWN"  # type: ignore[assignment]
 
         # Gödel 限制
         godel = self.metamath.godel_limitation(FormalSystemStrength.CIC)
@@ -478,10 +478,10 @@ class VerificationPipeline:
         total_checks += 1
         if not property_violations:
             passed_checks += 1
-            checks["property_consistency"] = "consistent"
+            checks["property_consistency"] = "consistent"  # type: ignore[assignment]
         else:
-            checks["property_consistency"] = "violations_found"
-            checks["violations"] = property_violations
+            checks["property_consistency"] = "violations_found"  # type: ignore[assignment]
+            checks["violations"] = property_violations  # type: ignore[assignment]
             for v in property_violations:
                 warnings.append(f"与 {v['theorem']} 的已知性质矛盾: {v['contradiction']}")
 
@@ -500,10 +500,10 @@ class VerificationPipeline:
         total_checks += 1
         if not physical_violations:
             passed_checks += 1
-            checks["physical_consistency"] = "consistent"
+            checks["physical_consistency"] = "consistent"  # type: ignore[assignment]
         else:
-            checks["physical_consistency"] = "violations_found"
-            checks["physical_violations"] = physical_violations
+            checks["physical_consistency"] = "violations_found"  # type: ignore[assignment]
+            checks["physical_violations"] = physical_violations  # type: ignore[assignment]
             for v in physical_violations:
                 warnings.append(f"物理定律矛盾: {v['reason']}")
 
@@ -529,7 +529,7 @@ class VerificationPipeline:
         else:
             # 无假设时跳过此检查
             passed_checks += 1
-            checks["assumption_conclusion_overlap"] = "no_assumptions"
+            checks["assumption_conclusion_overlap"] = "no_assumptions"  # type: ignore[assignment]
 
         # ── 检查 5: 定理性质验证 ──
         total_checks += 1
@@ -549,7 +549,7 @@ class VerificationPipeline:
 
         if verified_properties:
             passed_checks += 1
-            checks["verified_properties"] = verified_properties
+            checks["verified_properties"] = verified_properties  # type: ignore[assignment]
         else:
             # 没有验证到的性质不算失败
             passed_checks += 1
@@ -564,10 +564,10 @@ class VerificationPipeline:
             confidence *= 0.2
             semantic_ok = False
 
-        checks["llm_available"] = False
-        checks["semantic_check"] = "knowledge_base_matching"
-        checks["total_checks"] = total_checks
-        checks["passed_checks"] = passed_checks
+        checks["llm_available"] = False  # type: ignore[assignment]
+        checks["semantic_check"] = "knowledge_base_matching"  # type: ignore[assignment]
+        checks["total_checks"] = total_checks  # type: ignore[assignment]
+        checks["passed_checks"] = passed_checks  # type: ignore[assignment]
 
         return LayerResult(
             layer=VerificationLayer.LLM_SEMANTIC,
@@ -660,7 +660,7 @@ class VerificationPipeline:
                 )
 
         if generated_theorems:
-            checks["generated_theorem_statements"] = generated_theorems
+            checks["generated_theorem_statements"] = generated_theorems  # type: ignore[assignment]
             # 将定理代码追加到主代码
             theorem_code = "\n".join(t["code"] for t in generated_theorems)
             lean4_code = lean4_code + "\n" + theorem_code
@@ -669,7 +669,7 @@ class VerificationPipeline:
         # ── 步骤 3: 推断类型签名 ──
         type_signatures = self._infer_type_signatures(statement, assumptions)
         if type_signatures:
-            checks["type_signatures"] = type_signatures
+            checks["type_signatures"] = type_signatures  # type: ignore[assignment]
             # 追加类型签名到代码
             sig_code = "\n".join(f"-- Inferred type: {sig}" for sig in type_signatures)
             lean4_code = lean4_code + "\n\n" + sig_code
@@ -686,7 +686,7 @@ class VerificationPipeline:
         has_axiom = any("axiom" in line for line in code_lines)
         has_sorry = any("sorry" in line for line in code_lines)
 
-        checks["code_stats"] = {
+        checks["code_stats"] = {  # type: ignore[assignment]
             "total_lines": len(lean4_code.split("\n")),
             "code_lines": len(code_lines),
             "has_theorem": has_theorem,
@@ -706,8 +706,8 @@ class VerificationPipeline:
         if generated_theorems:
             confidence = min(0.3 + 0.05 * len(generated_theorems), 0.4)
 
-        checks["lean4_available"] = False
-        checks["code_generated"] = True
+        checks["lean4_available"] = False  # type: ignore[assignment]
+        checks["code_generated"] = True  # type: ignore[assignment]
         checks["verification_status"] = "code_generated_not_verified"
 
         return LayerResult(

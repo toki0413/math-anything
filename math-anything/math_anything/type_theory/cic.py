@@ -414,7 +414,7 @@ class CICTypeChecker:
         if isinstance(typ, Sort):
             return typ
         if typ.kind == TermKind.UNIVERSE:
-            return Sort(SortKind.TYPE, typ.level)
+            return Sort(SortKind.TYPE, typ.level)  # type: ignore[attr-defined]
         return TYPE0_SORT
 
     def is_prop(self, term: Term, ctx: Context) -> bool:
@@ -439,7 +439,7 @@ class CICTypeChecker:
 
         # 检查是否是单构造子类型
         if target_type.kind == TermKind.VAR:
-            name = target_type.name
+            name = target_type.name  # type: ignore[attr-defined]
             itype = self.mltt_checker.inductive_types.get(name)
             if itype and len(itype.constructors) == 1:
                 return True, f"Singleton elimination: {name} has exactly one constructor"

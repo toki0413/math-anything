@@ -268,7 +268,7 @@ class CrossEngineSession:
 
     def _detect_coupling_between(self, model_a: ScaleModel, model_b: ScaleModel) -> List[CouplingInterface]:
         """Detect coupling between two specific models."""
-        interfaces = []
+        interfaces = []  # type: ignore[var-annotated]
 
         # Determine direction (micro -> macro)
         scale_order = [
@@ -449,11 +449,11 @@ class CrossEngineSession:
         # Check that all interface endpoints exist
         for interface in self.coupling_interfaces:
             if interface.from_scale not in self.models:
-                report["errors"].append(f"Interface source not found: {interface.from_scale}")
+                report["errors"].append(f"Interface source not found: {interface.from_scale}")  # type: ignore[attr-defined]
                 report["consistent"] = False
 
             if interface.to_scale not in self.models:
-                report["errors"].append(f"Interface target not found: {interface.to_scale}")
+                report["errors"].append(f"Interface target not found: {interface.to_scale}")  # type: ignore[attr-defined]
                 report["consistent"] = False
 
         # Check for orphaned models (no interfaces)
@@ -462,7 +462,7 @@ class CrossEngineSession:
                 iface.from_scale == model_id or iface.to_scale == model_id for iface in self.coupling_interfaces
             )
             if not connected:
-                report["warnings"].append(f"Model {model_id} has no coupling interfaces")
+                report["warnings"].append(f"Model {model_id} has no coupling interfaces")  # type: ignore[attr-defined]
 
         return report
 

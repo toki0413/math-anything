@@ -165,27 +165,27 @@ def _eval_node(node: ast.AST, context: dict[str, Any]) -> Any:
 
     # 布尔运算
     if isinstance(node, ast.BoolOp):
-        op_func = _BOOL_OPS.get(type(node.op))
+        op_func = _BOOL_OPS.get(type(node.op))  # type: ignore[assignment]
         if op_func is None:
             raise SafeEvalError(f"Unsupported boolean op: {type(node.op).__name__}")
         values = [_eval_node(v, context) for v in node.values]
-        return op_func(values)
+        return op_func(values)  # type: ignore[call-arg]
 
     # 一元运算
     if isinstance(node, ast.UnaryOp):
         operand = _eval_node(node.operand, context)
         if isinstance(node.op, ast.Not):
             return not operand
-        op_func = _ARITH_OPS.get(type(node.op))
+        op_func = _ARITH_OPS.get(type(node.op))  # type: ignore[assignment]
         if op_func is None:
             raise SafeEvalError(f"Unsupported unary op: {type(node.op).__name__}")
-        return op_func(operand)
+        return op_func(operand)  # type: ignore[call-arg]
 
     # 二元算术运算
     if isinstance(node, ast.BinOp):
         left = _eval_node(node.left, context)
         right = _eval_node(node.right, context)
-        op_func = _ARITH_OPS.get(type(node.op))
+        op_func = _ARITH_OPS.get(type(node.op))  # type: ignore[assignment]
         if op_func is None:
             raise SafeEvalError(f"Unsupported binary op: {type(node.op).__name__}")
         return op_func(left, right)
@@ -272,7 +272,7 @@ def _eval_node(node: ast.AST, context: dict[str, Any]) -> Any:
                 }[node.func.id]
                 args = [_eval_node(a, context) for a in node.args]
                 kwargs = {kw.arg: _eval_node(kw.value, context) for kw in node.keywords if kw.arg}
-                return func(*args, **kwargs)
+                return func(*args, **kwargs)  # type: ignore[operator]
             # 也检查 context 中的函数
             if node.func.id in context and callable(context[node.func.id]):
                 args = [_eval_node(a, context) for a in node.args]
@@ -350,7 +350,7 @@ def _eval_node(node: ast.AST, context: dict[str, Any]) -> Any:
 
     # 字典字面量
     if isinstance(node, ast.Dict):
-        return {_eval_node(k, context): _eval_node(v, context) for k, v in zip(node.keys, node.values)}
+        return {_eval_node(k, context): _eval_node(v, context) for k, v in zip(node.keys, node.values)}  # type: ignore[arg-type]
 
     # Set 字面量
     if isinstance(node, ast.Set):

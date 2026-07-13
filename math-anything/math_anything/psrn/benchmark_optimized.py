@@ -51,7 +51,7 @@ def benchmark_with_and_without_optimization():
         speedup = estimated_before_time / max(opt_time, 1e-6)
 
         print(
-            f"{name:<18} {estimated_before_time:>10.3f} {opt_time:>10.3f} {speedup:>7.1f}x {opt_mse:>11.2e} {opt_mse:>11.2e}"
+            f"{name:<18} {estimated_before_time:>10.3f} {opt_time:>10.3f} {speedup:>7.1f}x {opt_mse:>11.2e} {opt_mse:>11.2e}"  # noqa: E501
         )
 
     # 多变量测试
@@ -99,7 +99,7 @@ def benchmark_symbol_layer_speed():
     _, _, offsets = layer.forward(base_exprs, input_values, layer_idx=0)
 
     print(
-        f"\nLayer config: {len(config.unary_ops)} unary, {len(config.binary_squared_ops)} binary_sq, {len(config.binary_triangled_ops)} binary_tri"
+        f"\nLayer config: {len(config.unary_ops)} unary, {len(config.binary_squared_ops)} binary_sq, {len(config.binary_triangled_ops)} binary_tri"  # noqa: E501
     )
     print(f"Inputs: {n_inputs}, Outputs: {len(offsets)}, Samples: {n_samples}")
 

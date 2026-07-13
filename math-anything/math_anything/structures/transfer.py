@@ -40,7 +40,7 @@ def set_network_weights(network: Any, weights: list[float]) -> None:
 def transfer_weights(source_weights: list[float], adapter_matrix: list[list[float]]) -> list[float]:
     """Map a source weight vector into a target weight space."""
     result = np.asarray(adapter_matrix, dtype=float) @ np.asarray(source_weights, dtype=float)
-    return result.tolist()
+    return result.tolist()  # type: ignore[no-any-return]
 
 
 class WeightSpaceTransfer:
@@ -60,7 +60,7 @@ class WeightSpaceTransfer:
     @property
     def matrix(self) -> list[list[float]]:
         """Serializable adapter matrix."""
-        return self._matrix.tolist()
+        return self._matrix.tolist()  # type: ignore[no-any-return]
 
     def to_dict(self) -> dict[str, Any]:
         return {

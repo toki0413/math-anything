@@ -333,13 +333,13 @@ class ExtendedMathSchema:
                 name: {
                     "data": data,
                     "metadata": (
-                        self._extension_metadata.get(name, {}).to_dict() if name in self._extension_metadata else {}
+                        self._extension_metadata.get(name, {}).to_dict() if name in self._extension_metadata else {}  # type: ignore[union-attr]
                     ),
                 }
                 for name, data in self.extensions.items()
             }
 
-        return base_dict
+        return base_dict  # type: ignore[no-any-return]
 
     def to_json(self, indent: int = 2) -> str:
         """Serialize to JSON string."""
@@ -605,16 +605,16 @@ def validate_with_extensions(data: Dict[str, Any]) -> Dict[str, Any]:
     for ext_name, ext_data in extensions.items():
         ext = ExtensionRegistry.create(ext_name)
         if not ext:
-            report["warnings"].append(f"Unknown extension: {ext_name}")
+            report["warnings"].append(f"Unknown extension: {ext_name}")  # type: ignore[attr-defined]
             continue
 
         # Extract actual data (may be wrapped)
         actual_data = ext_data.get("data", ext_data)
 
         if not ext.validate_data(actual_data):
-            report["errors"].append(f"Validation failed for extension: {ext_name}")
+            report["errors"].append(f"Validation failed for extension: {ext_name}")  # type: ignore[attr-defined]
             report["valid"] = False
         else:
-            report["extensions"][ext_name] = "valid"
+            report["extensions"][ext_name] = "valid"  # type: ignore[index]
 
     return report

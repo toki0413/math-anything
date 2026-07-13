@@ -113,7 +113,7 @@ class VonNeumannAlgebra(CStarAlgebra):
             vec = null_space[:, i]
             mat = vec.reshape(n, n)
             basis.append(mat.real.tolist())
-        return basis
+        return basis  # type: ignore[return-value]
 
     def verify_bicommutant(self, M: list[list[float]]) -> bool:
         """验证双重交换子定理: M 是否等于 M''.
@@ -138,16 +138,16 @@ class VonNeumannAlgebra(CStarAlgebra):
         # 简化处理: 把 comm1_basis 拼成一个大矩阵，对其求交换子
         comm2_basis: list[list[list[float]]] | None = None
         for B in comm1_basis:
-            cb = self.commutant(B)
+            cb = self.commutant(B)  # type: ignore[arg-type]
             if comm2_basis is None:
-                comm2_basis = cb
+                comm2_basis = cb  # type: ignore[assignment]
             else:
                 # 取交集: 保留同时在两个交换子中的基
-                comm2_basis = _matrix_intersection(comm2_basis, cb, n)
+                comm2_basis = _matrix_intersection(comm2_basis, cb, n)  # type: ignore[arg-type]
         if comm2_basis is None:
             return True
         # 检查 M 是否在 M'' 的基张成的空间中
-        for B in comm2_basis:
+        for B in comm2_basis:  # type: ignore[assignment]
             B_arr = np.array(B, dtype=complex)
             if np.allclose(M_arr, B_arr, atol=1e-8):
                 return True
@@ -274,7 +274,7 @@ class State(AbstractMathematicalStructure):
             return (False, 0.0)
         rho = np.array(self.density_matrix, dtype=complex)
         trace_val = float(np.real(np.trace(rho)))
-        return (np.isclose(trace_val, 1.0), trace_val)
+        return (np.isclose(trace_val, 1.0), trace_val)  # type: ignore[return-value]
 
     def von_neumann_entropy(self) -> float | None:
         """计算 von Neumann 熵: S(ρ) = -Tr(ρ ln ρ).
@@ -463,7 +463,7 @@ class QuantumState(State):
         else:
             # Tr_B: 对第 1,3 维求迹
             reduced = np.trace(rho_tensor, axis1=1, axis2=3)
-        return reduced.real.tolist()
+        return reduced.real.tolist()  # type: ignore[no-any-return]
 
     @property
     def function_space(self) -> str:
@@ -654,7 +654,7 @@ class GNSConstruction(AbstractMathematicalStructure):
         # 检查这些像是否张成整个空间
         mat = np.column_stack(images)
         rank = np.linalg.matrix_rank(mat, tol=1e-10)
-        return rank == len(omega_vec)
+        return rank == len(omega_vec)  # type: ignore[no-any-return]
 
     def irreducibility_description(self) -> str:
         """不可约性判定描述."""
@@ -707,7 +707,7 @@ class CommutativeCase(AbstractMathematicalStructure):
             family=StructureFamily.ALGEBRA,
             name="Commutative C*-Algebra ≅ C_0(X)",
             canonical_form="A_commutative ≅ C_0(X),  X = σ(A) locally compact Hausdorff",
-            description="Gelfand-Naimark: commutative C*-algebra is algebra of continuous vanishing-at-infinity functions",
+            description="Gelfand-Naimark: commutative C*-algebra is algebra of continuous vanishing-at-infinity functions",  # noqa: E501
         )
     )
     spectrum_space: str = ""
@@ -735,7 +735,7 @@ class CommutativeCase(AbstractMathematicalStructure):
             ),
             StructuralInvariant(
                 name="classical_probability_commutative",
-                expression="Classical probability = commutative quantum probability: L^∞(Ω) is a commutative von Neumann algebra",
+                expression="Classical probability = commutative quantum probability: L^∞(Ω) is a commutative von Neumann algebra",  # noqa: E501
                 theorem="Kolmogorov ⇔ commutative von Neumann algebra with faithful normal tracial state",
                 affected_quantities=["probability", "commutativity"],
             ),

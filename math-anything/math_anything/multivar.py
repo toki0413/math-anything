@@ -83,7 +83,7 @@ class MultiVariableDiscovery:
             "(x^2 + y^2)"
         """
         # Process input arrays
-        arrays = [np.array(a).flatten() for a in arrays]
+        arrays = [np.array(a).flatten() for a in arrays]  # type: ignore[assignment]
 
         if target is None:
             # Last array is target

@@ -195,7 +195,7 @@ class ExtractionSession:
         self._schema = state["schema"]
         self._modified = True
 
-        return state.get("description", "")
+        return state.get("description", "")  # type: ignore[no-any-return]
 
     def redo(self) -> Optional[str]:
         """Redo last undone modification.
@@ -226,7 +226,7 @@ class ExtractionSession:
         self._schema = state["schema"]
         self._modified = True
 
-        return state.get("description", "")
+        return state.get("description", "")  # type: ignore[no-any-return]
 
     def get_status(self) -> Dict[str, Any]:
         """Get session status information.
@@ -277,7 +277,7 @@ class ExtractionSession:
 
         for part in parts:
             if isinstance(data, dict) and part in data:
-                data = data[part]
+                data = data[part]  # type: ignore[assignment]
             else:
                 return None
 

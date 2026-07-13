@@ -65,8 +65,8 @@ class AdaptiveAttentionGenerator(TokenGenerator):
         }
 
         # 历史反馈统计
-        self.feedback_history = defaultdict(list)
-        self.token_success_rate = {}
+        self.feedback_history = defaultdict(list)  # type: ignore[var-annotated]
+        self.token_success_rate = {}  # type: ignore[var-annotated]
 
     def generate(
         self,
@@ -448,7 +448,7 @@ class HybridAttentionGenerator(AdaptiveAttentionGenerator):
         n_by_strategy = {k: int(self.n_tokens * w) for k, w in self.strategy_weights.items()}
 
         all_tokens = []
-        all_values = []
+        all_values = []  # type: ignore[var-annotated]
 
         # 1. 注意力策略
         if n_by_strategy["attention"] > 0:
@@ -459,9 +459,9 @@ class HybridAttentionGenerator(AdaptiveAttentionGenerator):
             self.n_tokens = orig_n
             all_tokens.extend(tokens)
             if len(all_values) == 0:
-                all_values = values
+                all_values = values  # type: ignore[assignment]
             else:
-                all_values = np.column_stack([all_values, values])
+                all_values = np.column_stack([all_values, values])  # type: ignore[arg-type, assignment]
 
         # 2. 进化策略（保留历史优秀token）
         if n_by_strategy["evolutionary"] > 0 and reward_history:

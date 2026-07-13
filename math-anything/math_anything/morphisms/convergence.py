@@ -134,7 +134,7 @@ class ConsistencyMorphism(Morphism):
 
     def truncation_error_bound(self, h: float, constant: float = 1.0) -> float:
         """计算截断误差上界 C * h^p."""
-        return constant * h**self.consistency_order
+        return constant * h**self.consistency_order  # type: ignore[no-any-return]
 
 
 # ──────────────────────────────────────────────────────────────────
@@ -262,7 +262,7 @@ class ConvergenceMorphism(Morphism):
 
     def richardson_extrapolation(self, f_h: float, f_2h: float, order: int = 2) -> float:
         """Richardson 外推：组合两个网格层级提高精度."""
-        return f_h + (f_h - f_2h) / (2**order - 1)
+        return f_h + (f_h - f_2h) / (2**order - 1)  # type: ignore[no-any-return]
 
     def a_posteriori_error_estimate(self, residual: np.ndarray, operator: np.ndarray | None = None) -> float:
         """从残差 r = Au - f 估计误差."""
@@ -423,8 +423,8 @@ class SuperconvergenceMorphism(Morphism):
 
     def error_at_superconvergent_point(self, h: float, constant: float = 1.0) -> float:
         """估计超收敛点处的误差 C * h^{p+δ}."""
-        return constant * h**self.superconvergent_order
+        return constant * h**self.superconvergent_order  # type: ignore[no-any-return]
 
     def error_at_general_point(self, h: float, constant: float = 1.0) -> float:
         """估计一般点处的误差 C * h^p."""
-        return constant * h**self.global_order
+        return constant * h**self.global_order  # type: ignore[no-any-return]

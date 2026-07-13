@@ -177,8 +177,8 @@ class SourceCodeAnalyzer:
     def analyze(
         self,
         source_dir: str,
-        file_patterns: List[str] = None,
-        entry_hints: List[str] = None,
+        file_patterns: List[str] = None,  # type: ignore[assignment]
+        entry_hints: List[str] = None,  # type: ignore[assignment]
     ) -> Dict[str, Any]:
         """Analyze source code directory.
 
@@ -206,7 +206,7 @@ class SourceCodeAnalyzer:
         command_contexts: Dict[str, List[str]] = {}
 
         # Collect all source files
-        source_files = []
+        source_files = []  # type: ignore[var-annotated]
         for pattern in file_patterns:
             source_files.extend(source_path.rglob(pattern))
 
@@ -352,9 +352,9 @@ class SourceCodeAnalyzer:
         entry_hints: List[str],
     ) -> Tuple[List[ExtractedCommand], List[ExtractedParameter], List[Dict]]:
         """Analyze a single source file."""
-        commands = []
-        parameters = []
-        equations = []
+        commands = []  # type: ignore[var-annotated]
+        parameters = []  # type: ignore[var-annotated]
+        equations = []  # type: ignore[var-annotated]
 
         language = self._detect_language(file_path)
 
@@ -583,7 +583,7 @@ def quick_analyze(source_dir: str) -> Dict[str, Any]:
     logger.info("Coverage Metrics:")
     logger.info(f"   Files: {coverage.get('files_successfully_processed', 0)}/{coverage.get('total_files_scanned', 0)}")
     logger.info(
-        f"   Commands: {coverage.get('commands_found', 0)} (est. {coverage.get('estimated_command_coverage', 0) * 100:.0f}% coverage)"
+        f"   Commands: {coverage.get('commands_found', 0)} (est. {coverage.get('estimated_command_coverage', 0) * 100:.0f}% coverage)"  # noqa: E501
     )
     logger.info(f"   Reliability: {coverage.get('reliability', 'unknown')}")
 

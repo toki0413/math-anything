@@ -272,7 +272,7 @@ class MathFingerprintExtractor:
             return False
 
         # Build adjacency
-        adjacency = {}
+        adjacency = {}  # type: ignore[var-annotated]
         for edge in graph.edges:
             if edge.from_node not in adjacency:
                 adjacency[edge.from_node] = []

@@ -81,7 +81,7 @@ class AbaqusCheckEngine(CheckEngine):
                             rule="Near-incompressibility (nu -> 0.5)",
                             severity="warning",
                             message=f"nu = {nu} is very close to 0.5 (incompressible limit).",
-                            suggestion="Use hybrid elements (e.g., C3D8H) or mixed formulation to avoid volumetric locking.",
+                            suggestion="Use hybrid elements (e.g., C3D8H) or mixed formulation to avoid volumetric locking.",  # noqa: E501
                         )
                     )
 
@@ -95,7 +95,7 @@ class AbaqusCheckEngine(CheckEngine):
                     )
                 )
 
-            if rho is None and any(s.get("analysis_type") in ("dynamic", "modal") for s in []):
+            if rho is None and any(s.get("analysis_type") in ("dynamic", "modal") for s in []):  # type: ignore[var-annotated]
                 results.append(
                     CheckResult(
                         rule="Density missing for dynamic analysis",
@@ -117,7 +117,7 @@ class AbaqusCheckEngine(CheckEngine):
                         rule="No boundary conditions",
                         severity="error",
                         message="No *Boundary card found.",
-                        suggestion="Static FEM requires boundary conditions to prevent rigid body motion and ensure K is invertible.",
+                        suggestion="Static FEM requires boundary conditions to prevent rigid body motion and ensure K is invertible.",  # noqa: E501
                     )
                 )
             else:
@@ -138,7 +138,7 @@ class AbaqusCheckEngine(CheckEngine):
                     rule="Possibly insufficient constraints",
                     severity="warning",
                     message=f"Only {fixed_dofs} zero-value boundary condition(s) detected.",
-                    suggestion="In 3D, at least 6 constraints (3 translations + 3 rotations) are typically needed to prevent rigid body motion. Ensure constraints are on independent nodes.",
+                    suggestion="In 3D, at least 6 constraints (3 translations + 3 rotations) are typically needed to prevent rigid body motion. Ensure constraints are on independent nodes.",  # noqa: E501
                 )
             )
 
@@ -177,7 +177,7 @@ class AbaqusCheckEngine(CheckEngine):
                     rule="Reduced integration elements",
                     severity="info",
                     message="C3D8R (reduced integration) is selected.",
-                    suggestion="Check that hourglass energy is < 5% of total strain energy. Use C3D8I for bending-dominated problems.",
+                    suggestion="Check that hourglass energy is < 5% of total strain energy. Use C3D8I for bending-dominated problems.",  # noqa: E501
                 )
             )
 
@@ -214,7 +214,7 @@ class AbaqusCheckEngine(CheckEngine):
                         rule="Very large max increments",
                         severity="info",
                         message=f"Max increments = {max_inc} is very large.",
-                        suggestion="This is acceptable but may produce large output files. Monitor .sta file for convergence.",
+                        suggestion="This is acceptable but may produce large output files. Monitor .sta file for convergence.",  # noqa: E501
                     )
                 )
 
@@ -246,7 +246,7 @@ class AbaqusCheckEngine(CheckEngine):
                         rule="Large initial increment with NLGEOM",
                         severity="warning",
                         message="NLGEOM is ON but initial increment is relatively large.",
-                        suggestion="For strongly nonlinear problems, start with a smaller initial increment (e.g., 0.01) to improve convergence.",
+                        suggestion="For strongly nonlinear problems, start with a smaller initial increment (e.g., 0.01) to improve convergence.",  # noqa: E501
                     )
                 )
 
@@ -269,7 +269,7 @@ class AbaqusCheckEngine(CheckEngine):
                     rule="Very small mesh",
                     severity="info",
                     message=f"Only {nodes} node(s) detected.",
-                    suggestion="Verify this is a simplified test model; production meshes usually need > 1000 nodes for mesh-independent results.",
+                    suggestion="Verify this is a simplified test model; production meshes usually need > 1000 nodes for mesh-independent results.",  # noqa: E501
                 )
             )
 

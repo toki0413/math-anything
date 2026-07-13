@@ -117,7 +117,7 @@ class GraphQueryEngine:
         # BFS on morphism links
         from collections import deque
 
-        queue = deque([(from_id, [])])
+        queue = deque([(from_id, [])])  # type: ignore[var-annotated]
         visited = {from_id}
 
         while queue:

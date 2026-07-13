@@ -266,8 +266,8 @@ class DiversityAwareAttentionGenerator(AttentionTokenGenerator):
         scored_candidates.sort(key=lambda x: x[2], reverse=True)
 
         # 多样性筛选：避免选中的表达式过于相似
-        selected = []
-        selected_values = []
+        selected = []  # type: ignore[var-annotated]
+        selected_values = []  # type: ignore[var-annotated]
 
         for expr, values, score in scored_candidates:
             if len(selected) >= self.n_tokens:

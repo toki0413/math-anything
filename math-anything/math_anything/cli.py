@@ -74,7 +74,7 @@ def _extract_schema(engine_name: str, files: list[str]) -> MathSchema:
             file_dict[key] = f
     if not file_dict:
         file_dict["input"] = files[0]
-    return engine.extract(file_dict)
+    return engine.extract(file_dict)  # type: ignore[no-any-return]
 
 
 def create_parser(prog_name: str = "bourbaki") -> argparse.ArgumentParser:

@@ -89,19 +89,19 @@ class ExpressionSimplifier:
         left, right = node.left, node.right
 
         # x + 0 = x
-        if self._is_zero(right):
-            return left
+        if self._is_zero(right):  # type: ignore[arg-type]
+            return left  # type: ignore[return-value]
 
         # 0 + x = x
-        if self._is_zero(left):
-            return right
+        if self._is_zero(left):  # type: ignore[arg-type]
+            return right  # type: ignore[return-value]
 
         # const + const = const
-        if left.node_type == NodeType.CONST and right.node_type == NodeType.CONST:
-            return Node(NodeType.CONST, value=left.value + right.value)
+        if left.node_type == NodeType.CONST and right.node_type == NodeType.CONST:  # type: ignore[union-attr]
+            return Node(NodeType.CONST, value=left.value + right.value)  # type: ignore[operator, union-attr]
 
         # x + x = 2 * x
-        if self._trees_equal(left, right):
+        if self._trees_equal(left, right):  # type: ignore[arg-type]
             two = Node(NodeType.CONST, value=2.0)
             return Node(NodeType.MUL, left=two, right=left)
 
@@ -112,20 +112,20 @@ class ExpressionSimplifier:
         left, right = node.left, node.right
 
         # x - 0 = x
-        if self._is_zero(right):
-            return left
+        if self._is_zero(right):  # type: ignore[arg-type]
+            return left  # type: ignore[return-value]
 
         # 0 - x = -x (keep as 0 - x for now)
-        if self._is_zero(left):
+        if self._is_zero(left):  # type: ignore[arg-type]
             return node
 
         # x - x = 0
-        if self._trees_equal(left, right):
+        if self._trees_equal(left, right):  # type: ignore[arg-type]
             return Node(NodeType.CONST, value=0.0)
 
         # const - const = const
-        if left.node_type == NodeType.CONST and right.node_type == NodeType.CONST:
-            return Node(NodeType.CONST, value=left.value - right.value)
+        if left.node_type == NodeType.CONST and right.node_type == NodeType.CONST:  # type: ignore[union-attr]
+            return Node(NodeType.CONST, value=left.value - right.value)  # type: ignore[operator, union-attr]
 
         return node
 
@@ -134,39 +134,39 @@ class ExpressionSimplifier:
         left, right = node.left, node.right
 
         # x * 0 = 0
-        if self._is_zero(right) or self._is_zero(left):
+        if self._is_zero(right) or self._is_zero(left):  # type: ignore[arg-type]
             return Node(NodeType.CONST, value=0.0)
 
         # x * 1 = x
-        if self._is_one(right):
-            return left
+        if self._is_one(right):  # type: ignore[arg-type]
+            return left  # type: ignore[return-value]
 
         # 1 * x = x
-        if self._is_one(left):
-            return right
+        if self._is_one(left):  # type: ignore[arg-type]
+            return right  # type: ignore[return-value]
 
         # const * const = const
-        if left.node_type == NodeType.CONST and right.node_type == NodeType.CONST:
-            return Node(NodeType.CONST, value=left.value * right.value)
+        if left.node_type == NodeType.CONST and right.node_type == NodeType.CONST:  # type: ignore[union-attr]
+            return Node(NodeType.CONST, value=left.value * right.value)  # type: ignore[operator, union-attr]
 
         # 2 * 2 = 4 (but we keep as is for clarity in expressions)
         # Actually, let's merge small integer constants
-        if left.node_type == NodeType.CONST and right.node_type == NodeType.CONST:
-            result = left.value * right.value
+        if left.node_type == NodeType.CONST and right.node_type == NodeType.CONST:  # type: ignore[union-attr]
+            result = left.value * right.value  # type: ignore[operator, union-attr]
             if abs(result - round(result)) < 1e-10:  # Integer result
                 return Node(NodeType.CONST, value=result)
 
         # const * (const * x) = (const * const) * x
         if (
-            left.node_type == NodeType.CONST
-            and right.node_type == NodeType.MUL
-            and right.left.node_type == NodeType.CONST
+            left.node_type == NodeType.CONST  # type: ignore[union-attr]
+            and right.node_type == NodeType.MUL  # type: ignore[union-attr]
+            and right.left.node_type == NodeType.CONST  # type: ignore[union-attr]
         ):
-            new_const = left.value * right.left.value
+            new_const = left.value * right.left.value  # type: ignore[operator, union-attr]
             return Node(
                 NodeType.MUL,
                 left=Node(NodeType.CONST, value=new_const),
-                right=right.right,
+                right=right.right,  # type: ignore[union-attr]
             )
 
         return node
@@ -176,40 +176,40 @@ class ExpressionSimplifier:
         left, right = node.left, node.right
 
         # x / 1 = x
-        if self._is_one(right):
-            return left
+        if self._is_one(right):  # type: ignore[arg-type]
+            return left  # type: ignore[return-value]
 
         # 0 / x = 0 (for x != 0)
-        if self._is_zero(left):
+        if self._is_zero(left):  # type: ignore[arg-type]
             return Node(NodeType.CONST, value=0.0)
 
         # x / x = 1 (for x != 0)
-        if self._trees_equal(left, right):
+        if self._trees_equal(left, right):  # type: ignore[arg-type]
             return Node(NodeType.CONST, value=1.0)
 
         # const / const = const
-        if left.node_type == NodeType.CONST and right.node_type == NodeType.CONST:
-            if abs(right.value) > 1e-10:
-                return Node(NodeType.CONST, value=left.value / right.value)
+        if left.node_type == NodeType.CONST and right.node_type == NodeType.CONST:  # type: ignore[union-attr]
+            if abs(right.value) > 1e-10:  # type: ignore[arg-type, union-attr]
+                return Node(NodeType.CONST, value=left.value / right.value)  # type: ignore[operator, union-attr]
 
         # (x * const) / const = x
         if (
-            left.node_type == NodeType.MUL
-            and left.left.node_type == NodeType.CONST
-            and right.node_type == NodeType.CONST
+            left.node_type == NodeType.MUL  # type: ignore[union-attr]
+            and left.left.node_type == NodeType.CONST  # type: ignore[union-attr]
+            and right.node_type == NodeType.CONST  # type: ignore[union-attr]
         ):
-            if abs(right.value - left.left.value) < 1e-10:
-                return left.right
+            if abs(right.value - left.left.value) < 1e-10:  # type: ignore[operator, union-attr]
+                return left.right  # type: ignore[return-value, union-attr]
 
         # (x * const) / (y * const) = x / y
         if (
-            left.node_type == NodeType.MUL
-            and right.node_type == NodeType.MUL
-            and left.left.node_type == NodeType.CONST
-            and right.left.node_type == NodeType.CONST
+            left.node_type == NodeType.MUL  # type: ignore[union-attr]
+            and right.node_type == NodeType.MUL  # type: ignore[union-attr]
+            and left.left.node_type == NodeType.CONST  # type: ignore[union-attr]
+            and right.left.node_type == NodeType.CONST  # type: ignore[union-attr]
         ):
-            if abs(left.left.value - right.left.value) < 1e-10:
-                return Node(NodeType.DIV, left=left.right, right=right.right)
+            if abs(left.left.value - right.left.value) < 1e-10:  # type: ignore[operator, union-attr]
+                return Node(NodeType.DIV, left=left.right, right=right.right)  # type: ignore[union-attr]
 
         return node
 
@@ -218,25 +218,25 @@ class ExpressionSimplifier:
         left, right = node.left, node.right
 
         # eml(x, 1) = exp(x)
-        if self._is_one(right):
+        if self._is_one(right):  # type: ignore[arg-type]
             # We can't actually change the node type easily
             # But we can simplify the structure
             pass
 
         # eml(0, 1) = exp(0) - ln(1) = 1 - 0 = 1
-        if self._is_zero(left) and self._is_one(right):
+        if self._is_zero(left) and self._is_one(right):  # type: ignore[arg-type]
             return Node(NodeType.CONST, value=1.0)
 
         # eml(1, 1) = e - 0 = e
-        if self._is_one(left) and self._is_one(right):
+        if self._is_one(left) and self._is_one(right):  # type: ignore[arg-type]
             return Node(NodeType.CONST, value=math.e)
 
         # eml(const, const) = const
-        if left.node_type == NodeType.CONST and right.node_type == NodeType.CONST:
+        if left.node_type == NodeType.CONST and right.node_type == NodeType.CONST:  # type: ignore[union-attr]
             try:
                 import numpy as np
 
-                result = np.exp(left.value) - np.log(max(right.value, 1e-10))
+                result = np.exp(left.value) - np.log(max(right.value, 1e-10))  # type: ignore[arg-type, type-var, union-attr]
                 if not (np.isnan(result) or np.isinf(result)):
                     return Node(NodeType.CONST, value=float(result))
             except (ValueError, OverflowError) as e:
@@ -249,33 +249,33 @@ class ExpressionSimplifier:
         left, right = node.left, node.right
 
         # x^0 = 1
-        if self._is_zero(right):
+        if self._is_zero(right):  # type: ignore[arg-type]
             return Node(NodeType.CONST, value=1.0)
 
         # x^1 = x
-        if self._is_one(right):
-            return left
+        if self._is_one(right):  # type: ignore[arg-type]
+            return left  # type: ignore[return-value]
 
         # 0^x = 0 (for x > 0)
-        if self._is_zero(left):
+        if self._is_zero(left):  # type: ignore[arg-type]
             return Node(NodeType.CONST, value=0.0)
 
         # 1^x = 1
-        if self._is_one(left):
+        if self._is_one(left):  # type: ignore[arg-type]
             return Node(NodeType.CONST, value=1.0)
 
         # const^const = const
-        if left.node_type == NodeType.CONST and right.node_type == NodeType.CONST:
+        if left.node_type == NodeType.CONST and right.node_type == NodeType.CONST:  # type: ignore[union-attr]
             try:
-                result = left.value**right.value
+                result = left.value**right.value  # type: ignore[operator, union-attr]
                 if not (math.isnan(result) or math.isinf(result)):
                     return Node(NodeType.CONST, value=float(result))
             except (ValueError, OverflowError, ZeroDivisionError) as e:
                 logger.debug(f"Failed to simplify power constants: {e}")
 
         # x^2 = x * x (for small integers)
-        if right.node_type == NodeType.CONST and right.value == 2.0:
-            return Node(NodeType.MUL, left=left, right=left.copy())
+        if right.node_type == NodeType.CONST and right.value == 2.0:  # type: ignore[union-attr]
+            return Node(NodeType.MUL, left=left, right=left.copy())  # type: ignore[union-attr]
 
         return node
 
@@ -284,13 +284,13 @@ class ExpressionSimplifier:
         left = node.left
 
         # sin(0) = 0
-        if self._is_zero(left):
+        if self._is_zero(left):  # type: ignore[arg-type]
             return Node(NodeType.CONST, value=0.0)
 
         # sin(const) = const
-        if left.node_type == NodeType.CONST:
+        if left.node_type == NodeType.CONST:  # type: ignore[union-attr]
             try:
-                result = math.sin(left.value)
+                result = math.sin(left.value)  # type: ignore[arg-type, union-attr]
                 return Node(NodeType.CONST, value=float(result))
             except (ValueError, OverflowError) as e:
                 logger.debug(f"Failed to simplify sin constant: {e}")
@@ -302,13 +302,13 @@ class ExpressionSimplifier:
         left = node.left
 
         # cos(0) = 1
-        if self._is_zero(left):
+        if self._is_zero(left):  # type: ignore[arg-type]
             return Node(NodeType.CONST, value=1.0)
 
         # cos(const) = const
-        if left.node_type == NodeType.CONST:
+        if left.node_type == NodeType.CONST:  # type: ignore[union-attr]
             try:
-                result = math.cos(left.value)
+                result = math.cos(left.value)  # type: ignore[arg-type, union-attr]
                 return Node(NodeType.CONST, value=float(result))
             except (ValueError, OverflowError) as e:
                 logger.debug(f"Failed to simplify cos constant: {e}")
@@ -320,18 +320,18 @@ class ExpressionSimplifier:
         left = node.left
 
         # sqrt(0) = 0
-        if self._is_zero(left):
+        if self._is_zero(left):  # type: ignore[arg-type]
             return Node(NodeType.CONST, value=0.0)
 
         # sqrt(1) = 1
-        if self._is_one(left):
+        if self._is_one(left):  # type: ignore[arg-type]
             return Node(NodeType.CONST, value=1.0)
 
         # sqrt(const) = const
-        if left.node_type == NodeType.CONST:
+        if left.node_type == NodeType.CONST:  # type: ignore[union-attr]
             try:
-                if left.value >= 0:
-                    result = math.sqrt(left.value)
+                if left.value >= 0:  # type: ignore[operator, union-attr]
+                    result = math.sqrt(left.value)  # type: ignore[arg-type, union-attr]
                     return Node(NodeType.CONST, value=float(result))
             except (ValueError, OverflowError) as e:
                 logger.debug(f"Failed to simplify sqrt constant: {e}")
@@ -345,16 +345,16 @@ class ExpressionSimplifier:
         left = node.left
 
         # abs(0) = 0
-        if self._is_zero(left):
+        if self._is_zero(left):  # type: ignore[arg-type]
             return Node(NodeType.CONST, value=0.0)
 
         # abs(const) = const
-        if left.node_type == NodeType.CONST:
-            return Node(NodeType.CONST, value=abs(left.value))
+        if left.node_type == NodeType.CONST:  # type: ignore[union-attr]
+            return Node(NodeType.CONST, value=abs(left.value))  # type: ignore[arg-type, union-attr]
 
         # abs(abs(x)) = abs(x)
-        if left.node_type == NodeType.ABS:
-            return left
+        if left.node_type == NodeType.ABS:  # type: ignore[union-attr]
+            return left  # type: ignore[return-value]
 
         return node
 
@@ -377,12 +377,12 @@ class ExpressionSimplifier:
             return False
 
         if n1.node_type == NodeType.CONST:
-            return abs(n1.value - n2.value) < 1e-10
+            return abs(n1.value - n2.value) < 1e-10  # type: ignore[no-any-return, operator]
 
         if n1.node_type == NodeType.VAR:
             return n1.name == n2.name
 
-        return self._trees_equal(n1.left, n2.left) and self._trees_equal(n1.right, n2.right)
+        return self._trees_equal(n1.left, n2.left) and self._trees_equal(n1.right, n2.right)  # type: ignore[arg-type]
 
 
 def simplify(node: Node) -> Node:

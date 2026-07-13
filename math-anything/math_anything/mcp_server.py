@@ -125,8 +125,8 @@ def list_domains() -> str:
         domains.append(
             {
                 "name": name,
-                "description": cls.description,
-                "equation_type": cls.equation_type,
+                "description": cls.description,  # type: ignore[attr-defined]
+                "equation_type": cls.equation_type,  # type: ignore[attr-defined]
                 "morphism_chain_length": len(dom.build_morphism_chain()),
             }
         )
@@ -366,7 +366,7 @@ def solve_numerical(
                 np.fill_diagonal(H0, np.linspace(-1, 1, dim))
                 return H0 + coupling * density
 
-            solver = SelfConsistentSolver(
+            solver = SelfConsistentSolver(  # type: ignore[assignment]
                 hamiltonian_builder=hamiltonian_builder,
                 n_states=parameters.get("n_states", 1),
                 mixing=parameters.get("mixing", 0.3),
@@ -374,7 +374,7 @@ def solve_numerical(
                 tol=parameters.get("tol", 1e-6),
             )
             initial = np.eye(dim) / dim
-            result = solver.solve(initial)
+            result = solver.solve(initial)  # type: ignore[attr-defined]
 
         elif solver_type == "symplectic":
             from math_anything.structures.evolution import SymplecticIntegrator
@@ -405,21 +405,21 @@ def solve_numerical(
             def flux(U):
                 return U  # Simple advection
 
-            solver = ConservationLawSolver(flux, n_vars=n_vars)
+            solver = ConservationLawSolver(flux, n_vars=n_vars)  # type: ignore[assignment]
             U = np.array(parameters.get("state", [1.0]), dtype=float)
             result = {
-                "flux_jacobian": solver.flux_jacobian(U).tolist(),
-                "characteristic_speeds": solver.characteristic_speeds(U).tolist(),
-                "max_wave_speed": solver.max_wave_speed(U),
+                "flux_jacobian": solver.flux_jacobian(U).tolist(),  # type: ignore[attr-defined]
+                "characteristic_speeds": solver.characteristic_speeds(U).tolist(),  # type: ignore[attr-defined]
+                "max_wave_speed": solver.max_wave_speed(U),  # type: ignore[attr-defined]
             }
 
         elif solver_type == "variational":
             from math_anything.structures.equilibrium import VariationalSolver
 
-            solver = VariationalSolver()
+            solver = VariationalSolver()  # type: ignore[assignment]
             n_el = parameters.get("n_elements", 10)
             L = parameters.get("domain_length", 1.0)
-            result = solver.solve_1d_poisson(n_el, L)
+            result = solver.solve_1d_poisson(n_el, L)  # type: ignore[attr-defined]
 
         elif solver_type == "continuum":
             from math_anything.structures.geometry_continuum import DeformationGradient
@@ -498,7 +498,7 @@ def dimensional_analyze(
                     result["pi_groups"] = pi_groups
                     result["quantities"] = [q["name"] for q in quantities]
         except Exception as e:
-            result["pi_groups_error"] = str(e)
+            result["pi_groups_error"] = str(e)  # type: ignore[assignment]
 
     # Mode 2: Expression dimensional checking
     if expression_lhs and expression_rhs:
@@ -507,9 +507,9 @@ def dimensional_analyze(
 
             analyzer = SymbolicDimensionalAnalyzer()
             check = analyzer.check_equation(expression_lhs, expression_rhs)
-            result["dimensional_check"] = check
+            result["dimensional_check"] = check  # type: ignore[assignment]
         except Exception as e:
-            result["dimensional_check_error"] = str(e)
+            result["dimensional_check_error"] = str(e)  # type: ignore[assignment]
 
     # Mode 3: Schema-based check (legacy compatibility)
     if schema and not quantities and not (expression_lhs and expression_rhs):
@@ -520,13 +520,13 @@ def dimensional_analyze(
             canonical = schema.get("canonical_form", "")
             if canonical:
                 dim_check = checker.check_schema(canonical)
-                result["dimensional_check"] = dim_check.__dict__ if dim_check else None
+                result["dimensional_check"] = dim_check.__dict__ if dim_check else None  # type: ignore[assignment]
         except Exception as e:
-            result["dimensional_check_error"] = str(e)
+            result["dimensional_check_error"] = str(e)  # type: ignore[assignment]
 
     if not result:
         result["note"] = (
-            "Provide quantities for Pi group computation, or expression_lhs/expression_rhs for dimensional checking"
+            "Provide quantities for Pi group computation, or expression_lhs/expression_rhs for dimensional checking"  # type: ignore[assignment]
         )
 
     return json.dumps(result, indent=2, ensure_ascii=False, default=str)
@@ -650,7 +650,7 @@ def verify_structure(
         return json.dumps(
             {
                 "passed": len(layer_results) > 0,
-                "overall_confidence": max(lr["confidence"] for lr in layer_results),
+                "overall_confidence": max(lr["confidence"] for lr in layer_results),  # type: ignore[type-var]
                 "layers": layer_results,
             },
             indent=2,
@@ -1023,10 +1023,10 @@ def get_domain_details(domain_name: str) -> str:
     dom = cls()
     return json.dumps(
         {
-            "name": cls.name,
-            "description": cls.description,
-            "equation_type": cls.equation_type,
-            "default_params": cls.default_params,
+            "name": cls.name,  # type: ignore[attr-defined]
+            "description": cls.description,  # type: ignore[attr-defined]
+            "equation_type": cls.equation_type,  # type: ignore[attr-defined]
+            "default_params": cls.default_params,  # type: ignore[attr-defined]
             "morphism_chain": dom.build_morphism_chain(),
         },
         indent=2,

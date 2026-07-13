@@ -159,7 +159,7 @@ class PlaneWaveTruncation(Morphism):
         return self.invariants_introduced
 
     # HACK: provide setters so dataclass __init__ doesn't fail
-    @invariants_introduced.setter
+    @invariants_introduced.setter  # type: ignore[attr-defined, no-redef]
     def invariants_introduced(self, value: list[str]) -> None:
         pass
 

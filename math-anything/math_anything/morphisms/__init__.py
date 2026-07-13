@@ -101,7 +101,7 @@ class Morphism(ABC):
         if not self.condition:
             return True
         try:
-            return safe_eval(self.condition, params)
+            return safe_eval(self.condition, params)  # type: ignore[no-any-return]
         except (SafeEvalError, Exception):
             return False
 
@@ -128,8 +128,8 @@ class Morphism(ABC):
 class CompositeMorphism(Morphism):
     """两个态射的合成."""
 
-    first: Morphism = field(default=None)
-    second: Morphism = field(default=None)
+    first: Morphism = field(default=None)  # type: ignore[assignment]
+    second: Morphism = field(default=None)  # type: ignore[assignment]
 
     @property
     def mathematical_form(self) -> str:
@@ -162,7 +162,7 @@ class CompositeMorphism(Morphism):
     def invariants_lost(self, value: list[str]) -> None:
         pass
 
-    @property
+    @property  # type: ignore[misc]
     def kernel_description(self) -> str:
         return "ker(g) ∪ g⁻¹(ker(f))"
 

@@ -314,9 +314,9 @@ class WikidataClient:
 
         # Query numerical methods
         for method in fingerprint.get("tensor_operations", []):
-            info = self.get_numerical_method_info(method)
+            info = self.get_numerical_method_info(method)  # type: ignore[assignment]
             if info:
-                results.append({"type": "numerical_method", **info})
+                results.append({"type": "numerical_method", **info})  # type: ignore[dict-item]
 
         return results
 
@@ -371,7 +371,7 @@ class WikidataClient:
 
     def _search_entity(self, search_term: str, type_filter: str = "") -> Optional[WikidataEntity]:
         """Search for entity by term."""
-        url = f"{self.API_BASE}?action=wbsearchentities&search={urllib.parse.quote(search_term)}&format=json&language=en&limit=1"
+        url = f"{self.API_BASE}?action=wbsearchentities&search={urllib.parse.quote(search_term)}&format=json&language=en&limit=1"  # noqa: E501
 
         try:
             req = urllib.request.Request(url, headers=self.headers)

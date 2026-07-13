@@ -120,12 +120,12 @@ class PhysicsKnowledgeBase:
         # 策略1: 查找参数典型值
         if param_name in cls.PARAMETER_RANGES:
             info = cls.PARAMETER_RANGES[param_name]
-            if "typical" in info:
+            if "typical" in info:  # type: ignore[operator]
                 return InferenceResult(
                     parameter=param_name,
-                    inferred_value=info["typical"],
+                    inferred_value=info["typical"],  # type: ignore[index]
                     confidence=InferenceConfidence.MEDIUM,
-                    reasoning=(f"使用 {param_name} 的典型值 {info['typical']} {info.get('unit', '')}"),
+                    reasoning=(f"使用 {param_name} 的典型值 {info['typical']} {info.get('unit', '')}"),  # type: ignore[attr-defined, index]
                     source="经验规律",
                 )
 

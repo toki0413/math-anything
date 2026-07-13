@@ -71,7 +71,7 @@ class MDDomain(Domain):
         }
 
         if field.symplectic_matrix is not None:
-            result["symplectic"] = True
+            result["symplectic"] = True  # type: ignore[assignment]
             result["symplectic_matrix_shape"] = field.symplectic_matrix.shape
 
         return result

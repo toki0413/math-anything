@@ -190,11 +190,11 @@ class DeformationGradient:
 
     def right_cauchy_green(self) -> np.ndarray:
         """C = F^T F."""
-        return self.F.T @ self.F
+        return self.F.T @ self.F  # type: ignore[no-any-return]
 
     def left_cauchy_green(self) -> np.ndarray:
         """B = F F^T."""
-        return self.F @ self.F.T
+        return self.F @ self.F.T  # type: ignore[no-any-return]
 
     def green_lagrange_strain(self) -> np.ndarray:
         """E = (C - I) / 2."""
@@ -237,7 +237,7 @@ class DeformationGradient:
         J = self.jacobian()
         if abs(J) < 1e-15:
             return np.zeros((self.dim, self.dim))
-        return (1.0 / J) * self.F @ S @ self.F.T
+        return (1.0 / J) * self.F @ S @ self.F.T  # type: ignore[no-any-return]
 
     def von_mises_stress(self, lame_lambda: float, lame_mu: float) -> float:
         """Compute von Mises equivalent stress."""

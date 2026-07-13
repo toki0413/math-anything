@@ -152,8 +152,8 @@ class FrameData:
     def compute_density(self) -> float:
         """Compute number density."""
         volume = np.prod([hi - lo for lo, hi in self.box_bounds])
-        self._density = self.num_atoms / volume if volume > 0 else 0.0
-        return self._density
+        self._density = self.num_atoms / volume if volume > 0 else 0.0  # type: ignore[assignment]
+        return self._density  # type: ignore[return-value]
 
 
 @dataclass
@@ -441,7 +441,7 @@ class LammpsDumpExtractor(StreamingFrameExtractor):
         if frame_index < self.frame_count:
             # Need to reopen and scan
             self.close()
-            self.open(self.filepath)
+            self.open(self.filepath)  # type: ignore[arg-type]
 
         while self.frame_count < frame_index:
             frame = self._read_frame()
@@ -578,7 +578,7 @@ class StreamingParser:
         if checkpoint_path and Path(checkpoint_path).exists():
             Path(checkpoint_path).unlink()
 
-        return self.stats
+        return self.stats  # type: ignore[no-any-return]
 
     def _create_extractor(self, format: FileFormat) -> StreamingFrameExtractor:
         """Create frame extractor for the given format."""
@@ -606,7 +606,7 @@ class StreamingParser:
         # Initialize sampling state
         last_keyframe_data = None
 
-        for frame in self.extractor.frames():
+        for frame in self.extractor.frames():  # type: ignore[union-attr]
             # Check max frames
             if sampling.max_frames and sampled_count >= sampling.max_frames:
                 break
@@ -731,7 +731,7 @@ class StreamingParser:
 
         rmsd = np.sqrt(np.mean((pos1 - pos2) ** 2))
         # Normalize by typical atomic spacing (~1 Angstrom)
-        return min(rmsd, 1.0)
+        return min(rmsd, 1.0)  # type: ignore[no-any-return]
 
     def _compute_file_hash(self, filepath: str) -> str:
         """Compute hash of file for checkpoint validation."""
@@ -747,8 +747,8 @@ class StreamingParser:
             return
 
         checkpoint = Checkpoint(
-            file_path=self.extractor.filepath,
-            file_hash=self._compute_file_hash(self.extractor.filepath),
+            file_path=self.extractor.filepath,  # type: ignore[union-attr]
+            file_hash=self._compute_file_hash(self.extractor.filepath),  # type: ignore[union-attr]
             last_frame=frame_idx,
             last_position=0,  # Not used for text files
             timestamp=__import__("time").time(),
@@ -762,7 +762,7 @@ class StreamingParser:
         """Load checkpoint."""
         try:
             with open(path, "rb") as f:
-                return safe_load(f)
+                return safe_load(f)  # type: ignore[no-any-return]
         except (OSError, ValueError, RuntimeError):
             return None
 
@@ -848,7 +848,7 @@ class DumpSampler:
                 break
 
         extractor.close()
-        return begin, middle, end
+        return begin, middle, end  # type: ignore[return-value]
 
 
 # Backward compatibility alias

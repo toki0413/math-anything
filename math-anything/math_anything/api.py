@@ -116,20 +116,20 @@ class ExtractionResult:
         # Mathematical structure
         math_struct = self.schema.get("mathematical_structure", {})
         if math_struct:
-            lines.append(f"\nProblem Type: {math_struct.get('problem_type', 'N/A')}")
-            lines.append(f"Canonical Form: {math_struct.get('canonical_form', 'N/A')}")
+            lines.append(f"\nProblem Type: {math_struct.get('problem_type', 'N/A')}")  # type: ignore[attr-defined]
+            lines.append(f"Canonical Form: {math_struct.get('canonical_form', 'N/A')}")  # type: ignore[attr-defined]
 
         # Approximations
         approxs = self.schema.get("approximations", [])
         if approxs:
-            lines.append(f"\nApproximations Applied ({len(approxs)}):")
-            for i, app in enumerate(approxs[:5], 1):
+            lines.append(f"\nApproximations Applied ({len(approxs)}):")  # type: ignore[arg-type]
+            for i, app in enumerate(approxs[:5], 1):  # type: ignore[index]
                 lines.append(f"  {i}. {app.get('name', 'Unknown')}")
-            if len(approxs) > 5:
-                lines.append(f"  ... and {len(approxs) - 5} more")
+            if len(approxs) > 5:  # type: ignore[arg-type]
+                lines.append(f"  ... and {len(approxs) - 5} more")  # type: ignore[arg-type]
 
         # Constraints
-        constraints = self.schema.get("mathematical_decoding", {}).get("constraints", [])
+        constraints = self.schema.get("mathematical_decoding", {}).get("constraints", [])  # type: ignore[attr-defined]
         if constraints:
             satisfied = sum(1 for c in constraints if c.get("satisfied"))
             lines.append(f"\nConstraints: {satisfied}/{len(constraints)} satisfied")
@@ -175,7 +175,7 @@ class MathAnything:
     @property
     def supported_engines(self) -> List[str]:
         """List of supported computational engines."""
-        return self._engines.copy()
+        return self._engines.copy()  # type: ignore[no-any-return]
 
     @staticmethod
     def _validate_and_coerce_params(params: object) -> Dict[str, object]:
@@ -214,11 +214,11 @@ class MathAnything:
             # Any other non-dict, non-scalar value that isn't already handled
             elif isinstance(value, (list, tuple)) and key_lower not in ("kpoints", "lattice"):
                 # Keep as-is for other keys — extractors may handle them differently
-                coerced[key] = value
+                coerced[key] = value  # type: ignore[assignment]
             else:
                 coerced[key] = value
 
-        return coerced
+        return coerced  # type: ignore[return-value]
 
     def extract(self, engine: str, params: Dict[str, object], validate: bool = True) -> ExtractionResult:
         """Extract mathematical structure from parameters.
@@ -262,7 +262,7 @@ class MathAnything:
         cache_key = f"{engine}:{sorted(params.items())}"
         cached = self._cache.get(cache_key)
         if cached is not None:
-            return cached
+            return cached  # type: ignore[no-any-return]
 
         # Extract
         self._warnings = []
@@ -426,8 +426,8 @@ class MathAnything:
         differ = MathDiffer()
         report = differ.compare(result1.schema, result2.schema)
         if critical_only:
-            return report.critical_changes
-        return report
+            return report.critical_changes  # type: ignore[return-value]
+        return report  # type: ignore[return-value]
 
     def visualize(
         self,
@@ -637,7 +637,7 @@ class MathAnything:
             }
 
         violations = []
-        constraints = result.schema.get("mathematical_decoding", {}).get("constraints", [])
+        constraints = result.schema.get("mathematical_decoding", {}).get("constraints", [])  # type: ignore[attr-defined]
         for c in constraints:
             if not c.get("satisfied", True):
                 violations.append(

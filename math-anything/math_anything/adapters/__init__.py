@@ -200,7 +200,7 @@ def _translate_openfoam(params: dict[str, Any]) -> dict[str, Any]:
 
 
 # Registry of all translators
-_TRANSLATORS: dict[str, callable] = {
+_TRANSLATORS: dict[str, callable] = {  # type: ignore[valid-type]
     "vasp": _translate_vasp,
     "qe": _translate_qe,
     "lammps": _translate_lammps,

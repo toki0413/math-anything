@@ -94,9 +94,9 @@ def safe_print(
 
     text = ascii_fallback(text) if force_ascii or encoding.lower() in ("gbk", "gb2312", "cp936", "ascii") else text
     try:
-        target.write(text + end)
-        target.flush()
+        target.write(text + end)  # type: ignore[union-attr]
+        target.flush()  # type: ignore[union-attr]
     except UnicodeEncodeError:
-        encoded = (text + end).encode(target.encoding or "utf-8", errors="replace").decode(target.encoding or "utf-8")
-        target.write(encoded)
-        target.flush()
+        encoded = (text + end).encode(target.encoding or "utf-8", errors="replace").decode(target.encoding or "utf-8")  # type: ignore[union-attr]
+        target.write(encoded)  # type: ignore[union-attr]
+        target.flush()  # type: ignore[union-attr]

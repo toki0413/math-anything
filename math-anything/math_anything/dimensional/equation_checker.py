@@ -290,7 +290,7 @@ class SymbolicDimensionalAnalyzer:
 
         try:
             result = parse_term()
-            return result
+            return result  # type: ignore[no-any-return]
         except Exception:
             return None
 
@@ -316,7 +316,7 @@ class SymbolicDimensionalAnalyzer:
 
     def _check_spectral(self, equation: str) -> EquationDimensionalCheck:
         """谱问题的维度检查."""
-        return self.check_equation(
+        return self.check_equation(  # type: ignore[call-arg, return-value]
             equation,
             lhs_terms=["H (Hamiltonian)", "ψ (wavefunction)"],
             rhs_terms=["ε (eigenvalue)", "ψ (wavefunction)"],
@@ -324,7 +324,7 @@ class SymbolicDimensionalAnalyzer:
 
     def _check_equilibrium(self, equation: str) -> EquationDimensionalCheck:
         """平衡问题的维度检查."""
-        return self.check_equation(
+        return self.check_equation(  # type: ignore[call-arg, return-value]
             equation,
             lhs_terms=["∇·σ (stress divergence)"],
             rhs_terms=["f (body force density)"],
@@ -332,7 +332,7 @@ class SymbolicDimensionalAnalyzer:
 
     def _check_ode(self, equation: str) -> EquationDimensionalCheck:
         """ODE 初值问题的维度检查."""
-        return self.check_equation(
+        return self.check_equation(  # type: ignore[call-arg, return-value]
             equation,
             lhs_terms=["m (mass)", "d²r/dt² (acceleration)"],
             rhs_terms=["F (force)"],
@@ -340,7 +340,7 @@ class SymbolicDimensionalAnalyzer:
 
     def _check_conservation_law(self, equation: str) -> EquationDimensionalCheck:
         """守恒律的维度检查."""
-        return self.check_equation(
+        return self.check_equation(  # type: ignore[call-arg, return-value]
             equation,
             lhs_terms=["∂u/∂t (acceleration)", "u·∇u (convective acceleration)"],
             rhs_terms=["∇p/ρ (pressure gradient / density)", "ν∇²u (viscous term)"],

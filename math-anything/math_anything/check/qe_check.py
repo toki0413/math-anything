@@ -85,7 +85,7 @@ class QuantumEspressoCheckEngine(CheckEngine):
                     rule="ecutrho too low",
                     severity="warning",
                     message=f"ecutrho = {ecutrho} Ry < 4 * ecutwfc = {4 * ecutwfc} Ry.",
-                    suggestion="Increase ecutrho to avoid charge density aliasing. Minimum: 4 * ecutwfc. Recommended: 8-12 * ecutwfc for PAW/USPP.",
+                    suggestion="Increase ecutrho to avoid charge density aliasing. Minimum: 4 * ecutwfc. Recommended: 8-12 * ecutwfc for PAW/USPP.",  # noqa: E501
                 )
             )
 
@@ -150,7 +150,7 @@ class QuantumEspressoCheckEngine(CheckEngine):
                     rule="CG diagonalization for large system",
                     severity="info",
                     message="Conjugate-gradient diagonalization is selected for a large system.",
-                    suggestion="CG is robust but slower than Davidson. For large systems, consider 'david' with adequate RAM.",
+                    suggestion="CG is robust but slower than Davidson. For large systems, consider 'david' with adequate RAM.",  # noqa: E501
                 )
             )
 
@@ -164,7 +164,7 @@ class QuantumEspressoCheckEngine(CheckEngine):
                         rule="Gamma-only sampling",
                         severity="info",
                         message="Only Gamma point is used for k-point sampling.",
-                        suggestion="Gamma-only is fine for large supercells or molecules. For small unit cells, use a denser mesh.",
+                        suggestion="Gamma-only is fine for large supercells or molecules. For small unit cells, use a denser mesh.",  # noqa: E501
                     )
                 )
             elif kpoint_mode == "crystal":
@@ -173,7 +173,7 @@ class QuantumEspressoCheckEngine(CheckEngine):
                         rule="Explicit k-points",
                         severity="info",
                         message="Explicit k-point list is used.",
-                        suggestion="Ensure the k-point path covers high-symmetry points for band structure calculations.",
+                        suggestion="Ensure the k-point path covers high-symmetry points for band structure calculations.",  # noqa: E501
                     )
                 )
             else:
@@ -203,11 +203,11 @@ class QuantumEspressoCheckEngine(CheckEngine):
         raw = schema.raw_symbols or {}
         params = dict(raw)
         ecutwfc_ry = raw.get("ecutwfc")
-        params["encut"] = ecutwfc_ry * 13.6057 if ecutwfc_ry else None
+        params["encut"] = ecutwfc_ry * 13.6057 if ecutwfc_ry else None  # type: ignore[operator]
         params["ediff"] = raw.get("conv_thr", 1e-6)
         params["nelm"] = raw.get("electron_maxstep", 100)
         params["algo"] = raw.get("mixing_mode", "plain")
-        params["ismear"] = self._map_smearing(raw.get("smearing", ""), raw.get("occupations", "fixed"))
+        params["ismear"] = self._map_smearing(raw.get("smearing", ""), raw.get("occupations", "fixed"))  # type: ignore[arg-type]
         params["sigma"] = raw.get("degauss", 0.0)
         params["ispin"] = raw.get("nspin", 1)
         params["functional"] = raw.get("functional", "PBE")

@@ -173,7 +173,7 @@ class AdaptiveConstantOptimizer:
             from ..utils.safe_eval import SafeEvalError, safe_eval
 
             y_pred = safe_eval(expr, local_vars)
-            return np.mean((y_pred - y) ** 2)
+            return np.mean((y_pred - y) ** 2)  # type: ignore[no-any-return]
         except (ValueError, TypeError, ZeroDivisionError, OverflowError, SafeEvalError) as e:
             logger.debug(f"Expression evaluation failed: {e}")
             return float("inf")
@@ -266,7 +266,7 @@ class UltimatePSRN(PSRN):
                 mse = np.mean((new_values[:, j] - y) ** 2)
                 mses.append(mse)
 
-            mses = np.array(mses)
+            mses = np.array(mses)  # type: ignore[assignment]
 
             # 渐进剪枝
             max_size = self.ultimate_config.max_layer_sizes[layer_idx]
@@ -391,19 +391,19 @@ class UltimatePSRN(PSRN):
 
         if max_depth <= 0:
             if random.random() < 0.5:
-                return Node("const", value=random.uniform(-3, 3))
+                return Node("const", value=random.uniform(-3, 3))  # type: ignore[arg-type]
             else:
-                return Node("var", name=random.choice(variable_names))
+                return Node("var", name=random.choice(variable_names))  # type: ignore[arg-type]
 
         if random.random() < 0.3:
             op = random.choice(["sin", "cos", "exp", "log", "neg"])
             child = self._create_random_tree(variable_names, max_depth - 1)
-            return Node("unary", op=op, children=[child])
+            return Node("unary", op=op, children=[child])  # type: ignore[arg-type, call-arg]
         else:
             op = random.choice(["+", "-", "*", "/", "eml"])
             left = self._create_random_tree(variable_names, max_depth - 1)
             right = self._create_random_tree(variable_names, max_depth - 1)
-            return Node("binary", op=op, children=[left, right])
+            return Node("binary", op=op, children=[left, right])  # type: ignore[arg-type, call-arg]
 
     def _evaluate_expr(self, expr: str, X: np.ndarray, y: np.ndarray, variable_names: Optional[List[str]]) -> float:
         """评估表达式."""
@@ -423,7 +423,7 @@ class UltimatePSRN(PSRN):
             from ..utils.safe_eval import SafeEvalError, safe_eval
 
             y_pred = safe_eval(expr, local_vars)
-            return np.mean((y_pred - y) ** 2)
+            return np.mean((y_pred - y) ** 2)  # type: ignore[no-any-return]
         except (ValueError, TypeError, ZeroDivisionError, OverflowError, SafeEvalError) as e:
             logger.debug(f"Expression evaluation failed: {e}")
             return float("inf")

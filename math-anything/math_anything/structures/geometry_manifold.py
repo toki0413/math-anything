@@ -216,7 +216,7 @@ class TensorField(AbstractMathematicalStructure):
 
     @property
     def total_components(self) -> int:
-        return self.manifold_dim ** (self.p + self.q)
+        return self.manifold_dim ** (self.p + self.q)  # type: ignore[no-any-return]
 
     @property
     def function_space(self) -> str:

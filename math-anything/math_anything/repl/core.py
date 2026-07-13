@@ -3,6 +3,7 @@
 Provides an interactive command-line interface for extracting and
 manipulating mathematical structures from computational software.
 """
+# ruff: noqa: E501
 
 import cmd
 import json
@@ -12,7 +13,7 @@ import sys
 try:
     import readline
 except ImportError:
-    readline = None
+    readline = None  # type: ignore[assignment]
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -146,6 +147,7 @@ class MathAnythingREPL(cmd.Cmd):
     def _banner(self) -> str:
         """Generate welcome banner."""
         slogan = self._color("yellow", "Bird is the Word")
+        # fmt: off
         banner = f"""
 {self._color("cyan", "╔══════════════════════════════════════════════════════════════╗")}
 {self._color("cyan", "║")}  {self._color("bold", "Bourbaki")} — Mathematical Structure Modeling                {self._color("cyan", "║")}
@@ -153,6 +155,7 @@ class MathAnythingREPL(cmd.Cmd):
 {self._color("cyan", "║")}  Type 'help' for commands, 'exit' to quit                     {self._color("cyan", "║")}
 {self._color("cyan", "╚══════════════════════════════════════════════════════════════════╝")}
 """
+        # fmt: on
         return banner
 
     def _setup_readline(self):
@@ -452,13 +455,13 @@ class MathAnythingREPL(cmd.Cmd):
                     elif "kpoints" in f_lower:
                         file_dict["kpoints"] = f
 
-                return extractor.extract(file_dict)
+                return extractor.extract(file_dict)  # type: ignore[no-any-return]
 
             elif engine == "lammps":
                 from lammps.core.extractor import LammpsExtractor
 
                 extractor = LammpsExtractor()
-                return extractor.extract({"input": files[0]})
+                return extractor.extract({"input": files[0]})  # type: ignore[no-any-return]
 
             elif engine == "ansys":
                 from ansys.core.apdl_parser import EnhancedAPDLParser
@@ -508,7 +511,7 @@ class MathAnythingREPL(cmd.Cmd):
             constitutive_relations=fem_math.get("material_models", []),
         )
 
-        return MathSchema(
+        return MathSchema(  # type: ignore[no-any-return]
             schema_version="1.0.0",
             meta=MetaInfo(
                 extracted_by="math-anything-repl",

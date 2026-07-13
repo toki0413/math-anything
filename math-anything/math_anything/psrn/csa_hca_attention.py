@@ -266,7 +266,7 @@ class HCALayer:
             else:
                 scores["composability"] = max(0, 1.0 - (complexity - 6) * 0.1)
 
-        return np.mean(list(scores.values()))
+        return np.mean(list(scores.values()))  # type: ignore[no-any-return]
 
     def _estimate_complexity(self, expr: str) -> int:
         """估计表达式复杂度."""
@@ -378,7 +378,7 @@ class CSAHCAAttentionGenerator(TokenGenerator):
         self.iteration = 0
 
         # 历史最佳（用于进化）
-        self.best_tokens_history = []
+        self.best_tokens_history = []  # type: ignore[var-annotated]
 
     def generate(
         self,

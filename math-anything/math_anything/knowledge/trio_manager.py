@@ -228,7 +228,7 @@ class KnowledgeTrioManager:
         results = []
 
         # Log for transparency
-        self._log_query(None, fingerprint)
+        self._log_query(None, fingerprint)  # type: ignore[arg-type]
 
         if KnowledgeSource.ARXIV in sources:
             arxiv_fp = self.fingerprint_extractor.extract_for_arxiv(None)

@@ -113,8 +113,8 @@ class SemanticMapper:
     def map_commands(
         self,
         commands: List[Dict[str, Any]],
-        parameters: List[Dict[str, Any]] = None,
-        equations: List[Dict[str, Any]] = None,
+        parameters: List[Dict[str, Any]] = None,  # type: ignore[assignment]
+        equations: List[Dict[str, Any]] = None,  # type: ignore[assignment]
     ) -> Dict[str, Any]:
         """Map extracted commands to mathematical structures.
 
@@ -179,9 +179,9 @@ class SemanticMapper:
                 if keyword in name or keyword in description:
                     mapped_numerical.append(
                         {
-                            "method": num_info["method"],
-                            "order": num_info.get("order"),
-                            "symplectic": num_info.get("symplectic"),
+                            "method": num_info["method"],  # type: ignore[index]
+                            "order": num_info.get("order"),  # type: ignore[attr-defined]
+                            "symplectic": num_info.get("symplectic"),  # type: ignore[attr-defined]
                             "source_command": name,
                         }
                     )

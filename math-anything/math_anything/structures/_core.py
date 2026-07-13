@@ -59,7 +59,7 @@ class StructuralInvariant:
             return True
         # 简单条件求值
         try:
-            return safe_eval(self.condition, properties)
+            return safe_eval(self.condition, properties)  # type: ignore[no-any-return]
         except (SafeEvalError, Exception):
             return True  # 条件无法求值时默认为激活
 

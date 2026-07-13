@@ -70,7 +70,7 @@ class VaspCheckEngine(CheckEngine):
                     rule="ENCUT below POTCAR ENMAX",
                     severity="error",
                     message=f"ENCUT = {encut} eV < max(ENMAX) = {max_enmax} eV from POTCAR.",
-                    suggestion="The plane-wave basis is mathematically incomplete for at least one element. Set ENCUT >= max(ENMAX), preferably 1.3x.",
+                    suggestion="The plane-wave basis is mathematically incomplete for at least one element. Set ENCUT >= max(ENMAX), preferably 1.3x.",  # noqa: E501
                 )
             )
         elif encut < 300:
@@ -79,7 +79,7 @@ class VaspCheckEngine(CheckEngine):
                     rule="ENCUT too low",
                     severity="warning",
                     message=f"ENCUT = {encut} eV is below 300 eV.",
-                    suggestion="Most elements need ENCUT >= 400 eV. Low ENCUT causes Pulay stress during cell relaxations.",
+                    suggestion="Most elements need ENCUT >= 400 eV. Low ENCUT causes Pulay stress during cell relaxations.",  # noqa: E501
                 )
             )
         elif max_enmax and encut < 1.3 * max_enmax:
@@ -88,7 +88,7 @@ class VaspCheckEngine(CheckEngine):
                     rule="ENCUT may be insufficient",
                     severity="info",
                     message=f"ENCUT = {encut} eV covers ENMAX ({max_enmax} eV) but margin is < 30%.",
-                    suggestion="For well-converged results, ENCUT = 1.3 * max(ENMAX) is recommended to suppress Pulay stress.",
+                    suggestion="For well-converged results, ENCUT = 1.3 * max(ENMAX) is recommended to suppress Pulay stress.",  # noqa: E501
                 )
             )
         return results
@@ -106,8 +106,8 @@ class VaspCheckEngine(CheckEngine):
                     CheckResult(
                         rule="Tetrahedron method with sparse k-mesh",
                         severity="error",
-                        message=f"ISMEAR=-5 (tetrahedron) requires dense k-mesh, but only {subdiv} ({total_k} k-points) detected.",
-                        suggestion="For tetrahedron method, use at least 6x6x6 k-points (or denser). For metals, switch to Gaussian (ISMEAR=0) or Methfessel-Paxton (ISMEAR=1).",
+                        message=f"ISMEAR=-5 (tetrahedron) requires dense k-mesh, but only {subdiv} ({total_k} k-points) detected.",  # noqa: E501
+                        suggestion="For tetrahedron method, use at least 6x6x6 k-points (or denser). For metals, switch to Gaussian (ISMEAR=0) or Methfessel-Paxton (ISMEAR=1).",  # noqa: E501
                     )
                 )
             else:
@@ -116,7 +116,7 @@ class VaspCheckEngine(CheckEngine):
                         rule="Tetrahedron method validation",
                         severity="info",
                         message="ISMEAR=-5 selected. Tetrahedron assumes linear DOS interpolation between k-points.",
-                        suggestion="Ensure your k-mesh is dense enough that the DOS varies slowly between adjacent k-points.",
+                        suggestion="Ensure your k-mesh is dense enough that the DOS varies slowly between adjacent k-points.",  # noqa: E501
                     )
                 )
 
@@ -127,7 +127,7 @@ class VaspCheckEngine(CheckEngine):
                         rule="SIGMA too large",
                         severity="warning",
                         message=f"SIGMA = {sigma} eV is large for {self._smear_name(ismear)}.",
-                        suggestion="Entropic correction T*S may exceed 1 meV/atom. For accurate total energies, use SIGMA <= 0.2 eV and extrapolate to zero.",
+                        suggestion="Entropic correction T*S may exceed 1 meV/atom. For accurate total energies, use SIGMA <= 0.2 eV and extrapolate to zero.",  # noqa: E501
                     )
                 )
             elif sigma > 0.2:
@@ -175,7 +175,7 @@ class VaspCheckEngine(CheckEngine):
                     rule="EDIFF too loose",
                     severity="warning",
                     message=f"EDIFF = {ediff} is very loose.",
-                    suggestion="For publishable results, use EDIFF <= 1e-5. For accurate forces and stress, EDIFF <= 1e-6.",
+                    suggestion="For publishable results, use EDIFF <= 1e-5. For accurate forces and stress, EDIFF <= 1e-6.",  # noqa: E501
                 )
             )
         elif ediff > 1e-5:
@@ -212,7 +212,7 @@ class VaspCheckEngine(CheckEngine):
                     rule="Relaxation disabled despite NSW > 0",
                     severity="error",
                     message=f"NSW = {nsw} requests ionic steps, but IBRION = {ibrion} disables relaxation.",
-                    suggestion="Set IBRION = 2 (conjugate gradient) or 1 (quasi-Newton) to perform geometry optimization.",
+                    suggestion="Set IBRION = 2 (conjugate gradient) or 1 (quasi-Newton) to perform geometry optimization.",  # noqa: E501
                 )
             )
 
@@ -222,7 +222,7 @@ class VaspCheckEngine(CheckEngine):
                     rule="IBRION=5 with finite NSW",
                     severity="warning",
                     message="IBRION=5 (finite differences) is for phonon calculations, not relaxation.",
-                    suggestion="For structure relaxation, use IBRION=2. For phonons, set NSW=1 and use appropriate displacement.",
+                    suggestion="For structure relaxation, use IBRION=2. For phonons, set NSW=1 and use appropriate displacement.",  # noqa: E501
                 )
             )
 
@@ -259,7 +259,7 @@ class VaspCheckEngine(CheckEngine):
                     rule="No initial magnetic moments",
                     severity="info",
                     message="ISPIN = 2 but MAGMOM not explicitly set.",
-                    suggestion="VASP will use default moments. For reliable magnetic ground states, explicitly set MAGMOM per atom type.",
+                    suggestion="VASP will use default moments. For reliable magnetic ground states, explicitly set MAGMOM per atom type.",  # noqa: E501
                 )
             )
 
@@ -288,7 +288,7 @@ class VaspCheckEngine(CheckEngine):
                     rule="DFT+U enabled",
                     severity="info",
                     message="DFT+U parameters are fully specified.",
-                    suggestion="Validate U values against experimental band gaps or magnetic moments. U is not transferable across compounds.",
+                    suggestion="Validate U values against experimental band gaps or magnetic moments. U is not transferable across compounds.",  # noqa: E501
                 )
             )
 
@@ -307,7 +307,7 @@ class VaspCheckEngine(CheckEngine):
                     rule="Low ENCUT with hybrid functional",
                     severity="warning",
                     message=f"Hybrid functional (LHFCALC) with ENCUT = {encut} eV may be insufficient.",
-                    suggestion="Hybrid functionals are sensitive to basis set completeness. Use ENCUT >= 400 eV, preferably >= 520 eV.",
+                    suggestion="Hybrid functionals are sensitive to basis set completeness. Use ENCUT >= 400 eV, preferably >= 520 eV.",  # noqa: E501
                 )
             )
 
@@ -370,7 +370,7 @@ class VaspCheckEngine(CheckEngine):
                     rule="ALGO=Eigenval is expensive",
                     severity="info",
                     message="Exact diagonalization (Eigenval) scales as O(N^3) and is very slow for large systems.",
-                    suggestion="Only use Eigenval for very small systems (< 10 atoms) or when exact eigenvalues are required.",
+                    suggestion="Only use Eigenval for very small systems (< 10 atoms) or when exact eigenvalues are required.",  # noqa: E501
                 )
             )
 
@@ -390,7 +390,7 @@ class VaspCheckEngine(CheckEngine):
                     rule="ALGO=Damped selected",
                     severity="info",
                     message="Damped algorithm is robust but slower than RMM-DIIS.",
-                    suggestion="Good choice for difficult systems (metals, strongly correlated). If converged quickly, try ALGO=Fast for speedup.",
+                    suggestion="Good choice for difficult systems (metals, strongly correlated). If converged quickly, try ALGO=Fast for speedup.",  # noqa: E501
                 )
             )
 
@@ -408,7 +408,7 @@ class VaspCheckEngine(CheckEngine):
                     rule="AMIX very large",
                     severity="warning",
                     message=f"AMIX = {amix} is aggressive. Pulay mixing may oscillate.",
-                    suggestion="For stable SCF, AMIX <= 0.4 is typical. For metals, AMIX = 0.2 is safer. Reduce if SCF diverges.",
+                    suggestion="For stable SCF, AMIX <= 0.4 is typical. For metals, AMIX = 0.2 is safer. Reduce if SCF diverges.",  # noqa: E501
                 )
             )
 
@@ -418,7 +418,7 @@ class VaspCheckEngine(CheckEngine):
                     rule="BMIX very small",
                     severity="warning",
                     message=f"BMIX = {bmix} is very small.",
-                    suggestion="BMIX controls Kerker preconditioning cutoff. Typical: 1.0-1.5. Very small BMIX suppresses charge mixing at all wavelengths, slowing convergence.",
+                    suggestion="BMIX controls Kerker preconditioning cutoff. Typical: 1.0-1.5. Very small BMIX suppresses charge mixing at all wavelengths, slowing convergence.",  # noqa: E501
                 )
             )
 
@@ -428,7 +428,7 @@ class VaspCheckEngine(CheckEngine):
                     rule="Default AMIX for metal",
                     severity="info",
                     message="Using default AMIX = 0.4 for a metallic system.",
-                    suggestion="Default AMIX is usually fine. If SCF oscillates, reduce to AMIX = 0.2 and increase BMIX to 1.0-1.5.",
+                    suggestion="Default AMIX is usually fine. If SCF oscillates, reduce to AMIX = 0.2 and increase BMIX to 1.0-1.5.",  # noqa: E501
                 )
             )
 
@@ -446,7 +446,7 @@ class VaspCheckEngine(CheckEngine):
                     rule="LREAL approximation enabled",
                     severity="info",
                     message="LREAL = Auto/On uses real-space projection for PAW operators.",
-                    suggestion="Speeds up large systems (> 50 atoms) but can introduce small errors. For high-precision results or small systems, use LREAL = .FALSE.",
+                    suggestion="Speeds up large systems (> 50 atoms) but can introduce small errors. For high-precision results or small systems, use LREAL = .FALSE.",  # noqa: E501
                 )
             )
         return results
@@ -479,7 +479,7 @@ class VaspCheckEngine(CheckEngine):
                     rule="PREC = Single (reduced precision)",
                     severity="warning",
                     message="PREC = Single uses single-precision FFTs and reduces accuracy.",
-                    suggestion="Only use for very large systems where memory is limiting. Results may not be reproducible across machines.",
+                    suggestion="Only use for very large systems where memory is limiting. Results may not be reproducible across machines.",  # noqa: E501
                 )
             )
 
@@ -500,7 +500,7 @@ class VaspCheckEngine(CheckEngine):
                     rule="Both WAVECAR and CHGCAR disabled",
                     severity="info",
                     message="LWAVE = .FALSE. and LCHARG = .FALSE.: no wavefunction or charge density files written.",
-                    suggestion="If you plan follow-up calculations (DOS, band structure, dielectric), you will need to re-run the SCF. Consider keeping at least LCHARG = .TRUE.",
+                    suggestion="If you plan follow-up calculations (DOS, band structure, dielectric), you will need to re-run the SCF. Consider keeping at least LCHARG = .TRUE.",  # noqa: E501
                 )
             )
 
@@ -510,7 +510,7 @@ class VaspCheckEngine(CheckEngine):
                     rule="CHGCAR output during relaxation",
                     severity="info",
                     message="LCHARG = .TRUE. during ionic relaxation writes CHGCAR for each step.",
-                    suggestion="Only the final CHGCAR is typically useful. For large systems, writing every step creates large files.",
+                    suggestion="Only the final CHGCAR is typically useful. For large systems, writing every step creates large files.",  # noqa: E501
                 )
             )
 

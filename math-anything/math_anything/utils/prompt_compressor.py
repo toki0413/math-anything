@@ -106,7 +106,7 @@ class PromptCompressor:
 
     @property
     def stats(self) -> PromptStats:
-        return self._stats
+        return self._stats  # type: ignore[no-any-return]
 
     def reset_stats(self) -> None:
         self._stats = PromptStats()

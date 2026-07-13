@@ -168,7 +168,7 @@ class VoxelMathExtractor:
         Returns:
             Dictionary with extracted mathematical structures
         """
-        result = {
+        result = {  # type: ignore[var-annotated]
             "grid_info": {},
             "discretization": {},
             "boundary_conditions": [],
@@ -310,8 +310,8 @@ class VoxelMathExtractor:
                 {
                     "method": "Finite-Difference Time-Domain",
                     "discretization_approach": "finite_difference",
-                    "staggered_grid": True,
-                    "yee_grid": True,
+                    "staggered_grid": True,  # type: ignore[dict-item]
+                    "yee_grid": True,  # type: ignore[dict-item]
                 }
             )
         elif simulation_type == "fvm":
@@ -319,7 +319,7 @@ class VoxelMathExtractor:
                 {
                     "method": "Finite Volume Method",
                     "discretization_approach": "conservation_form",
-                    "cell_centered": True,
+                    "cell_centered": True,  # type: ignore[dict-item]
                 }
             )
 
@@ -490,7 +490,7 @@ class VoxelMathExtractor:
         }
 
         if simulation_type == "lattice_boltzmann":
-            rules["lbm_specific"] = {
+            rules["lbm_specific"] = {  # type: ignore[assignment]
                 "macroscopic_reconstruction": {
                     "density": "ρ = Σᵢ fᵢ",
                     "velocity": "u = (1/ρ) Σᵢ cᵢ fᵢ",

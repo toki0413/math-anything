@@ -227,7 +227,7 @@ class VariationalSolver:
         self.stiffness_assembler = stiffness_assembler
         self.load_assembler = load_assembler
 
-    def solve_1d_poisson(self, n_elements: int = 10, domain_length: float = 1.0, source: Callable = None) -> dict:
+    def solve_1d_poisson(self, n_elements: int = 10, domain_length: float = 1.0, source: Callable = None) -> dict:  # type: ignore[assignment]
         """Solve 1D Poisson equation -u'' = f with u(0)=u(L)=0.
 
         Uses linear finite elements.

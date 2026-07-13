@@ -102,7 +102,7 @@ class AnsysCheckEngine(CheckEngine):
                     CheckResult(
                         rule=f"APDL constraint: {c.get('property', 'unknown')}",
                         severity=severity,
-                        message=f"{c.get('property', '')} = {c.get('value', '')} violates {c.get('constraint', '')}. {c.get('description', '')}",
+                        message=f"{c.get('property', '')} = {c.get('value', '')} violates {c.get('constraint', '')}. {c.get('description', '')}",  # noqa: E501
                         suggestion="Adjust parameter to satisfy the constraint.",
                     )
                 )

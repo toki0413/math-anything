@@ -68,13 +68,13 @@ class EMDomain(Domain):
         if field.coupling_matrix is not None:
             result["coupling_matrix_shape"] = field.coupling_matrix.shape
         if field.eigenvalues is not None:
-            result["eigenvalues"] = [float(e) for e in field.eigenvalues[:4]]
+            result["eigenvalues"] = [float(e) for e in field.eigenvalues[:4]]  # type: ignore[misc]
 
         # CFL for FDTD
         n = self.params.get("n_cells", 100)
         L = self.params.get("domain_size", 1.0)
         dx = L / n
-        result["cfl_condition"] = {
+        result["cfl_condition"] = {  # type: ignore[assignment]
             "wave_speed": c,
             "dx": dx,
             "max_dt": dx / (c * np.sqrt(3)),  # 3D Courant condition

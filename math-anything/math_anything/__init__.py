@@ -170,7 +170,7 @@ def __getattr__(name: str):
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
-def load_harness(engine_name: str) -> MathAnythingHarness:
+def load_harness(engine_name: str) -> MathAnythingHarness:  # type: ignore[valid-type]
     """Load a harness by engine name.
 
     Args:
@@ -192,7 +192,7 @@ def load_harness(engine_name: str) -> MathAnythingHarness:
     if harness is None:
         available = HarnessRegistry.list_engines()
         raise ValueError(f"Engine '{engine_name}' not found. Available engines: {available}")
-    return harness
+    return harness  # type: ignore[no-any-return]
 
 
 def list_engines() -> list:
@@ -209,7 +209,7 @@ def list_engines() -> list:
         DeprecationWarning,
         stacklevel=2,
     )
-    return HarnessRegistry.list_engines()
+    return HarnessRegistry.list_engines()  # type: ignore[no-any-return]
 
 
 __all__ = [

@@ -72,7 +72,7 @@ def invariant_to_prop_type(inv: StructuralInvariant) -> Pi:
         )
     elif "=" in inv.expression:
         # 等式: Id_A(lhs, rhs)
-        return Identity(Var("Value"), Var("lhs"), Var("rhs"))
+        return Identity(Var("Value"), Var("lhs"), Var("rhs"))  # type: ignore[return-value]
     else:
         # 一般命题
         return arrow(Var("Structure"), Var(prop_name))
@@ -151,7 +151,7 @@ def morphism_to_type(morphism: Morphism) -> MorphismType:
             proof_term = proof_types[0]
             for pt in proof_types[1:]:
                 proof_term = product(proof_term, pt)
-        result_type = Sigma("b", target, proof_term)
+        result_type = Sigma("b", target, proof_term)  # type: ignore[assignment]
 
     mt.full_type = Pi("a", source, result_type)
     return mt
@@ -313,7 +313,7 @@ class TypeTheoryBridge:
         检查：对于每个 invariants_kept 中的不变量，
         是否存在 transport 证明将其从源传输到目标。
         """
-        errors = []
+        errors = []  # type: ignore[var-annotated]
         proofs = {}
 
         for inv_name in morphism.invariants_kept:
@@ -331,7 +331,7 @@ class TypeTheoryBridge:
         for inv_name in morphism.invariants_lost:
             # 丢失的不变量在类型论中意味着：
             # 不存在 transport 证明
-            proofs[inv_name] = Var(f"impossible_{inv_name}")
+            proofs[inv_name] = Var(f"impossible_{inv_name}")  # type: ignore[assignment]
 
         if errors:
             return TypeCheckResult(success=False, errors=errors)
@@ -379,8 +379,8 @@ class TypeTheoryBridge:
                     target_value=next_value,
                     eq_proof=eq,
                 )
-                current_value = next_value
-                current_proof = transport_term
+                current_value = next_value  # type: ignore[assignment]
+                current_proof = transport_term  # type: ignore[assignment]
                 kept_count += 1
 
         if lost_count > 0:

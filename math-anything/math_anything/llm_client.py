@@ -104,7 +104,7 @@ class LLMClient:
                 system=system_msg,
                 messages=user_messages,
             )
-            return response.content[0].text
+            return response.content[0].text  # type: ignore[no-any-return]
 
         else:
             # OpenAI-compatible
@@ -121,7 +121,7 @@ class LLMClient:
                     if chunk.choices and chunk.choices[0].delta.content:
                         chunks.append(chunk.choices[0].delta.content)
                 return "".join(chunks)
-            return response.choices[0].message.content
+            return response.choices[0].message.content  # type: ignore[no-any-return]
 
     def embed(
         self,

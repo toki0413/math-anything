@@ -158,7 +158,7 @@ Generate a JSON plan with at most 4 steps."""
             json_str = response.split("```")[1].split("```")[0].strip()
         else:
             json_str = response
-        return json.loads(json_str)
+        return json.loads(json_str)  # type: ignore[no-any-return]
     except Exception:
         print("Failed to parse plan. Raw response:")
         print(response)

@@ -28,12 +28,12 @@ class DFTInsightTemplate(InsightTemplate):
 
     def _register_default_sections(self) -> None:
         DFTInsightTemplate._INSIGHT_SECTIONS = [
-            _dft_problem_overview,
-            _dft_basis_set,
-            _dft_kpoint_sampling,
-            _dft_scf_convergence,
-            _dft_functional,
-            _dft_magnetic,
+            _dft_problem_overview,  # type: ignore[list-item]
+            _dft_basis_set,  # type: ignore[list-item]
+            _dft_kpoint_sampling,  # type: ignore[list-item]
+            _dft_scf_convergence,  # type: ignore[list-item]
+            _dft_functional,  # type: ignore[list-item]
+            _dft_magnetic,  # type: ignore[list-item]
         ]
 
 
@@ -206,13 +206,13 @@ class DFTDraftTemplate(DraftTemplate):
 
     def _register_default_sections(self) -> None:
         DFTDraftTemplate._DRAFT_SECTIONS = [
-            _dft_draft_theory,
-            _dft_draft_software,
-            _dft_draft_basis,
-            _dft_draft_sampling,
-            _dft_draft_convergence,
-            _dft_draft_relaxation,
-            _dft_draft_caveats,
+            _dft_draft_theory,  # type: ignore[list-item]
+            _dft_draft_software,  # type: ignore[list-item]
+            _dft_draft_basis,  # type: ignore[list-item]
+            _dft_draft_sampling,  # type: ignore[list-item]
+            _dft_draft_convergence,  # type: ignore[list-item]
+            _dft_draft_relaxation,  # type: ignore[list-item]
+            _dft_draft_caveats,  # type: ignore[list-item]
         ]
 
 
@@ -308,11 +308,11 @@ class DFTCheckTemplate(CheckTemplate):
 
     def _register_default_sections(self) -> None:
         DFTCheckTemplate._CHECK_SECTIONS = [
-            _dft_check_encut,
-            _dft_check_kmesh,
-            _dft_check_smearing,
-            _dft_check_scf,
-            _dft_check_magnetic,
+            _dft_check_encut,  # type: ignore[list-item]
+            _dft_check_kmesh,  # type: ignore[list-item]
+            _dft_check_smearing,  # type: ignore[list-item]
+            _dft_check_scf,  # type: ignore[list-item]
+            _dft_check_magnetic,  # type: ignore[list-item]
         ]
 
 
@@ -349,7 +349,7 @@ def _dft_check_encut(tpl: DFTCheckTemplate) -> List[NarrativeSection]:
 
 
 def _dft_check_kmesh(tpl: DFTCheckTemplate) -> List[NarrativeSection]:
-    results = []
+    results = []  # type: ignore[var-annotated]
     mesh = tpl._param("kpoint_mesh", [])
     ismear = tpl._param("ismear", 0)
     if not mesh:

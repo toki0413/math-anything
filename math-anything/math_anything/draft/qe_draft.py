@@ -72,11 +72,11 @@ class QuantumEspressoDraftEngine(DraftEngine):
         raw = schema.raw_symbols or {}
         params = dict(raw)
         ecutwfc_ry = raw.get("ecutwfc")
-        params["encut"] = ecutwfc_ry * 13.6057 if ecutwfc_ry else None
+        params["encut"] = ecutwfc_ry * 13.6057 if ecutwfc_ry else None  # type: ignore[operator]
         params["ediff"] = raw.get("conv_thr", 1e-6)
         params["nelm"] = raw.get("electron_maxstep", 100)
         params["algo"] = raw.get("mixing_mode", "plain")
-        params["ismear"] = self._map_smearing(raw.get("smearing", ""), raw.get("occupations", "fixed"))
+        params["ismear"] = self._map_smearing(raw.get("smearing", ""), raw.get("occupations", "fixed"))  # type: ignore[arg-type]
         params["sigma"] = raw.get("degauss", 0.0)
         params["ispin"] = raw.get("nspin", 1)
         params["functional"] = raw.get("functional", "PBE")

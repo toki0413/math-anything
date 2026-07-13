@@ -39,7 +39,7 @@ class LinearMorphism(Morphism):
         x = np.asarray(input_data, dtype=float)
         if x.shape != (self.input_dim,):
             raise ValueError(f"Expected input shape ({self.input_dim},), got {x.shape}")
-        return self.weight @ x + self.bias
+        return self.weight @ x + self.bias  # type: ignore[no-any-return]
 
 
 class ActivationMorphism(Morphism):
@@ -75,12 +75,12 @@ class ActivationMorphism(Morphism):
     def apply(self, input_data: Any) -> np.ndarray:
         x = np.asarray(input_data, dtype=float)
         if self.activation == "relu":
-            return np.maximum(0.0, x)
+            return np.maximum(0.0, x)  # type: ignore[no-any-return]
         if self.activation == "tanh":
-            return np.tanh(x)
+            return np.tanh(x)  # type: ignore[no-any-return]
         # Clamp for numerical stability before exponentiation.
         x = np.clip(x, -500.0, 500.0)
-        return 1.0 / (1.0 + np.exp(-x))
+        return 1.0 / (1.0 + np.exp(-x))  # type: ignore[no-any-return]
 
     def derivative(self, pre_activation: np.ndarray) -> np.ndarray:
         """Return the element-wise derivative of the activation at pre_activation."""
@@ -89,11 +89,11 @@ class ActivationMorphism(Morphism):
             return (x > 0).astype(float)
         if self.activation == "tanh":
             t = np.tanh(x)
-            return 1.0 - t * t
+            return 1.0 - t * t  # type: ignore[no-any-return]
         # sigmoid
         x = np.clip(x, -500.0, 500.0)
         s = 1.0 / (1.0 + np.exp(-x))
-        return s * (1.0 - s)
+        return s * (1.0 - s)  # type: ignore[no-any-return]
 
 
 class LossMorphism(Morphism):
@@ -156,10 +156,10 @@ class SequentialNetwork:
             elif isinstance(layer, ActivationMorphism):
                 z = h
                 h = layer.apply(h)
-                self._cache.append((None, z))
+                self._cache.append((None, z))  # type: ignore[arg-type]
             else:
                 h = layer.apply(h)
-                self._cache.append((None, h))
+                self._cache.append((None, h))  # type: ignore[arg-type]
         return h
 
     def backward(

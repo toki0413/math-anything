@@ -198,7 +198,7 @@ def run_all():
     for label, r in results.items():
         sp = r["gp_time"] / max(r["psrn_time"], 1e-6)
         print(
-            f"{label:>18} | {r['gp_time']:>8.3f}s | {r['psrn_time']:>8.3f}s | {sp:>7.1f}x | {r['gp_mse']:>11.2e} | {r['psrn_mse']:>11.2e}"
+            f"{label:>18} | {r['gp_time']:>8.3f}s | {r['psrn_time']:>8.3f}s | {sp:>7.1f}x | {r['gp_mse']:>11.2e} | {r['psrn_mse']:>11.2e}"  # noqa: E501
         )
 
     return results

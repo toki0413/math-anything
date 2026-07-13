@@ -272,7 +272,7 @@ class MetamathAnalyzer:
             (semi_decidable_patterns, DecidabilityClass.SEMI_DECIDABLE),
             (decidable_patterns, DecidabilityClass.DECIDABLE),
         ]:
-            for pattern in patterns:
+            for pattern in patterns:  # type: ignore[attr-defined]
                 if all(p in expr for p in pattern):
                     return DecidabilityBoundary(
                         problem_name=invariant_name,

@@ -52,8 +52,8 @@ class AbaqusDraftEngine(DraftEngine):
             body = (
                 "The governing equation is the static equilibrium of a continuous body: "
                 "$\\nabla \\cdot \\boldsymbol{\\sigma} + \\mathbf{b} = \\mathbf{0}$, "
-                "where $\\boldsymbol{\\sigma}$ is the Cauchy stress tensor and $\\mathbf{b}$ is the body force per unit volume. "
-                "The weak form is obtained by multiplying by a test function $\\mathbf{v}$ and integrating over the domain $\\Omega$: "
+                "where $\\boldsymbol{\\sigma}$ is the Cauchy stress tensor and $\\mathbf{b}$ is the body force per unit volume. "  # noqa: E501
+                "The weak form is obtained by multiplying by a test function $\\mathbf{v}$ and integrating over the domain $\\Omega$: "  # noqa: E501
                 "$\\int_\\Omega \\boldsymbol{\\sigma} : \\nabla^s \\mathbf{v} \\, \\mathrm{d}\\Omega = "
                 "\\int_\\Omega \\mathbf{b} \\cdot \\mathbf{v} \\, \\mathrm{d}\\Omega + "
                 "\\int_{\\Gamma_t} \\mathbf{t} \\cdot \\mathbf{v} \\, \\mathrm{d}\\Gamma$."

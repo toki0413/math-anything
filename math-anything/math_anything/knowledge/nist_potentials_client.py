@@ -125,7 +125,7 @@ class NISTPotentialsClient:
         },
         "reaxff": {
             "name": "ReaxFF",
-            "form": "E = E_bond + E_over + E_under + E_lp + E_val + E_pen + E_coa + E_C2 + E_tors + E_conj + E_HB + E_vdW + E_Coulomb",
+            "form": "E = E_bond + E_over + E_under + E_lp + E_val + E_pen + E_coa + E_C2 + E_tors + E_conj + E_HB + E_vdW + E_Coulomb",  # noqa: E501
             "parameters": ["many_bond_parameters"],
             "range": "short_range",
             "description": "Reactive force field for chemical reactions",
@@ -165,13 +165,13 @@ class NISTPotentialsClient:
             form_data = self.POTENTIAL_FORMS[normalized]
 
             return PotentialFunction(
-                name=form_data["name"],
+                name=form_data["name"],  # type: ignore[arg-type]
                 type=potential_type,
-                mathematical_form=form_data["form"],
-                parameters=form_data["parameters"],
-                description=form_data["description"],
+                mathematical_form=form_data["form"],  # type: ignore[arg-type]
+                parameters=form_data["parameters"],  # type: ignore[arg-type]
+                description=form_data["description"],  # type: ignore[arg-type]
                 materials=[],  # Would be populated from API
-                range_type=form_data["range"],
+                range_type=form_data["range"],  # type: ignore[arg-type]
                 source="NIST/OpenKIM",
             )
 
@@ -385,7 +385,7 @@ class NISTPotentialsClient:
         }
 
         normalized = potential_type.lower().replace("-", "_").replace(" ", "_")
-        return cutoffs.get(
+        return cutoffs.get(  # type: ignore[return-value]
             normalized,
             {"recommended": "unknown", "description": "No recommendation available"},
         )

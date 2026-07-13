@@ -76,7 +76,7 @@ class ConservativeEnhancedPSRN(PSRN):
                 mse = np.mean((new_values[:, j] - y) ** 2)
                 mses.append(mse)
 
-            mses = np.array(mses)
+            mses = np.array(mses)  # type: ignore[assignment]
 
             # 严格剪枝
             max_size = self.conservative_config.max_layer_size
@@ -103,7 +103,7 @@ class ConservativeEnhancedPSRN(PSRN):
 
         # 从所有候选中选择最优
         all_candidates.sort(key=lambda x: x[1])
-        best_expr, best_mse, _ = all_candidates[0] if all_candidates else ("x", float("inf"))
+        best_expr, best_mse, _ = all_candidates[0] if all_candidates else ("x", float("inf"))  # type: ignore[misc]
 
         top_k = [(expr, mse) for expr, mse, _ in all_candidates[:10]]
 

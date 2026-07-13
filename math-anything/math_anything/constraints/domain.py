@@ -125,10 +125,10 @@ class DomainLearner:
 
             # 计算区分力（简化为值域不重叠程度）
             if _is_numeric(pos_values) and _is_numeric(neg_values):
-                pos_mean = sum(pos_values) / len(pos_values)
-                neg_mean = sum(neg_values) / len(neg_values)
-                pos_std = _std(pos_values, pos_mean)
-                neg_std = _std(neg_values, neg_mean)
+                pos_mean = sum(pos_values) / len(pos_values)  # type: ignore[arg-type]
+                neg_mean = sum(neg_values) / len(neg_values)  # type: ignore[arg-type]
+                pos_std = _std(pos_values, pos_mean)  # type: ignore[arg-type]
+                neg_std = _std(neg_values, neg_mean)  # type: ignore[arg-type]
                 separation = abs(pos_mean - neg_mean) / max(pos_std + neg_std, 0.001)
                 candidates.append((feature, min(separation, 1.0)))
             else:
@@ -150,7 +150,7 @@ class DomainLearner:
             if not pos_values:
                 continue
             if _is_numeric(pos_values):
-                mean_val = sum(pos_values) / len(pos_values)
+                mean_val = sum(pos_values) / len(pos_values)  # type: ignore[arg-type]
                 conditions.append(
                     DomainCondition(
                         feature=feature,
@@ -226,7 +226,7 @@ def _std(values: list[float], mean: float) -> float:
     if len(values) < 2:
         return 0.0
     variance = sum((v - mean) ** 2 for v in values) / (len(values) - 1)
-    return max(variance**0.5, 1e-10)
+    return max(variance**0.5, 1e-10)  # type: ignore[no-any-return]
 
 
 def _check_condition(dc: DomainCondition, params: dict[str, Any]) -> bool:

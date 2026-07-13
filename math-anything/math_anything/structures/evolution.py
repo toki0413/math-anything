@@ -91,7 +91,7 @@ class HamiltonianSystem(EvolutionProblem):
         props = {"hamiltonian": self.symplectic, "time_dependent": not self.autonomous}
 
         for inv in get_invariants("hamiltonian"):
-            if inv.is_active(props):
+            if inv.is_active(props):  # type: ignore[arg-type]
                 invariants.append(inv)
 
         if self.symplectic:

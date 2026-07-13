@@ -31,7 +31,7 @@ class ArxivPaper:
     updated: str
     pdf_url: str
     relevance_score: float = 0.0
-    matched_concepts: List[str] = None
+    matched_concepts: List[str] = None  # type: ignore[assignment]
 
     def __post_init__(self):
         if self.matched_concepts is None:
@@ -250,13 +250,13 @@ class ArxivClient:
                     categories.append(term)
 
             return ArxivPaper(
-                id=id_elem.text.split("/")[-1] if id_elem is not None else "",
-                title=title_elem.text.strip() if title_elem is not None else "",
-                authors=authors,
-                abstract=summary_elem.text.strip() if summary_elem is not None else "",
+                id=id_elem.text.split("/")[-1] if id_elem is not None else "",  # type: ignore[union-attr]
+                title=title_elem.text.strip() if title_elem is not None else "",  # type: ignore[union-attr]
+                authors=authors,  # type: ignore[arg-type]
+                abstract=summary_elem.text.strip() if summary_elem is not None else "",  # type: ignore[union-attr]
                 categories=categories,
-                published=published_elem.text if published_elem is not None else "",
-                updated=updated_elem.text if updated_elem is not None else "",
+                published=published_elem.text if published_elem is not None else "",  # type: ignore[arg-type]
+                updated=updated_elem.text if updated_elem is not None else "",  # type: ignore[arg-type]
                 pdf_url=pdf_url,
             )
 

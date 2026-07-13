@@ -26,12 +26,12 @@ class FEMInsightTemplate(InsightTemplate):
 
     def _register_default_sections(self) -> None:
         FEMInsightTemplate._INSIGHT_SECTIONS = [
-            _fem_problem_overview,
-            _fem_discretization,
-            _fem_material,
-            _fem_boundary_conditions,
-            _fem_solver,
-            _fem_stability,
+            _fem_problem_overview,  # type: ignore[list-item]
+            _fem_discretization,  # type: ignore[list-item]
+            _fem_material,  # type: ignore[list-item]
+            _fem_boundary_conditions,  # type: ignore[list-item]
+            _fem_solver,  # type: ignore[list-item]
+            _fem_stability,  # type: ignore[list-item]
         ]
 
 
@@ -91,7 +91,7 @@ def _fem_discretization(tpl: FEMInsightTemplate) -> Optional[NarrativeSection]:
 
     element_knowledge = {
         "C3D8": "8-node hexahedron (trilinear). Prone to shear locking in bending; use C3D8I or C3D8R for bending.",
-        "C3D8R": "8-node hexahedron with reduced integration. Hourglass stabilization required. Check hourglass energy < 5%.",
+        "C3D8R": "8-node hexahedron with reduced integration. Hourglass stabilization required. Check hourglass energy < 5%.",  # noqa: E501
         "C3D8I": "8-node hexahedron with incompatible modes. Excellent for bending without hourglass modes.",
         "C3D4": "4-node tetrahedron (linear). Very stiff; use C3D10 for accuracy.",
         "C3D10": "10-node quadratic tetrahedron. Accurate for complex geometries and bending.",
@@ -251,13 +251,13 @@ class FEMDraftTemplate(DraftTemplate):
 
     def _register_default_sections(self) -> None:
         FEMDraftTemplate._DRAFT_SECTIONS = [
-            _fem_draft_theory,
-            _fem_draft_software,
-            _fem_draft_mesh,
-            _fem_draft_material,
-            _fem_draft_bc,
-            _fem_draft_solver,
-            _fem_draft_caveats,
+            _fem_draft_theory,  # type: ignore[list-item]
+            _fem_draft_software,  # type: ignore[list-item]
+            _fem_draft_mesh,  # type: ignore[list-item]
+            _fem_draft_material,  # type: ignore[list-item]
+            _fem_draft_bc,  # type: ignore[list-item]
+            _fem_draft_solver,  # type: ignore[list-item]
+            _fem_draft_caveats,  # type: ignore[list-item]
         ]
 
 
@@ -394,11 +394,11 @@ class FEMCheckTemplate(CheckTemplate):
 
     def _register_default_sections(self) -> None:
         FEMCheckTemplate._CHECK_SECTIONS = [
-            _fem_check_materials,
-            _fem_check_bcs,
-            _fem_check_elements,
-            _fem_check_steps,
-            _fem_check_mesh,
+            _fem_check_materials,  # type: ignore[list-item]
+            _fem_check_bcs,  # type: ignore[list-item]
+            _fem_check_elements,  # type: ignore[list-item]
+            _fem_check_steps,  # type: ignore[list-item]
+            _fem_check_mesh,  # type: ignore[list-item]
         ]
 
 
@@ -557,7 +557,7 @@ class FEMParamExtractor:
         FEMParamExtractor._expand_all_dof(params, raw)
 
         params["elements"] = raw.get("elements", [])
-        params["nodes"] = raw.get("parameters", {}).get("nodes", 100)
+        params["nodes"] = raw.get("parameters", {}).get("nodes", 100)  # type: ignore[attr-defined]
         params["nlgeom"] = raw.get("nlgeom", False)
 
         return params

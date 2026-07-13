@@ -98,19 +98,19 @@ class _OptionalBackendStub:
 
     def fit(self, dataset: list[tuple[Any, Any]], epochs: int = 10, lr: float = 0.05) -> None:
         raise ImportError(
-            f"The '{self.name}' backend requires the '{self._package_name}' package. "
-            f"Install it with: pip install {self._package_name}"
+            f"The '{self.name}' backend requires the '{self._package_name}' package. "  # type: ignore[attr-defined]
+            f"Install it with: pip install {self._package_name}"  # type: ignore[attr-defined]
         )
 
     def predict(self, x: Any) -> Any:
-        raise ImportError(f"The '{self.name}' backend requires the '{self._package_name}' package.")
+        raise ImportError(f"The '{self.name}' backend requires the '{self._package_name}' package.")  # type: ignore[attr-defined]
 
     def to_morphism_chain(self) -> list[dict[str, Any]]:
         return [
             {
-                "name": f"model_{self.name}",
+                "name": f"model_{self.name}",  # type: ignore[attr-defined]
                 "type": "surrogate",
-                "description": f"{self.name.upper()} surrogate backend (not installed)",
+                "description": f"{self.name.upper()} surrogate backend (not installed)",  # type: ignore[attr-defined]
                 "invariants_kept": [],
                 "invariants_lost": ["numpy_fallback"],
             }
@@ -151,7 +151,7 @@ class BackendRegistry:
         if name not in self._backends:
             available = ", ".join(sorted(self._backends.keys()))
             raise ValueError(f"Unknown backend '{name}'. Available: {available}")
-        return self._backends[name](**params)
+        return self._backends[name](**params)  # type: ignore[no-any-return]
 
     def list(self) -> list[str]:
         return sorted(self._backends.keys())

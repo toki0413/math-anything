@@ -27,7 +27,7 @@ class TieredAnalyzer:
     def __init__(self, base_path: Optional[str] = None):
         self.recommender = TierRecommender()
         self.base_path = Path(base_path) if base_path else Path.cwd()
-        self._harness_cache = {}
+        self._harness_cache = {}  # type: ignore[var-annotated]
 
     def analyze(
         self,
@@ -277,7 +277,7 @@ class TieredAnalyzer:
         }
 
         if result.file_analysis.num_atoms == 0:
-            validation["warnings"].append("Could not determine atom count")
+            validation["warnings"].append("Could not determine atom count")  # type: ignore[attr-defined]
 
         return validation
 

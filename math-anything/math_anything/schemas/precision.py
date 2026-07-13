@@ -163,11 +163,11 @@ class MathematicalDecoding:
         if self.core_problem:
             result["core_problem"] = self.core_problem
         if self.approximations_applied:
-            result["approximations_applied"] = [a.to_dict() for a in self.approximations_applied]
+            result["approximations_applied"] = [a.to_dict() for a in self.approximations_applied]  # type: ignore[assignment]
         if self.solution_method:
             result["solution_method"] = self.solution_method
         if self.mathematical_hierarchy:
-            result["mathematical_hierarchy"] = self.mathematical_hierarchy
+            result["mathematical_hierarchy"] = self.mathematical_hierarchy  # type: ignore[assignment]
         return result
 
 
@@ -215,13 +215,13 @@ class EnhancedMathSchema:
         if self.mathematical_structure:
             result["mathematical_structure"] = self.mathematical_structure.to_dict()
         if self.variable_dependencies:
-            result["variable_dependencies"] = [v.to_dict() for v in self.variable_dependencies]
+            result["variable_dependencies"] = [v.to_dict() for v in self.variable_dependencies]  # type: ignore[assignment]
         if self.discretization_scheme:
             result["discretization_scheme"] = self.discretization_scheme.to_dict()
         if self.solution_strategy:
             result["solution_strategy"] = self.solution_strategy.to_dict()
         if self.approximations:
-            result["approximations"] = [a.to_dict() for a in self.approximations]
+            result["approximations"] = [a.to_dict() for a in self.approximations]  # type: ignore[assignment]
         if self.ml_context:
             result["ml_context"] = self.ml_context.to_dict()
         if self.modeling_guidance:

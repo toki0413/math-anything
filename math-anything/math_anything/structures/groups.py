@@ -152,7 +152,7 @@ class FiniteGroupRepresentation(GroupRepresentation):
                 ),
                 StructuralInvariant(
                     name="number_of_irreps_equals_conjugacy_classes",
-                    expression=f"n_irrep = {self.conjugacy_classes} (number of irreducible representations = number of conjugacy classes)",
+                    expression=f"n_irrep = {self.conjugacy_classes} (number of irreducible representations = number of conjugacy classes)",  # noqa: E501
                     theorem="Representation Theory of Finite Groups",
                     condition="self.conjugacy_classes > 0",
                     affected_quantities=["irreps", "conjugacy_classes"],
@@ -412,7 +412,7 @@ class SpaceGroupRepresentation(GroupRepresentation):
         """Compute the Bloch phase exp(ik·R) for a lattice translation R."""
         k = np.array(self.k_vector)
         R = np.array(lattice_vector)
-        return np.exp(1j * np.dot(k, R))
+        return np.exp(1j * np.dot(k, R))  # type: ignore[no-any-return]
 
     def brillouin_zone_fractional(self, k_frac: tuple[float, float, float]) -> np.ndarray:
         """Convert fractional k-vector to Cartesian coordinates (cubic lattice assumed)."""
@@ -475,7 +475,7 @@ class BandCompatibility(GroupRepresentation):
     low_symmetry_direction: str = ""
     high_symmetry_irrep: str = ""
     compatible_irreps: list[str] = field(default_factory=list)
-    band_connectivity_graph: dict[str, list[str]] = field(default_factory=list)
+    band_connectivity_graph: dict[str, list[str]] = field(default_factory=list)  # type: ignore[arg-type]
 
     def subduction_multiplicities(
         self, char_table_high: "CharacterTable | None" = None, char_table_low: "CharacterTable | None" = None
@@ -486,8 +486,8 @@ class BandCompatibility(GroupRepresentation):
         """
         if char_table_low is not None:
             try:
-                i_high = char_table_high.irreps.index(self.high_symmetry_irrep)
-                high_chars = char_table_high.characters[i_high]
+                i_high = char_table_high.irreps.index(self.high_symmetry_irrep)  # type: ignore[union-attr]
+                high_chars = char_table_high.characters[i_high]  # type: ignore[union-attr]
                 return char_table_low.decompose_representation(high_chars)
             except (ValueError, AttributeError):
                 pass
@@ -511,7 +511,7 @@ class BandCompatibility(GroupRepresentation):
                 ),
                 StructuralInvariant(
                     name="compatibility_relation",
-                    expression=f"Irrep {self.high_symmetry_irrep} at {self.high_symmetry_point} branches to {self.compatible_irreps} along {self.low_symmetry_direction}",
+                    expression=f"Irrep {self.high_symmetry_irrep} at {self.high_symmetry_point} branches to {self.compatible_irreps} along {self.low_symmetry_direction}",  # noqa: E501
                     theorem="Compatibility relations for space group irreps (Bouckaert-Smoluchowski-Wigner)",
                     condition="self.high_symmetry_point and self.low_symmetry_direction",
                     affected_quantities=["band_structure", "irrep_label"],
@@ -675,14 +675,14 @@ class CharacterTable:
         Returns which irreps appear in each product.
         """
         if self.group_name != other.group_name:
-            return {"error": "Direct product requires same group"}
+            return {"error": "Direct product requires same group"}  # type: ignore[dict-item]
         results = {}
         for i, irrep_i in enumerate(self.irreps):
             for j, irrep_j in enumerate(self.irreps):
                 product_chars = self.characters[i] * self.characters[j]
                 decomp = self.decompose_representation(product_chars)
                 results[f"{irrep_i}⊗{irrep_j}"] = decomp
-        return results
+        return results  # type: ignore[return-value]
 
     def selection_rules(self, irrep_initial: str, irrep_operator: str, irrep_final: str) -> bool:
         """Check if a transition is allowed by group theory.

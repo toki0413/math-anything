@@ -71,7 +71,7 @@ class _EngineWrapper:
 
     def extract(self, params: dict[str, Any]) -> dict[str, Any]:
         self._load()
-        return self._extractor.extract(params)
+        return self._extractor.extract(params)  # type: ignore[no-any-return]
 
     def supported_file_types(self) -> list[str]:
         types: dict[str, list[str]] = {

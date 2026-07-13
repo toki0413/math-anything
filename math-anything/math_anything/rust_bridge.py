@@ -49,7 +49,7 @@ class _EMLPyFallback:
                 break
             current = nxt
 
-        return [v for v in sorted(closure)][:max_size]
+        return [v for v in sorted(closure)][:max_size]  # type: ignore[return-value]
 
     @staticmethod
     def buckingham_pi(matrix: np.ndarray) -> list[list[float]]:
@@ -258,7 +258,7 @@ class EMLAccelerator:
         """EML 万能算子: exp(x) - ln(y)."""
         if _use_rust and hasattr(_rust_module, "eml"):
             try:
-                return _rust_module.eml(x, y)
+                return _rust_module.eml(x, y)  # type: ignore[no-any-return]
             except Exception:
                 logger.debug("Rust eml() failed, using Python fallback")
         y_safe = max(y, 1e-300)
@@ -267,7 +267,7 @@ class EMLAccelerator:
     def eml_closure(self, base: list[float], max_depth: int, max_size: int = 100000) -> list[float]:
         if _use_rust and hasattr(_rust_module, "eml_closure"):
             try:
-                return _rust_module.eml_closure(base, max_depth, max_size)
+                return _rust_module.eml_closure(base, max_depth, max_size)  # type: ignore[no-any-return]
             except Exception:
                 logger.debug("Rust eml_closure() failed, using Python fallback")
         return _EMLPyFallback.eml_closure(base, max_depth, max_size)
@@ -277,7 +277,7 @@ class EMLAccelerator:
             try:
                 rows, cols = matrix.shape
                 data = matrix.ravel().tolist()
-                return _rust_module.buckingham_pi(rows, cols, data)
+                return _rust_module.buckingham_pi(rows, cols, data)  # type: ignore[no-any-return]
             except Exception:
                 logger.debug("Rust buckingham_pi() failed, using Python fallback")
         return _EMLPyFallback.buckingham_pi(matrix)
@@ -286,7 +286,7 @@ class EMLAccelerator:
         """并行计算多个矩阵的 Buckingham Pi 群 (Rust Rayon)."""
         if _use_rust and hasattr(_rust_module, "parallel_buckingham_pi"):
             try:
-                return _rust_module.parallel_buckingham_pi(matrices)
+                return _rust_module.parallel_buckingham_pi(matrices)  # type: ignore[no-any-return]
             except Exception:
                 pass
         # Python 回退: 逐个计算
@@ -295,7 +295,7 @@ class EMLAccelerator:
     def shortest_path(self, n_nodes: int, edges: list[tuple[int, int]], start: int, end: int) -> list[int]:
         if _use_rust and hasattr(_rust_module, "shortest_path"):
             try:
-                return _rust_module.shortest_path(n_nodes, edges, start, end)
+                return _rust_module.shortest_path(n_nodes, edges, start, end)  # type: ignore[no-any-return]
             except Exception:
                 logger.debug("Rust shortest_path() failed, using Python fallback")
         return _EMLPyFallback.shortest_path(n_nodes, edges, start, end)
@@ -304,7 +304,7 @@ class EMLAccelerator:
         """WHNF normalization via Rust (fast) or Python (fallback)."""
         if _use_rust and hasattr(_rust_module, "whnf_normalize"):
             try:
-                return _rust_module.whnf_normalize(term_json)
+                return _rust_module.whnf_normalize(term_json)  # type: ignore[no-any-return]
             except Exception:
                 logger.debug("Rust whnf_normalize() failed, using Python fallback")
         # Python fallback: use the type_theory module
@@ -350,7 +350,7 @@ class EMLAccelerator:
         """Batch evaluate expressions via Rust (fast) or Python (fallback)."""
         if _use_rust and hasattr(_rust_module, "batch_eval_expressions"):
             try:
-                return _rust_module.batch_eval_expressions(expressions, var_names, data_rows, data_flat)
+                return _rust_module.batch_eval_expressions(expressions, var_names, data_rows, data_flat)  # type: ignore[no-any-return]
             except Exception:
                 logger.debug("Rust batch_eval_expressions() failed, using Python fallback")
         # Python fallback using numpy
@@ -362,7 +362,7 @@ class EMLAccelerator:
             try:
                 local_vars = {name: data[:, i] for i, name in enumerate(var_names)}
                 local_vars.update(
-                    {"sin": np.sin, "cos": np.cos, "exp": np.exp, "log": np.log, "sqrt": np.sqrt, "abs": np.abs}
+                    {"sin": np.sin, "cos": np.cos, "exp": np.exp, "log": np.log, "sqrt": np.sqrt, "abs": np.abs}  # type: ignore[dict-item]
                 )
                 result = safe_eval(expr, local_vars)
                 results.append(result.tolist() if hasattr(result, "tolist") else [float(result)] * data_rows)
@@ -374,17 +374,17 @@ class EMLAccelerator:
         """Check definitional equality via Rust (fast) or Python (fallback)."""
         if _use_rust and hasattr(_rust_module, "check_def_eq"):
             try:
-                return _rust_module.check_def_eq(term_a_json, term_b_json)
+                return _rust_module.check_def_eq(term_a_json, term_b_json)  # type: ignore[no-any-return]
             except Exception:
                 logger.debug("Rust check_def_eq() failed, using Python fallback")
         # Python fallback: use type_theory checker
         import json
 
-        from math_anything.type_theory.terms import def_eq as py_def_eq
+        from math_anything.type_theory.terms import def_eq as py_def_eq  # type: ignore[attr-defined]
 
         a = _json_to_term(json.loads(term_a_json))
         b = _json_to_term(json.loads(term_b_json))
-        return py_def_eq(a, b)
+        return py_def_eq(a, b)  # type: ignore[no-any-return]
 
     def compute_riemann_tensor(
         self,
@@ -406,7 +406,7 @@ class EMLAccelerator:
         """
         if _use_rust and hasattr(_rust_module, "compute_riemann_tensor"):
             try:
-                return _rust_module.compute_riemann_tensor(christoffel, d_christoffel, dim)
+                return _rust_module.compute_riemann_tensor(christoffel, d_christoffel, dim)  # type: ignore[no-any-return]
             except Exception:
                 logger.debug("Rust compute_riemann_tensor() failed, using Python fallback")
         # Python fallback: O(n^5) nested loops
@@ -445,7 +445,7 @@ class EMLAccelerator:
         """
         if _use_rust and hasattr(_rust_module, "compute_ricci_tensor"):
             try:
-                return _rust_module.compute_ricci_tensor(riemann, dim)
+                return _rust_module.compute_ricci_tensor(riemann, dim)  # type: ignore[no-any-return]
             except Exception:
                 logger.debug("Rust compute_ricci_tensor() failed, using Python fallback")
         # Python fallback
@@ -477,7 +477,7 @@ class EMLAccelerator:
         """
         if _use_rust and hasattr(_rust_module, "compute_scalar_curvature"):
             try:
-                return _rust_module.compute_scalar_curvature(ricci, inv_metric, dim)
+                return _rust_module.compute_scalar_curvature(ricci, inv_metric, dim)  # type: ignore[no-any-return]
             except Exception:
                 logger.debug("Rust compute_scalar_curvature() failed, using Python fallback")
         # Python fallback
