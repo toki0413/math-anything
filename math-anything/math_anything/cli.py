@@ -25,7 +25,21 @@ def _get_engine_names() -> list[str]:
     return get_registry().list_engines()
 
 
-ENGINE_NAMES = _get_engine_names()
+# 引擎名延迟到 create_parser 内才真正查询，避免 `import math_anything.cli`
+# 或 `bourbaki --version` / `--help` 时触发所有引擎插件的发现与 import。
+ENGINE_NAMES: list[str] | None = None
+
+
+def _engine_choices() -> list[str]:
+    """惰性获取引擎名列表，结果缓存到模块级 ENGINE_NAMES。"""
+    global ENGINE_NAMES
+    if ENGINE_NAMES is None:
+        try:
+            ENGINE_NAMES = _get_engine_names()
+        except Exception:
+            # 注册中心初始化失败时退化为空列表，避免 argparse 构造阶段崩溃
+            ENGINE_NAMES = []
+    return ENGINE_NAMES
 
 
 from math_anything.check.base import get_check_engine
@@ -79,9 +93,20 @@ def _extract_schema(engine_name: str, files: list[str]) -> MathSchema:
 
 def create_parser(prog_name: str = "bourbaki") -> argparse.ArgumentParser:
     """Create argument parser."""
+    # 版本号从包元数据动态读取，避免与 pyproject.toml 失同步
+    try:
+        from importlib.metadata import version as _pkg_version
+
+        _version = _pkg_version("bourbaki")
+    except Exception:
+        try:
+            from math_anything import __version__ as _version
+        except Exception:
+            _version = "0.0.0"
+
     parser = argparse.ArgumentParser(
         prog=prog_name,
-        description="Math Anything - Mathematical Semantic Layer for Computational Materials Science",
+        description="Bourbaki - Mathematical Structure Modeling for Computational Science",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=f"""
 Examples:
@@ -97,7 +122,7 @@ Examples:
   # Cross-engine comparison (VASP vs QE)
   {prog_name} cross vasp_INCAR.json quantum_espresso
 
-For more information: https://github.com/toki/math-anything
+For more information: https://github.com/toki0413/math-anything
         """,
     )
 
@@ -121,26 +146,7 @@ For more information: https://github.com/toki/math-anything
     )
     extract_parser.add_argument(
         "engine",
-        choices=[
-            "vasp",
-            "lammps",
-            "abaqus",
-            "ansys",
-            "comsol",
-            "quantum_espresso",
-            "gromacs",
-            "multiwfn",
-            "openfoam",
-            "cp2k",
-            "fluent",
-            "su2",
-            "gamess",
-            "nwchem",
-            "liggghts",
-            "dakota",
-            "solidworks",
-            "voxel",
-        ],
+        choices=_engine_choices(),
         help="Computational engine type",
     )
     extract_parser.add_argument(
@@ -194,26 +200,7 @@ For more information: https://github.com/toki/math-anything
     )
     explain_parser.add_argument(
         "engine",
-        choices=[
-            "vasp",
-            "lammps",
-            "abaqus",
-            "ansys",
-            "comsol",
-            "quantum_espresso",
-            "gromacs",
-            "multiwfn",
-            "openfoam",
-            "cp2k",
-            "fluent",
-            "su2",
-            "gamess",
-            "nwchem",
-            "liggghts",
-            "dakota",
-            "solidworks",
-            "voxel",
-        ],
+        choices=_engine_choices(),
         help="Computational engine type",
     )
     explain_parser.add_argument(
@@ -235,26 +222,7 @@ For more information: https://github.com/toki/math-anything
     )
     draft_parser.add_argument(
         "engine",
-        choices=[
-            "vasp",
-            "lammps",
-            "abaqus",
-            "ansys",
-            "comsol",
-            "quantum_espresso",
-            "gromacs",
-            "multiwfn",
-            "openfoam",
-            "cp2k",
-            "fluent",
-            "su2",
-            "gamess",
-            "nwchem",
-            "liggghts",
-            "dakota",
-            "solidworks",
-            "voxel",
-        ],
+        choices=_engine_choices(),
         help="Computational engine type",
     )
     draft_parser.add_argument(
@@ -302,7 +270,7 @@ For more information: https://github.com/toki/math-anything
     )
     loops_parser.add_argument(
         "--engine",
-        choices=ENGINE_NAMES,
+        choices=_engine_choices(),
         default=None,
         help="Engine name (flag form; overrides positional engine)",
     )
@@ -400,26 +368,7 @@ For more information: https://github.com/toki/math-anything
     )
     check_parser.add_argument(
         "engine",
-        choices=[
-            "vasp",
-            "lammps",
-            "abaqus",
-            "ansys",
-            "comsol",
-            "quantum_espresso",
-            "gromacs",
-            "multiwfn",
-            "openfoam",
-            "cp2k",
-            "fluent",
-            "su2",
-            "gamess",
-            "nwchem",
-            "liggghts",
-            "dakota",
-            "solidworks",
-            "voxel",
-        ],
+        choices=_engine_choices(),
         help="Computational engine type",
     )
     check_parser.add_argument(
@@ -669,7 +618,7 @@ For more information: https://github.com/toki/math-anything
         "-v",
         "--version",
         action="version",
-        version="%(prog)s 1.0.0",
+        version=f"%(prog)s {_version}",
     )
 
     return parser
@@ -681,7 +630,7 @@ def cmd_repl(args):
 
     if args.session:
         try:
-            from repl.core import REPLSession
+            from math_anything.repl.core import REPLSession
 
             repl.session = REPLSession.load(args.session)
             print(f"Loaded session: {repl.session.name}")
@@ -706,7 +655,17 @@ def cmd_extract(args):
             import json
 
             print(json.dumps(schema.to_dict(), indent=2))
+        elif args.format == "yaml":
+            try:
+                import yaml
+            except ImportError:
+                print("Error: PyYAML not installed. Run `pip install pyyaml`.")
+                return 1
+            print(yaml.safe_dump(schema.to_dict(), sort_keys=False, allow_unicode=True))
         elif args.format == "pretty":
+            _print_pretty_schema(schema)
+        else:
+            # 未知 format 兜底（避免静默无输出）
             _print_pretty_schema(schema)
         return 0
     except Exception as e:

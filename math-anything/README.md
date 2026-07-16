@@ -75,7 +75,7 @@ Bourbaki:     ENCUT = 520
 - **8 physics and ML domains** — DFT, CFD, MD, FEM, EM, QC, phase field, and supervised learning, each as a morphism chain over conservation fields
 - **18 conservation matrix field equations** — Navier-Stokes, Euler, Schrödinger, Maxwell, elasticity, MHD, heat, Dirac, Einstein field, and more, each with Noether correspondence
 - **5-layer verification pipeline** — Syntax → Semantics → Invariants → Conservation → Completeness
-- **12 Rust-accelerated functions** — EML operator, closure computation, Buckingham π groups, category graph traversal, expression simplification, and more via `math_anything_rs`
+- **13 Rust-accelerated functions** — EML operator, closure computation, Buckingham π groups, category graph traversal, expression simplification, Riemann/Ricci/scalar curvature, and more via `math_anything_rs`
 - **MCP server with 13 tools** — Domain analysis, cross-domain comparison, conservation fields, morphism chains, dimensional analysis, Riemann geometry, topology/loop/homotopy/curvature, ML surrogate, training-trajectory curvature, optimization-landscape homotopy, transfer learning as natural transformation, surrogate backends, structure verification, and more
 
 ## Quick Start

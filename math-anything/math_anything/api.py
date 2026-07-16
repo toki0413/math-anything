@@ -530,7 +530,16 @@ class MathAnything:
         try:
             from importlib.metadata import version as pkg_version
 
-            version = pkg_version("math-anything")
+            # PyPI 发布名是 bourbaki；math-anything 是开发期 dist 名。
+            # 按优先级尝试，避免 PackageNotFoundError 误判为版本缺失。
+            for _dist in ("bourbaki", "math-anything", "math_anything"):
+                try:
+                    version = pkg_version(_dist)
+                    break
+                except Exception:
+                    continue
+            else:
+                version = "3.0.0"
         except Exception:
             version = "3.0.0"
 

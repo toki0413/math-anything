@@ -34,10 +34,17 @@ Bird is the Word — 致敬 Freeman Dyson 的 "Birds and Frogs"：
   而那，才是真正的 Word。
 
 Architecture (v3.0):
-  bourbaki.foundation   — algorithms & formal systems
-  bourbaki.structures   — mathematical structure type system
-  bourbaki.morphisms    — structure-preserving transformations
-  bourbaki.domains       — physics discipline instantiations
+  Bourbaki 是 math_anything 的纯 re-export shim 包：所有真正的实现都在
+  `math_anything` 下，本包仅做命名空间转发，让 PyPI 用户可以通过
+  `import bourbaki` 而无需知道内部包名。
+
+  3 层架构（实际定义在 math_anything 中，bourbaki 通过属性访问转发）：
+    math_anything.foundation  — algorithms & formal systems
+    math_anything.structures  — mathematical structure type system
+    math_anything.morphisms   — structure-preserving transformations
+    math_anything.domains     — physics discipline instantiations
+
+  因此 `bourbaki.structures` 等属性访问可用，但定义文件并不在本包目录下。
 """
 
 __version__ = "3.0.0"

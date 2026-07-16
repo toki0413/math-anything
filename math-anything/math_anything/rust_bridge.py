@@ -254,57 +254,91 @@ except ImportError:
 class EMLAccelerator:
     """EML 加速器，自动选择最快实现."""
 
+    # 所有可能由 Rust 模块暴露的方法名。在 __init__ 中一次性解析为
+    # callable 指针并缓存，避免热路径上反复 hasattr() 反射查找。
+    _RUST_METHOD_NAMES: tuple[str, ...] = (
+        "eml",
+        "eml_closure",
+        "buckingham_pi",
+        "parallel_buckingham_pi",
+        "shortest_path",
+        "whnf_normalize",
+        "propagate_constraints",
+        "batch_eval_expressions",
+        "check_def_eq",
+        "compute_riemann_tensor",
+        "compute_ricci_tensor",
+        "compute_scalar_curvature",
+    )
+
+    def __init__(self) -> None:
+        # _rust_funcs[name] = callable 或 None（None 表示该函数在 Rust 模块中不可用）
+        self._rust_funcs: dict[str, Any] = {}
+        if _use_rust:
+            for name in self._RUST_METHOD_NAMES:
+                self._rust_funcs[name] = getattr(_rust_module, name, None)
+
+    def _rust_call(self, name: str):
+        """返回缓存的 Rust 方法指针，若不存在返回 None。"""
+        return self._rust_funcs.get(name)
+
     def eml(self, x: float, y: float) -> float:
         """EML 万能算子: exp(x) - ln(y)."""
-        if _use_rust and hasattr(_rust_module, "eml"):
+        fn = self._rust_call("eml")
+        if fn is not None:
             try:
-                return _rust_module.eml(x, y)  # type: ignore[no-any-return]
+                return fn(x, y)  # type: ignore[no-any-return]
             except Exception:
                 logger.debug("Rust eml() failed, using Python fallback")
         y_safe = max(y, 1e-300)
         return math.exp(x) - math.log(y_safe)
 
     def eml_closure(self, base: list[float], max_depth: int, max_size: int = 100000) -> list[float]:
-        if _use_rust and hasattr(_rust_module, "eml_closure"):
+        fn = self._rust_call("eml_closure")
+        if fn is not None:
             try:
-                return _rust_module.eml_closure(base, max_depth, max_size)  # type: ignore[no-any-return]
+                return fn(base, max_depth, max_size)  # type: ignore[no-any-return]
             except Exception:
                 logger.debug("Rust eml_closure() failed, using Python fallback")
         return _EMLPyFallback.eml_closure(base, max_depth, max_size)
 
     def buckingham_pi(self, matrix: np.ndarray) -> list[list[float]]:
-        if _use_rust and hasattr(_rust_module, "buckingham_pi"):
+        fn = self._rust_call("buckingham_pi")
+        if fn is not None:
             try:
                 rows, cols = matrix.shape
                 data = matrix.ravel().tolist()
-                return _rust_module.buckingham_pi(rows, cols, data)  # type: ignore[no-any-return]
+                return fn(rows, cols, data)  # type: ignore[no-any-return]
             except Exception:
                 logger.debug("Rust buckingham_pi() failed, using Python fallback")
         return _EMLPyFallback.buckingham_pi(matrix)
 
     def parallel_buckingham_pi(self, matrices: list[tuple[int, int, list[float]]]) -> list[list[list[float]]]:
         """并行计算多个矩阵的 Buckingham Pi 群 (Rust Rayon)."""
-        if _use_rust and hasattr(_rust_module, "parallel_buckingham_pi"):
+        fn = self._rust_call("parallel_buckingham_pi")
+        if fn is not None:
             try:
-                return _rust_module.parallel_buckingham_pi(matrices)  # type: ignore[no-any-return]
+                return fn(matrices)  # type: ignore[no-any-return]
             except Exception:
                 pass
         # Python 回退: 逐个计算
         return [self.buckingham_pi(np.array(d).reshape(r, c)) for r, c, d in matrices]
 
     def shortest_path(self, n_nodes: int, edges: list[tuple[int, int]], start: int, end: int) -> list[int]:
-        if _use_rust and hasattr(_rust_module, "shortest_path"):
+        fn = self._rust_call("shortest_path")
+        if fn is not None:
             try:
-                return _rust_module.shortest_path(n_nodes, edges, start, end)  # type: ignore[no-any-return]
+                return fn(n_nodes, edges, start, end)  # type: ignore[no-any-return]
             except Exception:
                 logger.debug("Rust shortest_path() failed, using Python fallback")
         return _EMLPyFallback.shortest_path(n_nodes, edges, start, end)
 
     def whnf_normalize(self, term_json: str) -> str:
         """WHNF normalization via Rust (fast) or Python (fallback)."""
-        if _use_rust and hasattr(_rust_module, "whnf_normalize"):
+        fn = self._rust_call("whnf_normalize")
+        if fn is not None:
             try:
-                return _rust_module.whnf_normalize(term_json)  # type: ignore[no-any-return]
+                return fn(term_json)  # type: ignore[no-any-return]
             except Exception:
                 logger.debug("Rust whnf_normalize() failed, using Python fallback")
         # Python fallback: use the type_theory module
@@ -319,11 +353,10 @@ class EMLAccelerator:
 
     def propagate_constraints(self, invariant_names, morphism_kept, morphism_lost, morphism_introduced):
         """Batch constraint propagation via Rust (fast) or Python (fallback)."""
-        if _use_rust and hasattr(_rust_module, "propagate_constraints"):
+        fn = self._rust_call("propagate_constraints")
+        if fn is not None:
             try:
-                return _rust_module.propagate_constraints(
-                    invariant_names, morphism_kept, morphism_lost, morphism_introduced
-                )
+                return fn(invariant_names, morphism_kept, morphism_lost, morphism_introduced)
             except Exception:
                 logger.debug("Rust propagate_constraints() failed, using Python fallback")
         # Python fallback
@@ -348,9 +381,10 @@ class EMLAccelerator:
         self, expressions: list[str], var_names: list[str], data_rows: int, data_flat: list[float]
     ) -> list[list[float]]:
         """Batch evaluate expressions via Rust (fast) or Python (fallback)."""
-        if _use_rust and hasattr(_rust_module, "batch_eval_expressions"):
+        fn = self._rust_call("batch_eval_expressions")
+        if fn is not None:
             try:
-                return _rust_module.batch_eval_expressions(expressions, var_names, data_rows, data_flat)  # type: ignore[no-any-return]
+                return fn(expressions, var_names, data_rows, data_flat)  # type: ignore[no-any-return]
             except Exception:
                 logger.debug("Rust batch_eval_expressions() failed, using Python fallback")
         # Python fallback using numpy
@@ -372,9 +406,10 @@ class EMLAccelerator:
 
     def check_def_eq(self, term_a_json: str, term_b_json: str) -> bool:
         """Check definitional equality via Rust (fast) or Python (fallback)."""
-        if _use_rust and hasattr(_rust_module, "check_def_eq"):
+        fn = self._rust_call("check_def_eq")
+        if fn is not None:
             try:
-                return _rust_module.check_def_eq(term_a_json, term_b_json)  # type: ignore[no-any-return]
+                return fn(term_a_json, term_b_json)  # type: ignore[no-any-return]
             except Exception:
                 logger.debug("Rust check_def_eq() failed, using Python fallback")
         # Python fallback: use type_theory checker
@@ -404,9 +439,10 @@ class EMLAccelerator:
         Returns:
             展平的 Riemann 张量 (dim^4,)
         """
-        if _use_rust and hasattr(_rust_module, "compute_riemann_tensor"):
+        fn = self._rust_call("compute_riemann_tensor")
+        if fn is not None:
             try:
-                return _rust_module.compute_riemann_tensor(christoffel, d_christoffel, dim)  # type: ignore[no-any-return]
+                return fn(christoffel, d_christoffel, dim)  # type: ignore[no-any-return]
             except Exception:
                 logger.debug("Rust compute_riemann_tensor() failed, using Python fallback")
         # Python fallback: O(n^5) nested loops
@@ -443,9 +479,10 @@ class EMLAccelerator:
         Returns:
             展平的 Ricci 张量 (dim^2,)
         """
-        if _use_rust and hasattr(_rust_module, "compute_ricci_tensor"):
+        fn = self._rust_call("compute_ricci_tensor")
+        if fn is not None:
             try:
-                return _rust_module.compute_ricci_tensor(riemann, dim)  # type: ignore[no-any-return]
+                return fn(riemann, dim)  # type: ignore[no-any-return]
             except Exception:
                 logger.debug("Rust compute_ricci_tensor() failed, using Python fallback")
         # Python fallback
@@ -475,9 +512,10 @@ class EMLAccelerator:
         Returns:
             标量曲率
         """
-        if _use_rust and hasattr(_rust_module, "compute_scalar_curvature"):
+        fn = self._rust_call("compute_scalar_curvature")
+        if fn is not None:
             try:
-                return _rust_module.compute_scalar_curvature(ricci, inv_metric, dim)  # type: ignore[no-any-return]
+                return fn(ricci, inv_metric, dim)  # type: ignore[no-any-return]
             except Exception:
                 logger.debug("Rust compute_scalar_curvature() failed, using Python fallback")
         # Python fallback

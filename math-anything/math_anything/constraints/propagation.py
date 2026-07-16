@@ -16,7 +16,9 @@
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import dataclass, field
+from typing import Any, ClassVar
 
 from math_anything.morphisms import Morphism
 from math_anything.rust_bridge import EMLAccelerator
@@ -28,9 +30,36 @@ from .invariant import (
     WeakeningRule,
 )
 
-_accel = EMLAccelerator()
+# 惰性初始化 Rust 加速器，避免 import 时副作用
+_accel: EMLAccelerator | None = None
 _logger = logging.getLogger(__name__)
-_logger.info(f"Constraint propagation backend: {'Rust' if _accel.using_rust else 'Python'}")
+
+
+def _get_accel() -> EMLAccelerator:
+    """惰性获取 EMLAccelerator 单例，并在首次调用时记录后端类型."""
+    global _accel
+    if _accel is None:
+        _accel = EMLAccelerator()
+        _logger.debug(
+            "Constraint propagation backend: %s",
+            "Rust" if _accel.using_rust else "Python",
+        )
+    return _accel
+
+
+def _feature_matches(feature: str, text: str) -> bool:
+    """检查 feature 是否作为完整词出现在 text 中.
+
+    用词边界正则替代裸 ``in`` 子串匹配，避免 "energy" 误匹配
+    "in_energy_calc"、"in" 误匹配 "input" 这类常见 false positive。
+    """
+    if not feature:
+        return False
+    try:
+        return re.search(rf"\b{re.escape(feature)}\b", text, flags=re.IGNORECASE) is not None
+    except (re.error, TypeError):
+        # fallback：feature 不含特殊字符时退化为大小写不敏感子串
+        return feature.lower() in str(text).lower()
 
 
 @dataclass
@@ -74,27 +103,40 @@ class PropagationChain:
     invariants: list[LearnedInvariant]
     chain: list[str]  # 态射名称列表
     results: list[list[PropagationResult]] = field(default_factory=list)
-    # results[i][j] = 第 i 个不变量穿过第 j 个态射的结果
+    # results[i] = 第 i 个态射步骤下，当时仍存活的全部不变量的传播结果
+    # （注意：每步的 current_invariants 会因 lost/introduced 而变化，
+    # 因此 results[i][j] 的 j 并不全局对应同一个不变量。
+    # 查询某不变量的最终状态时必须按 invariant.name 跨步骤聚合，见 final_state。）
+
+    # 优先级：LOST > CONDITIONAL > WEAKENED > PRESERVED > EMERGED
+    _OUTCOME_PRIORITY: ClassVar[list[PropagationOutcome]] = [
+        PropagationOutcome.LOST,
+        PropagationOutcome.CONDITIONAL,
+        PropagationOutcome.WEAKENED,
+        PropagationOutcome.PRESERVED,
+        PropagationOutcome.EMERGED,
+    ]
 
     @property
     def final_state(self) -> dict[str, PropagationOutcome]:
-        """每个不变量的最终状态."""
-        final: dict[str, PropagationOutcome] = {}
-        for i, inv in enumerate(self.invariants):
-            if not self.results or i >= len(self.results):
-                final[inv.name] = PropagationOutcome.PRESERVED
-                continue
-            outcomes = [r.outcome for r in self.results[i]]
-            # 优先级：LOST > CONDITIONAL > WEAKENED > PRESERVED
-            for outcome in [
-                PropagationOutcome.LOST,
-                PropagationOutcome.CONDITIONAL,
-                PropagationOutcome.WEAKENED,
-                PropagationOutcome.PRESERVED,
-            ]:
-                if outcome in outcomes:
-                    final[inv.name] = outcome
-                    break
+        """每个不变量在态射链终点的累积状态.
+
+        按 invariant.name 跨所有步骤聚合结果，取优先级最高的 outcome。
+        初始不变量若在某步丢失则记为 LOST；新出现的不变量也会出现在结果中。
+        """
+        priority_rank = {o: i for i, o in enumerate(self._OUTCOME_PRIORITY)}
+        final: dict[str, PropagationOutcome] = {
+            inv.name: PropagationOutcome.PRESERVED for inv in self.invariants
+        }
+        for step_results in self.results:
+            for r in step_results:
+                name = r.invariant.name
+                current = final.get(name, r.outcome)
+                # 取优先级更高（rank 更小）的 outcome
+                if priority_rank[r.outcome] < priority_rank[current]:
+                    final[name] = r.outcome
+                else:
+                    final[name] = current
         return final
 
     @property
@@ -137,8 +179,18 @@ class ConstraintPropagation:
         morphism: Morphism,
         source: str,
         target: str,
+        params: dict[str, Any] | None = None,
     ) -> PropagationResult:
-        """传播单个不变量穿过单个态射."""
+        """传播单个不变量穿过单个态射.
+
+        Args:
+            invariant: 待传播的不变量
+            morphism: 当前态射
+            source/target: 源/目标结构标签
+            params: 当前参数上下文，用于弱化规则触发条件的求值。
+                若为 None，弱化规则的 trigger_condition 将无法引用任何变量，
+                通常只能匹配纯常量表达式。
+        """
         m = morphism
         result = PropagationResult(
             invariant=invariant,
@@ -155,16 +207,21 @@ class ConstraintPropagation:
             invariant.record_propagation(m.name, "LOST")
 
         elif invariant.name in m.invariants_kept:
-            # 检查是否需要弱化
+            # 检查是否需要弱化：用真实参数上下文求值 trigger_condition
+            eval_ctx = dict(params) if params else {}
             for rule in invariant.weakening_rules:
                 try:
-                    if safe_eval(rule.trigger_condition, {}):
+                    if safe_eval(rule.trigger_condition, eval_ctx):
                         invariant.weaken()
                         result.outcome = PropagationOutcome.WEAKENED
                         result.applied_weakening = rule
                         invariant.record_propagation(m.name, f"WEAKENED: {rule.name}")
                         break
-                except (SafeEvalError, Exception):
+                except (SafeEvalError, NameError, KeyError, TypeError, ValueError, ZeroDivisionError) as e:
+                    _logger.debug(
+                        "Weakening rule '%s' trigger eval failed on invariant '%s': %s",
+                        rule.name, invariant.name, e,
+                    )
                     continue
             else:
                 result.outcome = PropagationOutcome.PRESERVED
@@ -176,7 +233,11 @@ class ConstraintPropagation:
 
         else:
             # 隐式：检查域条件是否被态射影响
-            if m.kernel_description and any(dc.feature in m.kernel_description for dc in invariant.domain_conditions):
+            # 使用词边界匹配避免子串误判（如 "energy" 误匹配 "in_energy_calc"）
+            if m.kernel_description and any(
+                _feature_matches(dc.feature, m.kernel_description)
+                for dc in invariant.domain_conditions
+            ):
                 result.outcome = PropagationOutcome.CONDITIONAL
                 result.new_condition = f"Requires {m.kernel_description} to be negligible"
                 invariant.record_propagation(m.name, "CONDITIONAL")
@@ -192,6 +253,7 @@ class ConstraintPropagation:
         morphisms: list[Morphism],
         source_labels: list[str],
         target_labels: list[str],
+        params: dict[str, Any] | None = None,
     ) -> PropagationChain:
         """传播不变量集穿过完整的态射链.
 
@@ -200,6 +262,7 @@ class ConstraintPropagation:
             morphisms: 按序排列的态射（先应用 morphisms[0]，再 morphisms[1]，...）
             source_labels: 每个态射的源结构标签
             target_labels: 每个态射的目标结构标签
+            params: 当前参数上下文，用于弱化规则触发条件的求值。
 
         Returns:
             PropagationChain 包含所有传播结果
@@ -211,7 +274,8 @@ class ConstraintPropagation:
         # 尝试 Rust 加速的批量传播路径
         # Rust 路径只处理简单的 kept/lost/introduced 语义，
         # 弱化规则和域条件检查仍需 Python 回退
-        if _accel.using_rust and len(invariants) > 10 and len(morphisms) > 3:
+        accel = _get_accel()
+        if accel.using_rust and len(invariants) > 10 and len(morphisms) > 3:
             try:
                 morphism_data = [
                     {
@@ -224,10 +288,11 @@ class ConstraintPropagation:
                     for m in morphisms
                 ]
                 inv_names = [inv.name for inv in current_invariants]
-                rust_outcomes = _accel.propagate_constraints(inv_names, morphism_data)  # type: ignore[call-arg]
+                rust_outcomes = accel.propagate_constraints(inv_names, morphism_data)  # type: ignore[call-arg]
                 _logger.debug(
-                    f"Constraint propagation: Rust batch path, "
-                    f"{len(invariants)} invariants x {len(morphisms)} morphisms"
+                    "Constraint propagation: Rust batch path, "
+                    "%d invariants x %d morphisms",
+                    len(invariants), len(morphisms),
                 )
 
                 # 将 Rust 结果转换为 PropagationResult
@@ -240,7 +305,20 @@ class ConstraintPropagation:
                         for j, inv in enumerate(current_invariants):
                             if j < len(rust_outcomes[i]):
                                 outcome_str = rust_outcomes[i][j]
-                                outcome = PropagationOutcome[outcome_str]
+                                # 兼容 Rust 端可能返回的大小写/拼写差异
+                                try:
+                                    outcome = PropagationOutcome(outcome_str)
+                                except (KeyError, ValueError):
+                                    try:
+                                        outcome = PropagationOutcome[outcome_str]
+                                    except KeyError:
+                                        _logger.warning(
+                                            "Rust returned unknown outcome '%s' "
+                                            "for invariant '%s' at morphism '%s'; "
+                                            "defaulting to PRESERVED",
+                                            outcome_str, inv.name, morph.name,
+                                        )
+                                        outcome = PropagationOutcome.PRESERVED
                             else:
                                 outcome = PropagationOutcome.PRESERVED
                             step_results.append(
@@ -272,8 +350,8 @@ class ConstraintPropagation:
                     results=results,
                 )
                 return chain
-            except (ValueError, TypeError, RuntimeError):
-                _logger.debug("Rust batch propagation failed, falling back to Python")
+            except (ValueError, TypeError, RuntimeError, KeyError) as e:
+                _logger.debug("Rust batch propagation failed, falling back to Python: %s", e)
 
         # Python 回退路径: 逐个传播
         for i, morph in enumerate(morphisms):
@@ -282,7 +360,7 @@ class ConstraintPropagation:
             dst = target_labels[i] if i < len(target_labels) else "?"
 
             for inv in current_invariants:
-                result = self.propagate_single(inv, morph, src, dst)
+                result = self.propagate_single(inv, morph, src, dst, params=params)
                 step_results.append(result)
 
             results.append(step_results)

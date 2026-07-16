@@ -70,27 +70,32 @@ class FEMDiscretization(ContinuumToDiscrete):
         return f"u(x) = sum N_i(x) u_i, element: {self.element_shape}"
 
     def assemble_stiffness_matrix(self) -> np.ndarray:
-        """组装一维刚度矩阵 -u''=f 线性元."""
+        """组装一维刚度矩阵 -u''=f 线性元（三对角，向量化装配）."""
         n = self.n_elements + 1
         h = self.domain_length / self.n_elements
-        K = np.zeros((n, n))
-        for i in range(self.n_elements):
-            K[i, i] += 1.0 / h
-            K[i, i + 1] += -1.0 / h
-            K[i + 1, i] += -1.0 / h
-            K[i + 1, i + 1] += 1.0 / h
+        # 单元局部刚度矩阵 [[1, -1], [-1, 1]] / h，组装到三对角
+        main = np.full(n, 1.0 / h)
+        # 内部节点被两个单元贡献，端点只被一个单元贡献
+        main[0] = 1.0 / h
+        main[-1] = 1.0 / h
+        if n > 2:
+            main[1:-1] = 2.0 / h
+        off = np.full(n - 1, -1.0 / h)
+        K = np.diag(main) + np.diag(off, k=1) + np.diag(off, k=-1)
         return K
 
     def assemble_mass_matrix(self) -> np.ndarray:
-        """组装一维质量矩阵 线性元."""
+        """组装一维质量矩阵 线性元（三对角，向量化装配）."""
         n = self.n_elements + 1
         h = self.domain_length / self.n_elements
-        M = np.zeros((n, n))
-        for i in range(self.n_elements):
-            M[i, i] += h / 3
-            M[i, i + 1] += h / 6
-            M[i + 1, i] += h / 6
-            M[i + 1, i + 1] += h / 3
+        # 单元局部质量矩阵 [[2, 1], [1, 2]] * h/6，组装到三对角
+        main = np.full(n, 2.0 * h / 6.0)
+        main[0] = h / 3.0
+        main[-1] = h / 3.0
+        if n > 2:
+            main[1:-1] = 2.0 * h / 3.0
+        off = np.full(n - 1, h / 6.0)
+        M = np.diag(main) + np.diag(off, k=1) + np.diag(off, k=-1)
         return M
 
     def galerkin_orthogonality_error(self, u_exact: Callable, f: Callable) -> float:
@@ -229,7 +234,7 @@ class FDTDDiscretization(ContinuumToDiscrete):
 
     @property
     def mathematical_form(self) -> str:
-        return "E^{n+1} = E^n + (dt/eps) curl H  on staggered Yee grid"
+        return "E^{n+1} = E^n - (dt/dx) * (B_{i} - B_{i-1})  on staggered Yee grid"
 
     @property
     def dx(self) -> float:
@@ -237,22 +242,31 @@ class FDTDDiscretization(ContinuumToDiscrete):
 
     @property
     def dt(self) -> float:
-        return self.dx / (2 * self.c)  # CFL 条件
+        # 一维 Yee CFL: dt <= dx/c；用 cfl_number 真正生效（之前是硬编码 dx/(2c)）
+        return self.cfl_number * self.dx / self.c
 
     def compute_cfl_number(self) -> float:
         """计算 Courant 数 c*dt/dx."""
         return self.c * self.dt / self.dx
 
     def yee_step(self, E: np.ndarray, B: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-        """一维 Yee 算法单步推进."""
+        """一维 Yee 算法单步推进 (c=1 自然单位).
+
+        Maxwell 方程（1D, c=1）:
+            ∂B/∂t = -∂E/∂x   (Faraday)
+            ∂E/∂t = -∂B/∂x   (Ampère, 无源)
+
+        蛙跳格式下两个更新方程都用减号；之前 E 更新用 += 会导致
+        电磁波反向传播或数值不稳定。
+        """
         dx = self.dx
         dt = self.dt
         # 更新 B: B^{n+1/2} = B^{n-1/2} - dt/dx * (E^n_{i+1} - E^n_i)
         B_new = B.copy()
         B_new[:-1] -= (dt / dx) * (E[1:] - E[:-1])
-        # 更新 E: E^{n+1} = E^n + dt/dx * (B^{n+1/2}_{i} - B^{n+1/2}_{i-1})
+        # 更新 E: E^{n+1} = E^n - dt/dx * (B^{n+1/2}_{i} - B^{n+1/2}_{i-1})
         E_new = E.copy()
-        E_new[1:] += (dt / dx) * (B_new[1:] - B_new[:-1])
+        E_new[1:] -= (dt / dx) * (B_new[1:] - B_new[:-1])
         return E_new, B_new
 
 
@@ -313,12 +327,20 @@ class SpectralDiscretization(ContinuumToDiscrete):
         return D  # type: ignore[no-any-return]
 
     def fourier_diff_matrix(self, n: int) -> np.ndarray:
-        """计算 Fourier 谱微分矩阵."""
+        """计算 Fourier 谱微分矩阵.
+
+        Note: 偶数 n 的 Nyquist 模式需特殊处理，此处仅给出标准公式。
+        建议传入奇数 n。
+        """
+        if n <= 0:
+            return np.zeros((0, 0))
+        idx = np.arange(n)
+        # 利用 broadcasting 一次性计算所有 (i, j) 对的差
+        diff = idx[:, None] - idx[None, :]  # shape (n, n)
+        mask = diff != 0
         D = np.zeros((n, n))
-        for i in range(n):
-            for j in range(n):
-                if i != j:
-                    D[i, j] = 0.5 * (-1) ** (i - j) / np.tan(np.pi * (i - j) / n)
+        # 仅在非对角线计算；(-1)**diff 用 np.power 向量化
+        D[mask] = 0.5 * np.power(-1.0, diff[mask]) / np.tan(np.pi * diff[mask] / n)
         return D
 
 
@@ -363,25 +385,50 @@ class ParticleDiscretization(ContinuumToDiscrete):
         return f"A(r) = sum (m_j/rho_j) A_j W(r-r_j, h), kernel: {self.kernel_function}"
 
     def kernel(self, r: float, h: float = 0.1) -> float:
-        """SPH 核函数."""
-        if self.kernel_function == "gaussian" or self.kernel_function == "wendland":
-            # 对 wendland 也用高斯作为默认计算核
-            return float(np.exp(-0.5 * (r / h) ** 2) / (h * np.sqrt(2 * np.pi)))
+        """SPH 核函数（标量）."""
+        return float(self._kernel_vec(np.asarray(r, dtype=float), h))
+
+    def _kernel_vec(self, r: np.ndarray, h: float = 0.1) -> np.ndarray:
+        """SPH 核函数向量化实现.
+
+        注意：``kernel_function == "wendland"`` 时此处实际返回 Wendland C2
+        紧支集核（替代之前误用的高斯核）。Wendland C2 在 |q| >= 2 时为 0，
+        满足紧支集性质，再生性条件也与高斯不同。
+        """
+        q = np.abs(r) / h
+        if self.kernel_function == "gaussian":
+            return np.exp(-0.5 * (r / h) ** 2) / (h * np.sqrt(2 * np.pi))
+        elif self.kernel_function == "wendland":
+            # Wendland C2 (2D 归一化)：W(q) = 7/(4π h²) · (1 - q/2)⁴ · (1 + 2q), q < 2
+            coef = 7.0 / (4.0 * np.pi * h * h)
+            q_clipped = np.clip(q, 0.0, 2.0)
+            return coef * (1.0 - q_clipped / 2.0) ** 4 * (1.0 + 2.0 * q_clipped) * (q < 2)
         elif self.kernel_function == "cubic_spline":
-            q = abs(r) / h
-            if q <= 1:
-                return (1 - 1.5 * q**2 + 0.75 * q**3) / h
-            elif q <= 2:
-                return 0.25 * (2 - q) ** 3 / h
-            return 0.0
-        return 0.0
+            coef = 1.0 / h
+            w = np.zeros_like(r, dtype=float)
+            m1 = q <= 1
+            m2 = (q > 1) & (q <= 2)
+            w[m1] = (1 - 1.5 * q[m1] ** 2 + 0.75 * q[m1] ** 3) * coef
+            w[m2] = 0.25 * (2 - q[m2]) ** 3 * coef
+            return w
+        return np.zeros_like(r, dtype=float)
 
     def density_estimate(self, positions: np.ndarray, masses: np.ndarray, h: float = 0.1) -> np.ndarray:
-        """用 SPH 核函数估计每个粒子位置的密度."""
+        """用 SPH 核函数估计每个粒子位置的密度.
+
+        实现说明：当粒子数较大（默认 n_particles=10000）时，O(N²) 双层
+        Python 循环不可用。这里用向量化 + broadcasting 一次性计算，
+        复杂度仍为 O(N²) 但常数远小于 Python 循环。对超大规模建议
+        调用方改用 scipy.spatial.cKDTree 仅对邻居求和。
+        """
+        positions = np.asarray(positions, dtype=float)
+        masses = np.asarray(masses, dtype=float)
         n = len(positions)
-        rho = np.zeros(n)
-        for i in range(n):
-            for j in range(n):
-                r = abs(positions[i] - positions[j])
-                rho[i] += masses[j] * self.kernel(r, h)
-        return rho
+        if n == 0:
+            return np.zeros(0)
+        # diff[i, j] = positions[i] - positions[j]
+        diff = positions[:, None] - positions[None, :]
+        r = np.abs(diff)
+        w = self._kernel_vec(r, h)  # shape (n, n)
+        # rho[i] = sum_j m_j * W(|r_i - r_j|, h)
+        return w @ masses

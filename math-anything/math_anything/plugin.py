@@ -114,6 +114,17 @@ BUILTIN_ENGINES: dict[str, tuple[str, str]] = {
     "dakota": ("engines.dakota.core.extractor", "DakotaExtractor"),
 }
 
+# 引擎别名映射（alias → registry key）。
+# 用于把 CLI/文档中常用的长名解析到 BUILTIN_ENGINES 中的短键。
+# 例如：CLI 允许 `bourbaki extract quantum_espresso ...`，注册表 key 是 "qe"。
+ENGINE_ALIASES: dict[str, str] = {
+    "quantum_espresso": "qe",
+    "espresso": "qe",
+    "gaussian09": "gaussian",
+    "g09": "gaussian",
+    "nw_chem": "nwchem",
+}
+
 
 class PluginRegistry:
     """引擎插件注册表.
@@ -166,11 +177,17 @@ class PluginRegistry:
     def get(self, name: str) -> EnginePlugin:
         """获取指定引擎插件.
 
+        支持通过别名查找（见 ENGINE_ALIASES），例如 "quantum_espresso"
+        会被解析为 "qe"。
+
         Raises:
             PluginNotFoundError: 引擎不存在
         """
         self.discover()
-        plugin = self._plugins.get(name.lower())
+        key = name.lower()
+        # 别名解析：把 "quantum_espresso" → "qe" 等长名映射到注册键
+        key = ENGINE_ALIASES.get(key, key)
+        plugin = self._plugins.get(key)
         if plugin is None:
             available = ", ".join(sorted(self._plugins.keys()))
             raise PluginNotFoundError(
@@ -180,8 +197,11 @@ class PluginRegistry:
         return plugin
 
     def list_engines(self) -> list[str]:
+        """返回支持的引擎名列表（含别名）."""
         self.discover()
-        return sorted(self._plugins.keys())
+        names = set(self._plugins.keys())
+        names.update(ENGINE_ALIASES.keys())
+        return sorted(names)
 
     def register(self, plugin: EnginePlugin) -> None:
         self._plugins[plugin.engine_name] = plugin

@@ -82,14 +82,13 @@ class MetricFunction:
             dg[k] = (g_plus - g_minus) / (2.0 * epsilon)
 
         # Γ^k_{ij} = ½ g^{kl} (∂_j g_{li} + ∂_i g_{lj} - ∂_l g_{ij})
-        gamma = np.zeros((n, n, n))
-        for k in range(n):
-            for i in range(n):
-                for j in range(n):
-                    s = 0.0
-                    for idx in range(n):
-                        s += g_inv[k, idx] * (dg[j, idx, i] + dg[i, idx, j] - dg[idx, i, j])
-                    gamma[k, i, j] = 0.5 * s
+        # dg shape: (n, n, n), 索引 [d, l, i] = ∂_d g_{l, i}
+        # term[l, i, j] = dg[j, l, i] + dg[i, l, j] - dg[l, i, j]
+        #   dg[j, l, i] → axes (d=j, l, i) → permute 到 (l, i, j): transpose(1, 2, 0)
+        #   dg[i, l, j] → axes (d=i, l, j) → permute 到 (l, i, j): transpose(1, 0, 2)
+        #   dg[l, i, j] → 已经是 (l, i, j)，不变
+        term = dg.transpose(1, 2, 0) + dg.transpose(1, 0, 2) - dg  # shape (l, i, j)
+        gamma = 0.5 * np.einsum("kl,lij->kij", g_inv, term)
         return gamma
 
     def riemann_at(self, coords: dict[str, float], epsilon: float = 1e-5) -> np.ndarray:
@@ -116,26 +115,33 @@ class MetricFunction:
             gm = self.christoffel_at(cm, epsilon=epsilon)
             dgamma[c] = (gp - gm) / (2.0 * epsilon)
 
-        R = np.zeros((n, n, n, n))
-        for a in range(n):
-            for b in range(n):
-                for c in range(n):
-                    for d in range(n):
-                        val = dgamma[c, a, b, d] - dgamma[d, a, b, c]
-                        for e in range(n):
-                            val += gamma[a, c, e] * gamma[e, b, d]
-                            val -= gamma[a, d, e] * gamma[e, b, c]
-                        R[a, b, c, d] = val
+        # R^a_{bcd} = ∂_c Γ^a_{bd} - ∂_d Γ^a_{bc}
+        #           + Γ^a_{ce} Γ^e_{bd} - Γ^a_{de} Γ^e_{bc}
+        # dgamma 索引 [c, a, b, d] = ∂_c Γ^a_{bd}（注意第 0 轴是 c）
+        # R 索引 [a, b, c, d]；需要把 dgamma 的 c 轴从位置 0 挪到位置 2：transpose(1, 2, 0, 3)
+        # 第二项 dgamma[d, a, b, c] 在 R[a, b, c, d] 下需要 d 在位置 0 挪到 2、c 在位置 3 挪到 0... 不对
+        # 实际上 dgamma[d, a, b, c] 中：c 轴对应 R 的 d 位置（3），d 轴对应 R 的 c 位置（2），
+        # a 轴对应 R 的 a 位置（0），b 轴对应 R 的 b 位置（1）。
+        # 原 dgamma 是 (c, a, b, d)。我们想取 dgamma[d, a, b, c] 然后映射到 R[a, b, c, d]。
+        # 等价于先把 dgamma 的轴 0 与轴 3 交换：(d, a, b, c) = dgamma.transpose(3, 1, 2, 0)
+        # 然后把 (d, a, b, c) 看作 R 的 (a, b, c, d) — 也就是把 axis 0(d)→position 3,
+        # axis 1(a)→0, axis 2(b)→1, axis 3(c)→2，即 transpose(1, 2, 3, 0)
+        # 但这两步等价于直接对 dgamma 做 transpose(1, 2, 3, 0)：
+        #   dgamma.transpose(1, 2, 3, 0)[a, b, c, d] = dgamma[d, a, b, c] ✓
+        # 第一项 dgamma[c, a, b, d] → R[a, b, c, d]：transpose(1, 2, 0, 3)
+        #   dgamma.transpose(1, 2, 0, 3)[a, b, c, d] = dgamma[c, a, b, d] ✓
+        R = dgamma.transpose(1, 2, 0, 3) - dgamma.transpose(1, 2, 3, 0)
+        # Γ^a_{ce} Γ^e_{bd} → R[a, b, c, d]
+        R = R + np.einsum("ace,ebd->abcd", gamma, gamma)
+        # Γ^a_{de} Γ^e_{bc} → R[a, b, c, d]
+        R = R - np.einsum("ade,ebc->abcd", gamma, gamma)
         return R
 
     def ricci_at(self, coords: dict[str, float], epsilon: float = 1e-5) -> np.ndarray:
         """计算 Ricci 张量 R_{ij} = R^k_{ikj}。"""
         R = self.riemann_at(coords, epsilon=epsilon)
-        n = self.dim
-        ricci = np.zeros((n, n))
-        for i in range(n):
-            for j in range(n):
-                ricci[i, j] = sum(R[k, i, k, j] for k in range(n))
+        # R[a, b, c, d] = R^a_{bcd}; Ricci_{ij} = R^k_{ikj} = R[k, i, k, j]
+        ricci = np.einsum("kikj->ij", R)
         return ricci
 
     def scalar_curvature_at(self, coords: dict[str, float], epsilon: float = 1e-5) -> float:

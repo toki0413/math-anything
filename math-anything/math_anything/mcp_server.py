@@ -33,6 +33,58 @@ mcp = FastMCP(
 )
 
 
+def _json_default(obj: Any) -> Any:
+    """JSON 序列化兜底：把 numpy / dataclass / Path / set 等转成原生类型。
+
+    之前用 `default=str` 会把 numpy.float64(0.5) 序列化成字符串 "0.5"，
+    让 LLM 拿到的是字符串而非数字，破坏 schema 类型契约。
+    """
+    # numpy 标量与数组
+    try:
+        import numpy as np
+
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        if isinstance(obj, np.generic):
+            return obj.item()
+    except ImportError:
+        pass
+
+    # dataclass
+    if hasattr(obj, "__dataclass_fields__"):
+        from dataclasses import asdict
+
+        return asdict(obj)
+
+    # enum
+    if hasattr(obj, "value") and hasattr(obj, "name"):
+        try:
+            return obj.value
+        except Exception:
+            return obj.name
+
+    # path / set / frozenset
+    if hasattr(obj, "__fspath__"):
+        return str(obj)
+    if isinstance(obj, (set, frozenset)):
+        return sorted(obj)
+
+    # 有 to_dict / model_dump 协议的对象
+    if hasattr(obj, "to_dict") and callable(obj.to_dict):
+        try:
+            return obj.to_dict()
+        except Exception:
+            pass
+    if hasattr(obj, "model_dump") and callable(obj.model_dump):
+        try:
+            return obj.model_dump()
+        except Exception:
+            pass
+
+    # 兜底：转字符串，避免 json.dumps 抛 TypeError
+    return str(obj)
+
+
 # ═══════════════════════════════════════════════════════════════════
 # Domain Layer — Physics as instantiation of mathematical structures
 # ═══════════════════════════════════════════════════════════════════
@@ -66,7 +118,7 @@ def analyze_domain(domain: str, parameters: dict[str, Any] | None = None) -> str
 
     dom = DOMAIN_REGISTRY[domain](parameters)
     analysis = dom.analyze()
-    return json.dumps(analysis.to_dict(), indent=2, ensure_ascii=False, default=str)
+    return json.dumps(analysis.to_dict(), indent=2, ensure_ascii=False, default=_json_default)
 
 
 @mcp.tool()
@@ -107,7 +159,7 @@ def compare_domains(
     dom_a = DOMAIN_REGISTRY[domain_a](params_a)
     dom_b = DOMAIN_REGISTRY[domain_b](params_b)
     comparison = dom_a.compare_with(dom_b)
-    return json.dumps(comparison, indent=2, ensure_ascii=False, default=str)
+    return json.dumps(comparison, indent=2, ensure_ascii=False, default=_json_default)
 
 
 @mcp.tool()
@@ -199,7 +251,7 @@ def build_conservation_field(
         result["conservation_laws"] = (
             [str(cq) for cq in field.conserved_quantities] if field.conserved_quantities else []
         )
-        return json.dumps(result, indent=2, ensure_ascii=False, default=str)
+        return json.dumps(result, indent=2, ensure_ascii=False, default=_json_default)
     except Exception as e:
         return json.dumps({"error": str(e), "equation_type": eq_type}, indent=2)
 
@@ -261,7 +313,7 @@ def analyze_morphism_chain(
         },
         indent=2,
         ensure_ascii=False,
-        default=str,
+        default=_json_default,
     )
 
 
@@ -311,7 +363,7 @@ def compute_riemann_geometry(
             },
             indent=2,
             ensure_ascii=False,
-            default=str,
+            default=_json_default,
         )
     except Exception as e:
         return json.dumps({"error": str(e), "note": "Rust acceleration may not be available"}, indent=2)
@@ -447,7 +499,7 @@ def solve_numerical(
             )
 
         result["solver_type"] = solver_type
-        return json.dumps(result, indent=2, ensure_ascii=False, default=str)
+        return json.dumps(result, indent=2, ensure_ascii=False, default=_json_default)
 
     except Exception as e:
         return json.dumps({"error": str(e), "solver_type": solver_type}, indent=2)
@@ -529,7 +581,7 @@ def dimensional_analyze(
             "Provide quantities for Pi group computation, or expression_lhs/expression_rhs for dimensional checking"  # type: ignore[assignment]
         )
 
-    return json.dumps(result, indent=2, ensure_ascii=False, default=str)
+    return json.dumps(result, indent=2, ensure_ascii=False, default=_json_default)
 
 
 @mcp.tool()
@@ -545,7 +597,8 @@ def discover_equations(
 
     Args:
         variable_names: Comma-separated variable names (e.g., "x, y, dx/dt")
-        method: Discovery method: "sindyc" (default) or "genetic"
+        method: Discovery method: "sindyc" (default; falls back to a warning if
+            SINDyC backend unavailable) or "genetic" (PSRN, slower but functional)
         max_complexity: Maximum expression complexity (default: 10)
     """
     try:
@@ -558,42 +611,62 @@ def discover_equations(
         n_samples = 100
         X = np.random.randn(n_samples, n_vars)
 
-        if method == "genetic":
+        if method == "sindyc":
+            # SINDyC 后端当前未实现；尝试导入失败时返回带 fallback 提示的结果，
+            # 不自动跑慢速 genetic 路径，让调用方显式选择 method="genetic"。
             try:
-                from math_anything.psrn.pse_engine import PSEConfig, PSEEngine
-                from math_anything.psrn.psrn_network import PSRNConfig
+                from math_anything.psrn.sindyc import SINDyC
 
-                y = X[:, 0] ** 2 if n_vars >= 1 else np.random.randn(n_samples)
-                psrn_cfg = PSRNConfig()
-                pse_cfg = PSEConfig(psrn_config=psrn_cfg)
-                engine = PSEEngine(pse_cfg)
-                best_expr, pareto_front = engine.discover(X, y, variable_names=names, verbose=False)
+                y = X[:, 0] if n_vars >= 1 else np.random.randn(n_samples)
+                sindyc = SINDyC()
+                discovered = sindyc.discover(X, y, variable_names=names)
 
-                result = {
-                    "method": "genetic",
-                    "equation": best_expr if best_expr else "No expression found",
-                    "variables": names,
-                    "pareto_front": [
-                        {"expression": expr, "mse": float(mse), "complexity": int(compl), "reward": float(reward)}
-                        for expr, mse, compl, reward in pareto_front[:10]
-                    ],
-                }
-            except Exception as e:
-                result = {"method": "genetic", "variables": names, "error": str(e)}
-        else:
-            from math_anything.psrn.sindyc import SINDyC
+                result = {"method": "sindyc", "variables": names}
+                if isinstance(discovered, dict):
+                    result.update(discovered)
+                elif isinstance(discovered, str):
+                    result["equation"] = discovered
+                return json.dumps(result, indent=2, ensure_ascii=False, default=_json_default)
+            except ImportError as ie:
+                return json.dumps(
+                    {
+                        "method": "sindyc",
+                        "variables": names,
+                        "warning": (
+                            f"SINDyC backend unavailable ({ie}). "
+                            "Call discover_equations(..., method='genetic') for PSRN-based discovery."
+                        ),
+                        "fallback": "genetic",
+                    },
+                    indent=2,
+                    ensure_ascii=False,
+                    default=_json_default,
+                )
 
-            y = X[:, 0] if n_vars >= 1 else np.random.randn(n_samples)
-            sindyc = SINDyC()
-            discovered = sindyc.discover(X, y, variable_names=names)
+        # method == "genetic" 或其他值都走 PSRN 路径
+        try:
+            from math_anything.psrn.pse_engine import PSEConfig, PSEEngine
+            from math_anything.psrn.psrn_network import PSRNConfig
 
-            result = {"method": "sindyc", "variables": names}
-            if isinstance(discovered, dict):
-                result.update(discovered)
-            elif isinstance(discovered, str):
-                result["equation"] = discovered
+            y = X[:, 0] ** 2 if n_vars >= 1 else np.random.randn(n_samples)
+            psrn_cfg = PSRNConfig()
+            pse_cfg = PSEConfig(psrn_config=psrn_cfg)
+            engine = PSEEngine(pse_cfg)
+            best_expr, pareto_front = engine.discover(X, y, variable_names=names, verbose=False)
 
-        return json.dumps(result, indent=2, ensure_ascii=False, default=str)
+            result = {
+                "method": "genetic",
+                "equation": best_expr if best_expr else "No expression found",
+                "variables": names,
+                "pareto_front": [
+                    {"expression": expr, "mse": float(mse), "complexity": int(compl), "reward": float(reward)}
+                    for expr, mse, compl, reward in pareto_front[:10]
+                ],
+            }
+        except Exception as e:
+            result = {"method": "genetic", "variables": names, "error": str(e)}
+
+        return json.dumps(result, indent=2, ensure_ascii=False, default=_json_default)
     except Exception as e:
         return json.dumps(
             {
@@ -655,7 +728,7 @@ def verify_structure(
             },
             indent=2,
             ensure_ascii=False,
-            default=str,
+            default=_json_default,
         )
 
     layer_map = {
@@ -683,7 +756,7 @@ def verify_structure(
         },
         indent=2,
         ensure_ascii=False,
-        default=str,
+        default=_json_default,
     )
 
 
@@ -709,7 +782,7 @@ def translate_engine_params(engine: str, parameters: dict[str, Any]) -> str:
 
     try:
         result = translate_params(engine, parameters)
-        return json.dumps(result, indent=2, ensure_ascii=False, default=str)
+        return json.dumps(result, indent=2, ensure_ascii=False, default=_json_default)
     except Exception as e:
         return json.dumps({"error": str(e), "engine": engine}, indent=2)
 
@@ -987,7 +1060,7 @@ def analyze_ml_model(
             "epochs": 3,
         }
 
-    return json.dumps(report, indent=2, ensure_ascii=False, default=str)
+    return json.dumps(report, indent=2, ensure_ascii=False, default=_json_default)
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -1031,7 +1104,7 @@ def get_domain_details(domain_name: str) -> str:
         },
         indent=2,
         ensure_ascii=False,
-        default=str,
+        default=_json_default,
     )
 
 

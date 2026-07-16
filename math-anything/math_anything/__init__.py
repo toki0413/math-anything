@@ -1,26 +1,14 @@
 """Math Anything - Mathematical structure extraction for computational materials.
 
-Namespace package configuration for multi-source distribution.
-"""
-
-import sys
-from pathlib import Path
-
-# Auto-discover engine packages in engines/
-_pkg_dir = Path(__file__).parent
-_engines_dir = _pkg_dir.parent / "engines"
-if _engines_dir.exists() and str(_engines_dir) not in sys.path:
-    sys.path.insert(0, str(_engines_dir))
-
-import pkgutil
-
-__path__ = pkgutil.extend_path(__path__, __name__)
-
-"""Math Anything - Mathematical structure extraction for computational materials.
-
 Math Anything extracts universal mathematical structures (governing equations,
 boundary conditions, numerical methods, computational graphs) from computational
 software (VASP, LAMMPS, Abaqus, etc.) and outputs them as LLM-native structured data.
+
+The package is published on PyPI under the name ``bourbaki``; ``bourbaki`` is a
+pure re-export shim of this package, so ``import bourbaki`` and
+``import math_anything`` expose the same API.
+
+Namespace package configuration for multi-source distribution.
 
 Quick Start:
     ```python
@@ -36,6 +24,19 @@ Quick Start:
     print(result.to_mermaid())  # Visualize as diagram
     ```
 """
+
+import sys
+from pathlib import Path
+
+# Auto-discover engine packages in engines/
+_pkg_dir = Path(__file__).parent
+_engines_dir = _pkg_dir.parent / "engines"
+if _engines_dir.exists() and str(_engines_dir) not in sys.path:
+    sys.path.insert(0, str(_engines_dir))
+
+import pkgutil
+
+__path__ = pkgutil.extend_path(__path__, __name__)
 
 __version__ = "3.0.0"
 

@@ -324,6 +324,7 @@ class StructureBridge:
                 morphisms,  # type: ignore[arg-type]
                 sources,
                 targets,
+                params=params,
             )
 
         # 5. 风险评估
